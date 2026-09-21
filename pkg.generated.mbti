@@ -1,0 +1,89 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog"
+
+import {
+  "moonbitlang/core/builtin",
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn json_line(Record) -> String
+
+pub let level : Level
+
+pub let level_key : String
+
+pub fn line(Record) -> String
+
+pub let message_key : String
+
+pub fn object(Record, level? : String, message? : String) -> String
+
+// Errors
+
+// Types and methods
+pub(all) struct Discard {
+}
+pub fn Discard::write(Self, Record) -> Unit
+pub impl Sink for Discard
+
+pub(all) enum Level {
+  Trace
+  Debug
+  Info
+  Warning
+  Error
+  Fatal
+} derive(Compare, Eq, @debug.Debug)
+pub fn Level::compare(Self, Self) -> Int
+pub fn Level::equal(Self, Self) -> Bool
+pub fn Level::name(Self) -> String
+pub fn Level::not_equal(Self, Self) -> Bool
+pub fn Level::op_ge(Self, Self) -> Bool
+pub fn Level::op_gt(Self, Self) -> Bool
+pub fn Level::op_le(Self, Self) -> Bool
+pub fn Level::op_lt(Self, Self) -> Bool
+pub fn Level::output(Self, &@builtin.Logger) -> Unit
+pub fn Level::parse(StringView) -> Self?
+pub fn Level::rank(Self) -> Int
+pub fn Level::to_repr(Self) -> @debug.Repr
+pub fn Level::to_string(Self) -> String
+pub impl Show for Level
+
+pub struct Lines {
+  write : (String) -> Unit
+  format : (Record) -> String
+}
+pub fn Lines::new((String) -> Unit, format? : (Record) -> String) -> Self
+pub fn Lines::write(Self, Record) -> Unit
+pub impl Sink for Lines
+
+pub struct Logger {
+  filter : Level?
+  sink : &Sink
+}
+pub fn Logger::at(Self, Level) -> Self
+pub fn Logger::debug(Self, String, fields? : Array[(String, Json)]) -> Unit
+pub fn Logger::enabled(Self, Level) -> Bool
+pub fn Logger::error(Self, String, fields? : Array[(String, Json)]) -> Unit
+pub fn Logger::fatal(Self, String, fields? : Array[(String, Json)]) -> Unit
+pub fn Logger::info(Self, String, fields? : Array[(String, Json)]) -> Unit
+pub fn Logger::level(Self) -> Level?
+pub fn Logger::log(Self, Level, String, fields? : Array[(String, Json)]) -> Unit
+pub fn Logger::new(&Sink, level? : Level) -> Self
+pub fn Logger::silent() -> Self
+pub fn Logger::trace(Self, String, fields? : Array[(String, Json)]) -> Unit
+pub fn Logger::warn(Self, String, fields? : Array[(String, Json)]) -> Unit
+
+pub(all) struct Record {
+  level : Level
+  message : String
+  fields : Array[(String, Json)]
+}
+
+// Type aliases
+
+// Traits
+pub(open) trait Sink {
+  fn write(Self, Record) -> Unit
+}

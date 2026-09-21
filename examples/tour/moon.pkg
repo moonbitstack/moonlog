@@ -1,0 +1,6 @@
+// A tour of what moonlog does, runnable: `moon run examples/tour`.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonlog",
+}

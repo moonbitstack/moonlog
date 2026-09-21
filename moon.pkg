@@ -1,0 +1,8 @@
+// Structured logging: a level, a message, fields, and a seam to write through.
+//
+// There is no specification for logging. The shape here is the union of what the
+// libraries in this workspace already had, and the levels are named as they name
+// them, so migrating is not also a rename.
+import {
+  "moonbitstack/moonlog",
+} for "test"
