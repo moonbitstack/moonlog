@@ -4,8 +4,8 @@
 ///|
 /// A logger writing into an array, which is how a test reads what was said.
 fn capture(
-  level? : @moonlog.Level = Info,
-  format? : (@moonlog.Record) -> String = @moonlog.line,
+  level~ : @moonlog.Level = Info,
+  format~ : (@moonlog.Record) -> String = @moonlog.line,
 ) -> (@moonlog.Logger, Array[String]) {
   let held : Array[String] = []
   (

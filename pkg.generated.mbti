@@ -35,7 +35,7 @@ pub(all) enum Level {
   Error
   Fatal
 } derive(Compare, Eq, @debug.Debug)
-pub fn Level::compare(Self, Self) -> Int
+pub fn Level::compare(Self, Self) -> Int32
 pub fn Level::equal(Self, Self) -> Bool
 pub fn Level::name(Self) -> String
 pub fn Level::not_equal(Self, Self) -> Bool
@@ -45,7 +45,7 @@ pub fn Level::op_le(Self, Self) -> Bool
 pub fn Level::op_lt(Self, Self) -> Bool
 pub fn Level::output(Self, &@builtin.Logger) -> Unit
 pub fn Level::parse(StringView) -> Self?
-pub fn Level::rank(Self) -> Int
+pub fn Level::rank(Self) -> Int32
 pub fn Level::to_repr(Self) -> @debug.Repr
 pub fn Level::to_string(Self) -> String
 pub impl Show for Level

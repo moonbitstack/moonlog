@@ -39,7 +39,7 @@ pub extend Level with Show::{output, to_string}
 ///|
 /// The level's rank, low to high. A message is written when its level is at
 /// least the logger's, which is the arrangement every logging library uses.
-pub fn Level::rank(self : Level) -> Int {
+pub fn Level::rank(self : Level) -> Int32 {
   match self {
     Trace => 0
     Debug => 1
@@ -130,7 +130,7 @@ pub let level : Level = Info
 
 ///|
 /// A logger writing to `sink` at `level`.
-pub fn Logger::new(sink : &Sink, level? : Level = level) -> Logger {
+pub fn Logger::new(sink : &Sink, level~ : Level = level) -> Logger {
   { filter: Some(level), sink, }
 }
 
@@ -175,7 +175,7 @@ pub fn Logger::log(
   self : Logger,
   level : Level,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   if self.enabled(level) {
     self.sink.write({ level, message, fields, })
@@ -187,7 +187,7 @@ pub fn Logger::log(
 pub fn Logger::trace(
   self : Logger,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   self.log(Trace, message, fields~)
 }
@@ -197,7 +197,7 @@ pub fn Logger::trace(
 pub fn Logger::debug(
   self : Logger,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   self.log(Debug, message, fields~)
 }
@@ -207,7 +207,7 @@ pub fn Logger::debug(
 pub fn Logger::info(
   self : Logger,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   self.log(Info, message, fields~)
 }
@@ -217,7 +217,7 @@ pub fn Logger::info(
 pub fn Logger::warn(
   self : Logger,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   self.log(Warning, message, fields~)
 }
@@ -227,7 +227,7 @@ pub fn Logger::warn(
 pub fn Logger::error(
   self : Logger,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   self.log(Error, message, fields~)
 }
@@ -239,7 +239,7 @@ pub fn Logger::error(
 pub fn Logger::fatal(
   self : Logger,
   message : String,
-  fields? : Array[(String, Json)] = [],
+  fields~ : Array[(String, Json)] = [],
 ) -> Unit {
   self.log(Fatal, message, fields~)
 }
@@ -274,7 +274,7 @@ pub struct Lines {
 /// machine reads, [`json_line`] writes one JSON object instead.
 pub fn Lines::new(
   write : (String) -> Unit,
-  format? : (Record) -> String = line,
+  format~ : (Record) -> String = line,
 ) -> Lines {
   { write, format, }
 }
@@ -336,8 +336,8 @@ pub fn json_line(record : Record) -> String {
 /// a parameter rather than a reason to write your own formatter.
 pub fn object(
   record : Record,
-  level? : String = level_key,
-  message? : String = message_key,
+  level~ : String = level_key,
+  message~ : String = message_key,
 ) -> String {
   let out : Map[String, Json] = Map([])
   out[level] = Json::string(record.level.name())
