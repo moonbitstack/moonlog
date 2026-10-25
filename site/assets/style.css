@@ -608,6 +608,9 @@ nav.site a[aria-current="page"] {
 
 .stream-body {
   padding: 10px 0 4px;
+  /* A long line should fade into the margin rather than be sliced by it. */
+  -webkit-mask-image: linear-gradient(90deg, #000 95%, transparent);
+  mask-image: linear-gradient(90deg, #000 95%, transparent);
 }
 
 .line {

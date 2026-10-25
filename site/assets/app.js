@@ -132,7 +132,7 @@
       ["warn", "gateway::pool", "queue deep", [["waiting", "42"]]],
       ["info", "mirror::sync", "ok", [["mirrored", "debian"], ["took_ms", "842"]]],
       ["error", "gateway::http", "upstream refused", [["peer", '"10.0.0.1:873"']]],
-      ["fatal", "gateway::boot", "no route", [["iface", '"eth0"']]],
+      ["info", "gateway::boot", "ready", [["iface", '"eth0"'], ["port", "8080"]]],
     ];
 
     var time = 22 * 3600 + 13 * 60 + 24;
