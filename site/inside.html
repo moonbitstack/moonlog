@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Inside — moonlog</title>
-    <meta name="description" content="Why moonlog is shaped the way it is: the dispatch order, the time model, the health machine, the alarm walk and the vectors that pin them." />
+    <meta name="description" content="Why moonlog is shaped the way it is: the dispatch order, the time model, the health machine, the alarm walk and the cases that pin them." />
     <meta name="theme-color" content="#f7f5ef" />
     <link rel="stylesheet" href="assets/style.css" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312151a'/%3E%3Crect x='6' y='9' width='20' height='2' fill='%23e8e4da'/%3E%3Crect x='6' y='15' width='14' height='2' fill='%237a828c'/%3E%3Crect x='6' y='21' width='17' height='2' fill='%23ff8a5b'/%3E%3C/svg%3E" />
@@ -93,15 +93,15 @@
 
               <rect class="box" x="180" y="12" width="140" height="44" rx="3" />
               <text class="lbl" x="250" y="31" text-anchor="middle">Record</text>
-              <text class="lbl" x="250" y="46" text-anchor="middle" fill="var(--ink-faint)">instant + sequence</text>
+              <text class="lbl" x="250" y="46" text-anchor="middle" fill="var(--ink-faint)">instant + seq</text>
 
               <rect class="box" x="356" y="12" width="124" height="44" rx="3" />
               <text class="lbl" x="418" y="31" text-anchor="middle">Hub filter</text>
-              <text class="lbl" x="418" y="46" text-anchor="middle" fill="var(--ink-faint)">level · target · msg</text>
+              <text class="lbl" x="418" y="46" text-anchor="middle" fill="var(--ink-faint)">level · target</text>
 
               <rect class="box" x="516" y="12" width="156" height="44" rx="3" />
               <text class="lbl" x="594" y="31" text-anchor="middle">Hub chain</text>
-              <text class="lbl" x="594" y="46" text-anchor="middle" fill="var(--ink-faint)">may drop the record</text>
+              <text class="lbl" x="594" y="46" text-anchor="middle" fill="var(--ink-faint)">may drop it</text>
 
               <path class="wire" d="M148 34 H170" stroke="var(--ink-faint)" marker-end="url(#tip2)" />
               <path class="wire" d="M324 34 H346" stroke="var(--ink-faint)" marker-end="url(#tip2)" />
@@ -133,7 +133,7 @@
               <rect class="box" x="24" y="220" width="150" height="32" rx="3" />
               <text class="lbl" x="99" y="240" text-anchor="middle">breaker: up · down</text>
               <rect class="box" x="206" y="220" width="150" height="32" rx="3" />
-              <text class="lbl" x="281" y="240" text-anchor="middle">incident when told</text>
+              <text class="lbl" x="281" y="240" text-anchor="middle">incident opened</text>
               <rect class="box" x="388" y="220" width="150" height="32" rx="3" />
               <text class="lbl" x="463" y="240" text-anchor="middle">alarm: walk tiers</text>
 
@@ -219,8 +219,8 @@
           a recovery it starts again from the probe interval. A failure that has
           been told once is not told again until the alarm's reminder has passed,
           and a failure that was folded into another sink's incident still
-          reports its own recovery. The eight cases in the shared vectors pin
-          exactly that, including the fractional-second one.
+          reports its own recovery. The eight cases in <code>fail.json</code>
+          pin exactly that, including the fractional-second one.
         </p>
 
         <h2 id="walk">The alarm walk</h2>
@@ -283,13 +283,13 @@
 
         <h2 id="vectors">What is pinned</h2>
         <p>
-          Three files of cases decide whether an implementation of this model is
-          the same model. They are reproduced as tests here, and every language
-          that carries the model runs the same ones.
+          Three files of cases say what this model does, step by step. They are
+          reproduced as tests in this repository, so a change that alters one of
+          them has to alter a test in the same commit.
         </p>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>Vectors</th><th>Pins</th><th>Here</th></tr></thead>
+            <thead><tr><th>Cases</th><th>Pins</th><th>Here</th></tr></thead>
             <tbody>
               <tr><td>render</td><td>patterns, presets, logfmt, pretty, the serlog document and nine other schemas, and the filter rules</td><td>10 tests</td></tr>
               <tr><td>fail</td><td>the health machine, step by step, with the phase each step owes</td><td>9 tests</td></tr>
@@ -298,11 +298,11 @@
           </table>
         </div>
         <p>
-          The rest of the suite covers what the vectors do not: the queue and
+          The rest of the suite covers what the cases do not: the queue and
           what a full one drops, the logger's bound fields, a sink of one's own,
           redaction by path, the token bucket, deduplication, a sink that logs
           into its own hub, and a hub whose sink is down while another reads the
-          incident. Fifty-five in all, on four backends.
+          incident. Fifty-eight in all, on four backends.
         </p>
 
         <h2 id="code">Reading the code</h2>

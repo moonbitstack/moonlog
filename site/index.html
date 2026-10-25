@@ -322,7 +322,7 @@ log.<span class="fn">info</span>(<span class="s">"starting"</span>, fields=[(<sp
 
                 <rect class="accent-box" x="514" y="66" width="120" height="56" rx="4" />
                 <text class="lbl" x="574" y="88" text-anchor="middle" font-size="12.5">probing</text>
-                <text class="lbl" x="574" y="106" text-anchor="middle" fill="var(--ink-faint)">one write decides</text>
+                <text class="lbl" x="574" y="106" text-anchor="middle" fill="var(--ink-faint)">a single write</text>
 
                 <path d="M152 86 H262" stroke="var(--accent)" fill="none" marker-end="url(#tip)" />
                 <text class="lbl" x="207" y="78" text-anchor="middle" fill="var(--accent)">write failed</text>
@@ -339,8 +339,8 @@ log.<span class="fn">info</span>(<span class="s">"starting"</span>, fields=[(<sp
             </svg>
             <figcaption>
               Up → down → probing → up. The machine reads no clock: every
-              transition takes the instant it happens at, which is why it is
-              checked against vectors rather than against a stopwatch.
+              transition takes the instant it happens at, so a failure lasting
+              an hour is a loop in a test, not a wait.
             </figcaption>
           </figure>
 
@@ -377,7 +377,7 @@ log.<span class="fn">info</span>(<span class="s">"starting"</span>, fields=[(<sp
           <div class="band-head">
             <span class="idx">05</span>
             <h2>Written for the tools you already run</h2>
-            <span class="note">seven presets and ten schemas, each pinned by the same vectors</span>
+            <span class="note">seven presets and ten schemas, each pinned by a test</span>
           </div>
 
           <div class="table-wrap">

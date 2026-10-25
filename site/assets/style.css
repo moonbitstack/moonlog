@@ -88,7 +88,7 @@
   --panel-2: #efe6d4;
   --ink: #1a1613;
   --ink-soft: #4a4138;
-  --ink-faint: #837767;
+  --ink-faint: #74685a;
   --rule: #ded2bc;
   --rule-strong: #c5b79c;
 
@@ -517,17 +517,30 @@ nav.site a[aria-current="page"] {
 
 /* On dark stock the ink is light, so the solid button would go pale: fill it
    with the wax instead, which is what a label on a dark envelope looks like. */
-[data-theme="dark"] .button {
+[data-theme="dark"] .button:not(.ghost) {
   background: var(--accent);
   border-color: var(--accent);
   color: #1a120e;
   box-shadow: 2px 2px 0 #3a3226;
 }
 
-[data-theme="dark"] .button:hover {
+[data-theme="dark"] .button:not(.ghost):hover {
   background: #eda285;
   border-color: #eda285;
   color: #1a120e;
+}
+
+[data-theme="dark"] .button.ghost {
+  background: transparent;
+  border-color: var(--rule-strong);
+  color: var(--ink);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .button.ghost:hover {
+  background: var(--panel);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .install {
@@ -687,7 +700,7 @@ nav.site a[aria-current="page"] {
   color: var(--ink);
 }
 .stream .k {
-  color: var(--accent);
+  color: var(--ink-soft);
 }
 .stream .v {
   color: var(--ink-soft);
@@ -1140,8 +1153,8 @@ footer a {
 
 .rail .group {
   color: var(--ink-faint);
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   margin: 22px 0 7px;
 }
@@ -1321,7 +1334,7 @@ footer a {
 
 .kind {
   font-family: var(--type);
-  font-size: 9px;
+  font-size: 9.5px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-faint);
@@ -1416,7 +1429,7 @@ footer a {
 
 .figure .lbl {
   font-family: var(--type);
-  font-size: 11.5px;
+  font-size: 12.5px;
   fill: var(--ink-soft);
 }
 
