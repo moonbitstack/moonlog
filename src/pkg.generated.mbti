@@ -8,6 +8,8 @@ import {
 }
 
 // Values
+pub let batch_default : Int32
+
 pub fn built_in() -> Array[Level]
 
 pub let debug : Level
@@ -20,13 +22,19 @@ pub let info : Level
 
 pub let longest_probe : Int64
 
+pub let probe_default : Int64
+
 pub fn refuse(Int32, String, String) -> Refused
+
+pub let remind_default : Int64
 
 pub let reset : String
 
 pub fn sound(&Alarm, Incident, &Desk) -> Outcome
 
 pub let trace : Level
+
+pub let wait_default : Int64
 
 pub let warn : Level
 

@@ -331,6 +331,10 @@
             <b>Breaker::new</b>(probe, now) · <b>::admit</b>(now) → <code>Bool</code> · <b>::fault</b>(now, error, remind, tell) → <code>Phase?</code> · <b>::pass</b>(now) → <code>Phase?</code> · <b>::resting</b>(now) · <b>::wait</b>(now) · <b>::health</b>() · <b>::skipped</b>() · <b>::skipped_now</b>() · <b>::since</b>() · <b>::failed_since</b>() · <b>::error</b>()
           </p>
         </div>
+        <div class="entry" data-api-entry="probe_default batch_default wait_default defaults numbers policy">
+          <div class="sig"><span class="kind fn">let</span><span class="name">probe_default · batch_default · wait_default</span><span class="rest">5 s · 1000 · 1 s</span></div>
+          <p class="what">The policy numbers a slot and a queue start with, named so a caller can read one instead of writing it again.</p>
+        </div>
         <div class="entry" data-api-entry="Health up down probing">
           <div class="sig"><span class="kind ty">type</span><span class="name">Health</span><span class="rest">Up · Down · Probing</span></div>
           <p class="what">Whether a sink is writing, skipping, or having its one probing write.</p>
@@ -350,6 +354,10 @@
           <div class="sig"><span class="kind ty">type</span><span class="name">Tiers</span></div>
           <p class="what">The built-in alarm: fixed tiers of names, where <code>*</code> stands for every sink on the log route.</p>
           <p class="params"><b>Tiers::from</b>([["loki"], ["mail"]]) · <b>Tiers::new</b>() (standard error alone) · <b>::with_fallback</b>(Fallback) · <b>::with_remind</b>(nanos) · <b>::tiers</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="remind_default one hour">
+          <div class="sig"><span class="kind fn">let</span><span class="name">remind_default</span><span class="rest">Int64 — one hour, in nanoseconds</span></div>
+          <p class="what">How long an alarm stays quiet about a sink that is still down.</p>
         </div>
         <div class="entry" data-api-entry="Desk trait logs resting deliver">
           <div class="sig"><span class="kind tr">trait</span><span class="name">Desk</span><span class="rest">logs(Self) -> Array[String] · resting(Self, String) -> Bool · deliver(Self, String, Record) -> Result[Unit, String]</span></div>

@@ -163,15 +163,19 @@ pub struct Tiers {
 }
 
 ///|
+/// One hour: how long an alarm stays quiet about a sink that is still down.
+pub let remind_default : Int64 = 3_600_000_000_000L
+
+///|
 /// The default alarm: standard error alone, one hour between reminders.
 pub fn Tiers::new() -> Tiers {
-  { tiers: [["stderr"]], fallback: Ignore, remind: 3_600_000_000_000L, }
+  { tiers: [["stderr"]], fallback: Ignore, remind: remind_default, }
 }
 
 ///|
 /// Tiers of names, tried in order.
 pub fn Tiers::from(tiers : Array[Array[String]]) -> Tiers {
-  { tiers, fallback: Ignore, remind: 3_600_000_000_000L, }
+  { tiers, fallback: Ignore, remind: remind_default, }
 }
 
 ///|

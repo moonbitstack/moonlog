@@ -29,9 +29,22 @@ pub(all) struct Queue {
 }
 
 ///|
-/// Holds `size` records, written 1000 at a time or a second after the first.
+/// How many records a queue writes at once when nothing says otherwise.
+pub let batch_default : Int32 = 1000
+
+///|
+/// One second: how long a queue waits for its batch to fill.
+pub let wait_default : Int64 = 1_000_000_000L
+
+///|
+/// Five seconds: the first wait before a failed sink is probed again.
+pub let probe_default : Int64 = 5_000_000_000L
+
+///|
+/// Holds `size` records, written `batch_default` at a time or `wait_default`
+/// after the first.
 pub fn Queue::new(size~ : Int32) -> Queue {
-  { size, batch: 1000, wait: 1_000_000_000L, full: Drop, }
+  { size, batch: batch_default, wait: wait_default, full: Drop, }
 }
 
 ///|
@@ -128,7 +141,7 @@ pub fn Slot::new(sink : &Sink, name~ : String) -> Slot {
     on_fail: Ignore,
     queue: None,
     retries: 0,
-    breaker: Breaker::new(5_000_000_000L, 0L),
+    breaker: Breaker::new(probe_default, 0L),
     dropped: 0L,
     suppressed: 0L,
     buffered: [],
