@@ -1,0 +1,738 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog"
+
+import {
+  "moonbitlang/core/builtin",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/string",
+}
+
+// Values
+pub fn base_name(StringView) -> String
+
+pub fn built_in() -> Array[Level]
+
+pub fn chars_to_string(ArrayView[Char]) -> String
+
+pub let debug : Level
+
+pub fn default_layout() -> Pattern
+
+pub fn elapsed_ms(Record, Identity) -> Int64
+
+pub let error : Level
+
+pub let fatal : Level
+
+pub fn floor_div(Int64, Int64) -> Int64
+
+pub let info : Level
+
+pub let longest_probe : Int64
+
+pub fn pad(StringView, Int32, Char) -> String
+
+pub fn preset_of(StringView) -> Profile?
+
+pub fn profile_layout(Profile) -> Pattern
+
+pub fn refuse(Int32, String, String) -> Refused
+
+pub fn remind_of(OnFail) -> Int64
+
+pub fn replace_all(@string.Regex, String, String) -> String
+
+pub let reset : String
+
+pub fn run_chain(Array[&Processor], Record, Env) -> Record?
+
+pub fn shorten(StringView, Int32) -> String
+
+pub fn sound(&Alarm, Incident, &Desk) -> Outcome
+
+pub fn tell_of(OnFail) -> Tell
+
+pub let trace : Level
+
+pub let warn : Level
+
+pub fn write_digits(StringBuilder, Int32, Int32) -> Unit
+
+pub fn write_fields(StringBuilder, Record, Bool, Bool) -> Unit
+
+pub fn write_iso(StringBuilder, Int64) -> Unit
+
+pub fn write_iso_nanos(StringBuilder, Int64) -> Unit
+
+pub fn write_json_string(StringBuilder, StringView) -> Unit
+
+pub fn write_logfmt(StringBuilder, StringView) -> Unit
+
+pub fn write_offset_stamp(StringBuilder, Int64, Int32, Int32, sep? : String) -> Unit
+
+pub fn write_stamp(StringBuilder, Int64, Int32, Int32) -> Unit
+
+pub fn write_strftime(StringBuilder, Int64, Int32, String) -> Unit
+
+pub fn write_utc(StringBuilder, Int64) -> Unit
+
+// Errors
+pub(all) suberror Refused {
+  Refused(at~ : Int32, got~ : String, want~ : String)
+}
+pub fn Refused::to_text(Self) -> String
+
+// Types and methods
+pub struct Breaker {
+  probe : Int64
+  mut health : Health
+  mut gap : Int64
+  mut next : Int64
+  mut told : Int64?
+  mut since : Int64
+  mut opened_at : Int64
+  mut skipped : Int64
+  mut error : String?
+}
+pub fn Breaker::admit(Self, Int64) -> Bool
+pub fn Breaker::error(Self) -> String?
+pub fn Breaker::fault(Self, Int64, String, Int64, Tell) -> Phase?
+pub fn Breaker::health(Self) -> Health
+pub fn Breaker::new(Int64, Int64) -> Self
+pub fn Breaker::pass(Self, Int64) -> Phase?
+pub fn Breaker::resting(Self, Int64) -> Bool
+pub fn Breaker::since(Self) -> Int64
+pub fn Breaker::skipped(Self) -> Int64
+pub fn Breaker::skipped_now(Self) -> Int64
+pub fn Breaker::wait(Self, Int64) -> Int64
+
+pub(all) struct Caller {
+  module_path : String?
+  func : String?
+  file : String?
+  line : Int32?
+} derive(Eq, @debug.Debug)
+pub fn Caller::equal(Self, Self) -> Bool
+pub fn Caller::new() -> Self
+pub fn Caller::not_equal(Self, Self) -> Bool
+pub fn Caller::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Clock {
+  Local
+  Utc
+  Rfc3339
+  Unix
+  UnixMs
+  UnixNs
+  Custom(String)
+} derive(Eq, @debug.Debug)
+pub fn Clock::equal(Self, Self) -> Bool
+pub fn Clock::not_equal(Self, Self) -> Bool
+pub fn Clock::parse(StringView) -> Self
+pub fn Clock::to_repr(Self) -> @debug.Repr
+pub fn Clock::write(Self, StringBuilder, Int64, Int32) -> Unit
+
+pub(all) enum Colour {
+  Plain
+  Red
+  Green
+  Yellow
+  Blue
+  Magenta
+  Cyan
+  White
+  Grey
+  Alarm
+} derive(Eq, @debug.Debug)
+pub fn Colour::ansi(Self) -> String
+pub fn Colour::equal(Self, Self) -> Bool
+pub fn Colour::name(Self) -> StringView
+pub fn Colour::not_equal(Self, Self) -> Bool
+pub fn Colour::parse(StringView) -> Self raise Refused
+pub fn Colour::to_repr(Self) -> @debug.Repr
+
+pub struct Dedupe {
+  within : Int64
+  seen : Map[String, (Int64, Int32)]
+}
+pub fn Dedupe::new(within~ : Int64) -> Self
+pub fn Dedupe::process(Self, Record, Env) -> Record?
+pub impl Processor for Dedupe
+
+pub struct Discard {
+}
+pub fn Discard::new() -> Self
+pub fn Discard::write(Self, Entry) -> Result[Unit, String]
+pub impl Sink for Discard
+
+pub(all) struct Entry {
+  record : Record
+  line : String
+}
+
+pub(all) struct Env {
+  now : Int64
+}
+pub fn Env::at(Int64) -> Self
+
+pub struct Exclude {
+  keep : Keep
+}
+pub fn Exclude::field(Self, String, String) -> Self
+pub fn Exclude::level(Self, Level) -> Self
+pub fn Exclude::new() -> Self
+pub fn Exclude::process(Self, Record, Env) -> Record?
+pub fn Exclude::tag(Self, String) -> Self
+pub impl Processor for Exclude
+
+pub(all) struct Failure {
+  sink : String
+  error : String
+  at : Int64
+}
+
+pub(all) enum Fallback {
+  Panic
+  Ignore
+} derive(Eq, @debug.Debug)
+pub fn Fallback::equal(Self, Self) -> Bool
+pub fn Fallback::not_equal(Self, Self) -> Bool
+pub fn Fallback::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Fault {
+  error : String
+  phase : Phase?
+}
+
+pub struct Fields {
+  pairs : Array[(String, Value)]
+}
+pub fn Fields::new() -> Self
+pub fn Fields::process(Self, Record, Env) -> Record?
+pub fn Fields::set(Self, String, Value) -> Self
+pub impl Processor for Fields
+
+pub struct Filter {
+  mut base : Level?
+  rules : Array[Rule]
+  mut pattern : @string.Regex?
+  mut pattern_text : String
+}
+pub fn Filter::admits(Self, Level, String, String) -> Bool
+pub fn Filter::allows(Self, Level, String) -> Bool
+pub fn Filter::at(Level) -> Self
+pub fn Filter::has_pattern(Self) -> Bool
+pub fn Filter::lowest(Self) -> Level?
+pub fn Filter::off() -> Self
+pub fn Filter::parse(StringView) -> Self raise Refused
+pub fn Filter::to_text(Self) -> String
+
+pub(all) enum Full {
+  Drop
+  Block
+} derive(Eq, @debug.Debug)
+pub fn Full::equal(Self, Self) -> Bool
+pub fn Full::not_equal(Self, Self) -> Bool
+pub fn Full::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Health {
+  Up
+  Down
+  Probing
+} derive(Eq, @debug.Debug)
+pub fn Health::equal(Self, Self) -> Bool
+pub fn Health::name(Self) -> StringView
+pub fn Health::not_equal(Self, Self) -> Bool
+pub fn Health::to_repr(Self) -> @debug.Repr
+
+pub struct Hub {
+  identity : Identity
+  profile : Profile
+  mut filter : Filter
+  chain : Array[&Processor]
+  slots : Array[Slot]
+  layout : &Layout
+  clock : () -> Int64
+  mut seq : Int64
+}
+pub fn Hub::add(Self, Slot) -> String raise Refused
+pub fn Hub::alarm(Self, Slot, Fault?, Phase, Int64) -> Unit
+pub fn Hub::deliver(Self, String, Record) -> Result[Unit, String]
+pub fn Hub::dispatch(Self, Record) -> Unit
+pub fn Hub::enabled(Self, Level) -> Bool
+pub fn Hub::filter(Self) -> Filter
+pub fn Hub::flush(Self) -> Unit
+pub fn Hub::identity(Self) -> Identity
+pub fn Hub::logger(Self, String) -> Logger
+pub fn Hub::logs(Self) -> Array[String]
+pub fn Hub::new(identity? : Identity, profile? : Profile, clock? : () -> Int64, filter? : Filter?) -> Self
+pub fn Hub::now(Self) -> Int64
+pub fn Hub::process(Self, &Processor) -> Unit
+pub fn Hub::profile(Self) -> Profile
+pub fn Hub::remove(Self, String) -> Bool
+pub fn Hub::resting(Self, String) -> Bool
+pub fn Hub::scene(Self) -> Scene
+pub fn Hub::set_filter(Self, Filter) -> Unit
+pub fn Hub::set_level(Self, Level) -> Unit
+pub fn Hub::slot(Self, String) -> Slot?
+pub fn Hub::slots(Self) -> Array[Slot]
+pub fn Hub::status(Self) -> Array[Status]
+pub fn Hub::write(Self, Level, String, String, fields? : Array[(String, Value)]) -> Unit
+pub impl Desk for Hub
+
+pub(all) struct Identity {
+  app : String
+  env : String
+  instance : String
+  host : String
+  pid : Int32
+  start : Int64
+  offset : (Int64) -> Int32
+}
+pub fn Identity::new() -> Self
+pub fn Identity::of(app~ : String, env? : String, instance? : String, host? : String, pid? : Int32, start? : Int64, offset? : (Int64) -> Int32) -> Self
+
+pub(all) struct Incident {
+  sink : String
+  kind : String
+  phase : Phase
+  error : String
+  failures : Array[Failure]
+  mut skipped : Int64
+  mut dropped : Int64
+  mut since : Int64
+}
+pub fn Incident::describe(Self, now~ : Int64, target? : String) -> Record
+pub fn Incident::new(String, String, Phase, String, Int64) -> Self
+
+pub struct JsonLine {
+  schema : Schema
+  keys : Array[(String, String)]
+  mut levels : Levels?
+  mut nest : String?
+}
+pub fn JsonLine::encode(Self, Record, Scene) -> String
+pub fn JsonLine::levels(Self, Levels) -> Self
+pub fn JsonLine::nest(Self, String) -> Self
+pub fn JsonLine::new(Schema) -> Self
+pub fn JsonLine::rename(Self, String, String) -> Self
+pub fn JsonLine::render(Self, Record, Scene) -> String
+pub impl Layout for JsonLine
+
+pub struct Keep {
+  tags : Array[String]
+  equals : Array[(String, String)]
+  mut level : Level?
+}
+pub fn Keep::field(Self, String, String) -> Self
+pub fn Keep::holds(Self, Record) -> Bool
+pub fn Keep::level(Self, Level) -> Self
+pub fn Keep::new() -> Self
+pub fn Keep::tag(Self, String) -> Self
+
+pub(all) struct Level {
+  name : String
+  value : Int32
+  colour : Colour
+}
+pub fn Level::at_least(Self, Self) -> Bool
+pub fn Level::colour(Self) -> Colour
+pub fn Level::compare(Self, Self) -> Int32
+pub fn Level::equal(Self, Self) -> Bool
+pub fn Level::label(Self, Profile) -> String
+pub fn Level::logstash(Self) -> Int32
+pub fn Level::name(Self) -> String
+pub fn Level::named(Self, String) -> Self
+pub fn Level::not_equal(Self, Self) -> Bool
+pub fn Level::op_ge(Self, Self) -> Bool
+pub fn Level::op_gt(Self, Self) -> Bool
+pub fn Level::op_le(Self, Self) -> Bool
+pub fn Level::op_lt(Self, Self) -> Bool
+pub fn Level::otel(Self) -> Int32
+pub fn Level::output(Self, &@builtin.Logger) -> Unit
+pub fn Level::parse(StringView) -> Self raise Refused
+pub fn Level::syslog(Self) -> Int32
+pub fn Level::to_string(Self) -> String
+pub fn Level::value(Self) -> Int32
+pub impl Compare for Level
+pub impl Eq for Level
+pub impl Show for Level
+
+pub(all) enum Levels {
+  Name
+  Number
+} derive(Eq, @debug.Debug)
+pub fn Levels::equal(Self, Self) -> Bool
+pub fn Levels::not_equal(Self, Self) -> Bool
+pub fn Levels::parse(StringView) -> Self raise Refused
+pub fn Levels::to_repr(Self) -> @debug.Repr
+
+pub struct Limit {
+  rate : Double
+  burst : Double
+  mut level : Double
+  mut at : Int64
+  mut started : Bool
+}
+pub fn Limit::new(rate~ : Double, burst~ : Double) -> Self
+pub fn Limit::process(Self, Record, Env) -> Record?
+pub impl Processor for Limit
+
+pub struct Lines {
+  write : (String) -> Unit
+}
+pub fn Lines::new((String) -> Unit) -> Self
+pub fn Lines::write(Self, Entry) -> Result[Unit, String]
+pub impl Sink for Lines
+
+pub struct Logfmt {
+}
+pub fn Logfmt::new() -> Self
+pub fn Logfmt::render(Self, Record, Scene) -> String
+pub impl Layout for Logfmt
+
+pub struct Logger {
+  hub : Hub
+  target : String
+  fields : Array[(String, Value)]
+}
+pub fn Logger::bound(Self, String, Value) -> Self
+pub fn Logger::debug(Self, String, fields? : Array[(String, Value)]) -> Unit
+pub fn Logger::enabled(Self, Level) -> Bool
+pub fn Logger::error(Self, String, fields? : Array[(String, Value)]) -> Unit
+pub fn Logger::fatal(Self, String, fields? : Array[(String, Value)]) -> Unit
+pub fn Logger::info(Self, String, fields? : Array[(String, Value)]) -> Unit
+pub fn Logger::log(Self, Level, String, fields? : Array[(String, Value)]) -> Unit
+pub fn Logger::new(Hub, String) -> Self
+pub fn Logger::target(Self) -> String
+pub fn Logger::trace(Self, String, fields? : Array[(String, Value)]) -> Unit
+pub fn Logger::under(Self, String) -> Self
+pub fn Logger::warn(Self, String, fields? : Array[(String, Value)]) -> Unit
+
+pub struct Match {
+  keep : Keep
+}
+pub fn Match::field(Self, String, String) -> Self
+pub fn Match::level(Self, Level) -> Self
+pub fn Match::new() -> Self
+pub fn Match::process(Self, Record, Env) -> Record?
+pub fn Match::tag(Self, String) -> Self
+pub impl Processor for Match
+
+pub struct Memory {
+  size : Int32
+  entries : Array[Entry]
+}
+pub fn Memory::clear(Self) -> Unit
+pub fn Memory::find(Self, String) -> Array[Entry]
+pub fn Memory::lines(Self) -> Array[String]
+pub fn Memory::new(size? : Int32) -> Self
+pub fn Memory::records(Self) -> Array[Record]
+pub fn Memory::write(Self, Entry) -> Result[Unit, String]
+pub impl Sink for Memory
+
+pub(all) enum OnFail {
+  Panic
+  Ignore
+  Alarm(&Alarm)
+}
+
+pub(all) enum Outcome {
+  Heard
+  Unheard
+} derive(Eq, @debug.Debug)
+pub fn Outcome::equal(Self, Self) -> Bool
+pub fn Outcome::not_equal(Self, Self) -> Bool
+pub fn Outcome::to_repr(Self) -> @debug.Repr
+
+pub struct Pattern {
+  source : String
+  pieces : Array[Piece]
+  shows_error : Bool
+  labels : Profile?
+}
+pub fn Pattern::parse(StringView) -> Self raise Refused
+pub fn Pattern::render(Self, Record, Scene) -> String
+pub fn Pattern::render_line(Self, Record, Scene) -> String
+pub fn Pattern::source(Self) -> String
+pub impl Layout for Pattern
+
+pub(all) enum Phase {
+  Opened
+  Reminder
+  Resolved
+} derive(Eq, @debug.Debug)
+pub fn Phase::equal(Self, Self) -> Bool
+pub fn Phase::name(Self) -> StringView
+pub fn Phase::not_equal(Self, Self) -> Bool
+pub fn Phase::to_repr(Self) -> @debug.Repr
+
+type Piece
+
+pub struct Pretty {
+}
+pub fn Pretty::new() -> Self
+pub fn Pretty::render(Self, Record, Scene) -> String
+pub impl Layout for Pretty
+
+pub(all) enum Profile {
+  Serlog
+  Tracing
+  EnvLogger
+  Python
+  Logback
+  Slog
+  Pino
+} derive(Eq, @debug.Debug)
+pub fn Profile::env(Self) -> Array[String]
+pub fn Profile::equal(Self, Self) -> Bool
+pub fn Profile::level(Self) -> Level
+pub fn Profile::name(Self) -> StringView
+pub fn Profile::not_equal(Self, Self) -> Bool
+pub fn Profile::parse(StringView) -> Self raise Refused
+pub fn Profile::pattern(Self) -> StringView
+pub fn Profile::stream(Self) -> Stream
+pub fn Profile::to_repr(Self) -> @debug.Repr
+
+pub(all) struct Queue {
+  size : Int32
+  batch : Int32
+  wait : Int64
+  full : Full
+}
+pub fn Queue::batch(Self, Int32) -> Self
+pub fn Queue::full(Self, Full) -> Self
+pub fn Queue::new(size~ : Int32) -> Self
+pub fn Queue::wait(Self, Int64) -> Self
+
+pub(all) struct Record {
+  mut level : Level
+  target : String
+  mut msg : String
+  mut fields : Array[(String, Value)]
+  tags : Array[String]
+  mut caller : Caller
+  mut thread : String?
+  mut spans : String?
+  mut time : Int64
+  mut seq : Int64
+}
+pub fn Record::at(Self, Level) -> Self
+pub fn Record::copy(Self) -> Self
+pub fn Record::field(Self, String) -> Value?
+pub fn Record::has(Self, String) -> Bool
+pub fn Record::located(Self, String, line? : Int32) -> Self
+pub fn Record::numbered(Self, Int64) -> Self
+pub fn Record::of(Level, String, String) -> Self
+pub fn Record::on(Self, String) -> Self
+pub fn Record::say(Self, String) -> Self
+pub fn Record::set(Self, String, Value) -> Self
+pub fn Record::sets(Self, Array[(String, Value)]) -> Self
+pub fn Record::stamped(Self, Int64) -> Self
+pub fn Record::tag(Self, String) -> Self
+pub fn Record::tagged(Self, String) -> Bool
+pub fn Record::unset(Self, String) -> Self
+
+pub struct Redact {
+  keys : Array[String]
+  paths : Array[Array[String]]
+  patterns : Array[@string.Regex]
+  mut mask : String
+}
+pub fn Redact::key(Self, String) -> Self
+pub fn Redact::mask(Self, String) -> Self
+pub fn Redact::new() -> Self
+pub fn Redact::path(Self, String) -> Self
+pub fn Redact::pattern(Self, StringView) -> Self raise Refused
+pub fn Redact::process(Self, Record, Env) -> Record?
+pub impl Processor for Redact
+
+pub(all) struct Report {
+  fault : Fault?
+  phase : Phase?
+}
+
+type Rule
+
+pub struct Sample {
+  first : Int32
+  every : Int32
+  per : Int64
+  seen : Map[String, (Int64, Int32)]
+}
+pub fn Sample::new(first~ : Int32, every? : Int32, per~ : Int64) -> Self
+pub fn Sample::process(Self, Record, Env) -> Record?
+pub impl Processor for Sample
+
+pub struct Sanitise {
+}
+pub fn Sanitise::new() -> Self
+pub fn Sanitise::process(Self, Record, Env) -> Record?
+pub impl Processor for Sanitise
+
+pub(all) struct Scene {
+  profile : Profile
+  colour : Bool
+  identity : Identity
+}
+pub fn Scene::at(Self, Profile) -> Self
+pub fn Scene::coloured(Self, Bool) -> Self
+pub fn Scene::new(identity? : Identity, profile? : Profile, colour? : Bool) -> Self
+
+pub(all) enum Schema {
+  Serlog
+  Pino
+  Bunyan
+  Zap
+  Slog
+  Structlog
+  Logstash
+  Ecs
+  Gelf
+  Otel
+} derive(Eq, @debug.Debug)
+pub fn Schema::equal(Self, Self) -> Bool
+pub fn Schema::name(Self) -> StringView
+pub fn Schema::not_equal(Self, Self) -> Bool
+pub fn Schema::parse(StringView) -> Self raise Refused
+pub fn Schema::to_repr(Self) -> @debug.Repr
+
+pub struct Slot {
+  name : String
+  sink : &Sink
+  mut filter : Filter?
+  chain : Array[&Processor]
+  mut layout : &Layout
+  mut layout_given : Bool
+  mut colour : Bool
+  mut alarm_only : Bool
+  mut on_fail : OnFail
+  mut queue : Queue?
+  mut retries : Int32
+  mut breaker : Breaker
+  mut dropped : Int64
+  suppressed : Int64
+  buffered : Array[Record]
+  mut buffered_at : Int64
+}
+pub fn Slot::adopt(Self, &Layout) -> Unit
+pub fn Slot::alarm_only(Self) -> Self
+pub fn Slot::at(Self, Level) -> Self
+pub fn Slot::coloured(Self, Bool) -> Self
+pub fn Slot::deliver(Self, Record, Scene, Int64) -> Report
+pub fn Slot::filter(Self, Filter) -> Self
+pub fn Slot::flush(Self, Scene, Int64) -> Report
+pub fn Slot::layout(Self, &Layout) -> Self
+pub fn Slot::line(Self, Record, Scene) -> String
+pub fn Slot::name(Self) -> String
+pub fn Slot::new(&Sink, name~ : String) -> Self
+pub fn Slot::on_fail(Self, OnFail) -> Self
+pub fn Slot::policy(Self) -> OnFail
+pub fn Slot::probe(Self, Int64) -> Self
+pub fn Slot::process(Self, &Processor) -> Self
+pub fn Slot::queue(Self, Queue) -> Self
+pub fn Slot::refine(Self, Record, Env) -> Record?
+pub fn Slot::renderer(Self) -> &Layout
+pub fn Slot::resting(Self, Int64) -> Bool
+pub fn Slot::retries(Self, Int32) -> Self
+pub fn Slot::send(Self, Record, Scene, Int64) -> Report
+pub fn Slot::status(Self) -> Status
+pub fn Slot::wants(Self, Level, String) -> Bool
+
+pub(all) struct Status {
+  name : String
+  health : Health
+  skipped : Int64
+  dropped : Int64
+  suppressed : Int64
+  since : Int64
+  error : String?
+}
+
+pub(all) enum Stream {
+  Stdout
+  Stderr
+  Auto
+} derive(Eq, @debug.Debug)
+pub fn Stream::equal(Self, Self) -> Bool
+pub fn Stream::name(Self) -> StringView
+pub fn Stream::not_equal(Self, Self) -> Bool
+pub fn Stream::parse(StringView) -> Self raise Refused
+pub fn Stream::to_repr(Self) -> @debug.Repr
+
+pub(all) enum Tell {
+  Report
+  Silent
+  Folded
+} derive(Eq, @debug.Debug)
+pub fn Tell::equal(Self, Self) -> Bool
+pub fn Tell::not_equal(Self, Self) -> Bool
+pub fn Tell::to_repr(Self) -> @debug.Repr
+
+pub struct Tiers {
+  tiers : Array[Array[String]]
+  fallback : Fallback
+  remind : Int64
+}
+pub fn Tiers::fallback(Self) -> Fallback
+pub fn Tiers::from(Array[Array[String]]) -> Self
+pub fn Tiers::new() -> Self
+pub fn Tiers::remind(Self) -> Int64
+pub fn Tiers::route(Self, Incident) -> Array[Array[String]]
+pub fn Tiers::tiers(Self) -> Array[Array[String]]
+pub fn Tiers::with_fallback(Self, Fallback) -> Self
+pub fn Tiers::with_remind(Self, Int64) -> Self
+pub impl Alarm for Tiers
+
+pub(all) enum Value {
+  Null
+  Bool(Bool)
+  Int(Int64)
+  Float(Double)
+  Str(String)
+  List(Array[Value])
+  Map(Array[(String, Value)])
+  Error(String, Array[String])
+  Other(String)
+} derive(@debug.Debug)
+pub fn Value::encode(Self) -> String
+pub fn Value::of_bool(Bool) -> Self
+pub fn Value::of_error(message~ : String, causes? : Array[String]) -> Self
+pub fn Value::of_float(Double) -> Self
+pub fn Value::of_int(Int32) -> Self
+pub fn Value::of_list(Array[Self]) -> Self
+pub fn Value::of_long(Int64) -> Self
+pub fn Value::of_map(Array[(String, Self)]) -> Self
+pub fn Value::of_null() -> Self
+pub fn Value::of_other(String) -> Self
+pub fn Value::of_str(StringView) -> Self
+pub fn Value::to_repr(Self) -> @debug.Repr
+pub fn Value::to_text(Self) -> String
+pub fn Value::write_json(Self, StringBuilder) -> Unit
+
+// Type aliases
+
+// Traits
+pub(open) trait Alarm {
+  fn route(Self, Incident) -> Array[Array[String]]
+  fn fallback(Self) -> Fallback
+  fn remind(Self) -> Int64
+}
+
+pub(open) trait Desk {
+  fn logs(Self) -> Array[String]
+  fn resting(Self, String) -> Bool
+  fn deliver(Self, String, Record) -> Result[Unit, String]
+}
+
+pub(open) trait Layout {
+  fn render(Self, Record, Scene) -> String
+}
+
+pub(open) trait Processor {
+  fn process(Self, Record, Env) -> Record?
+}
+
+pub(open) trait Sink {
+  fn write(Self, Entry) -> Result[Unit, String]
+}
