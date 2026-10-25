@@ -1,0 +1,6 @@
+# One line ending, whichever machine checks the repository out: the formatter
+# writes LF, and CI fails on the diff if a Windows checkout hands it CRLF.
+* text=auto eol=lf
+
+*.png binary
+*.ico binary
