@@ -45,11 +45,13 @@ jobs:
       - name: moon test (all backends)
         run: moon test --target all
 
+      # PowerShell has no /dev/null, and these three lines are worth reading
+      # when one of them breaks: leave the output in the log.
       - name: the examples run
         run: |
-          moon run src/examples/01-tour > /dev/null
-          moon run src/examples/02-formats > /dev/null
-          moon run src/examples/03-service > /dev/null
+          moon run src/examples/01-tour
+          moon run src/examples/02-formats
+          moon run src/examples/03-service
 
       - name: lint (fmt is clean)
         run: |
