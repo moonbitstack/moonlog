@@ -193,8 +193,6 @@
         body.appendChild(node);
       }
     }
-    var last = body.lastElementChild;
-    if (last) last.querySelector(".body").classList.add("caret");
     Array.prototype.forEach.call(body.children, function (child) {
       child.classList.remove("enter");
       child.style.animation = "none";
@@ -210,7 +208,6 @@
       body.appendChild(next);
       Array.prototype.forEach.call(body.children, function (child, index) {
         child.querySelector(".no").textContent = String(seq - shown + index).padStart(3, "0");
-        child.querySelector(".body").classList.toggle("caret", index === body.children.length - 1);
         child.classList.remove("enter");
         child.style.animation = "none";
       });

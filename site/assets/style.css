@@ -387,6 +387,7 @@ nav.site a[aria-current="page"] {
 /* ------------------------------------------------------------- log stream */
 
 .stream {
+  min-width: 0; /* the lines are nowrap; without this the panel sets the page width */
   background: var(--code-bg);
   border: 1px solid var(--code-rule);
   border-radius: 6px;
@@ -396,8 +397,8 @@ nav.site a[aria-current="page"] {
   font-size: 11.6px;
   line-height: 1.95;
   color: var(--code-ink);
-  -webkit-mask-image: linear-gradient(90deg, #000 94%, transparent);
-  mask-image: linear-gradient(90deg, #000 94%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, #000 96%, transparent);
+  mask-image: linear-gradient(90deg, #000 96%, transparent);
 }
 
 .stream-bar {
@@ -431,7 +432,6 @@ nav.site a[aria-current="page"] {
 
 .stream-body {
   padding: 12px 0 14px;
-  min-height: 292px;
 }
 
 .line {
@@ -512,23 +512,6 @@ nav.site a[aria-current="page"] {
 }
 .stream .punct {
   color: #6b7382;
-}
-
-.caret::after {
-  content: "";
-  display: inline-block;
-  width: 7px;
-  height: 15px;
-  margin-left: 2px;
-  background: var(--accent);
-  vertical-align: -2px;
-  animation: blink 1.1s steps(1) infinite;
-}
-
-@keyframes blink {
-  50% {
-    opacity: 0;
-  }
 }
 
 /* --------------------------------------------------------------- section */
@@ -1195,17 +1178,27 @@ footer a {
 
 @media (max-width: 720px) {
   .masthead .inner {
-    gap: 12px;
-    padding: 0 16px;
+    gap: 8px;
+    padding: 0 12px;
   }
 
   nav.site {
-    gap: 14px;
+    gap: 11px;
     font-size: 12.5px;
+    margin-left: auto;
   }
 
   .wordmark .ver {
     display: none;
+  }
+
+  .icon-button {
+    width: 28px;
+    height: 28px;
+  }
+
+  .tools {
+    gap: 2px;
   }
 
   .wrap,
@@ -1230,6 +1223,14 @@ footer a {
 
   .next {
     grid-template-columns: 1fr;
+  }
+}
+
+/* A phone is too narrow for four labels beside the wordmark; the fourth is one
+   tap away from the guide's own sidebar. */
+@media (max-width: 520px) {
+  nav.site a:last-child {
+    display: none;
   }
 }
 
