@@ -249,6 +249,12 @@ pub fn Slot::status(self : Slot) -> Status {
 }
 
 ///|
+/// When the current failure began, for the incident an alarm carries.
+pub fn Slot::failed_since(self : Slot) -> Int64 {
+  self.breaker.failed_since()
+}
+
+///|
 /// Whether the slot is resting at `now`, so an alarm leaves it out.
 fn Slot::resting(self : Slot, now : Int64) -> Bool {
   self.breaker.resting(now)
@@ -256,9 +262,14 @@ fn Slot::resting(self : Slot, now : Int64) -> Bool {
 
 ///|
 /// Whether records at this level and target reach the sink at all.
-fn Slot::wants(self : Slot, level : Level, target : String) -> Bool {
+fn Slot::wants(
+  self : Slot,
+  level : Level,
+  target : String,
+  msg : String,
+) -> Bool {
   match self.filter {
-    Some(filter) => filter.allows(level, target)
+    Some(filter) => filter.admits(level, target, msg)
     None => true
   }
 }

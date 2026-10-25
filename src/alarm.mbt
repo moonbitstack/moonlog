@@ -62,6 +62,8 @@ pub(all) struct Incident {
   mut skipped : Int64
   mut dropped : Int64
   mut since : Int64
+  /// When this report was made; `since` is when the failure began.
+  mut at : Int64
 }
 
 ///|
@@ -81,6 +83,7 @@ pub fn Incident::new(
     skipped: 0L,
     dropped: 0L,
     since: now,
+    at: now,
   }
 }
 
@@ -89,7 +92,6 @@ pub fn Incident::new(
 /// something works again, with the failures on one field.
 pub fn Incident::describe(
   self : Incident,
-  now~ : Int64,
   target~ : String = "moonlog",
 ) -> Record {
   let (level, msg) = match self.phase {
@@ -97,7 +99,7 @@ pub fn Incident::describe(
     Reminder =>
       (error, "sink `" + self.sink + "` is still failing: " + self.error)
     Resolved => {
-      let seconds = floor_div(now - self.since, 1_000_000_000L)
+      let seconds = floor_div(self.at - self.since, 1_000_000_000L)
       (
         info,
         "sink `" +
@@ -244,7 +246,7 @@ pub fn sound(alarm : &Alarm, incident : Incident, desk : &Desk) -> Outcome {
     if names.length() == 0 {
       continue
     }
-    let record = incident.describe(now=incident.since)
+    let record = incident.describe()
     let mut heard = false
     for name in names {
       match desk.deliver(name, record) {
@@ -257,6 +259,10 @@ pub fn sound(alarm : &Alarm, incident : Incident, desk : &Desk) -> Outcome {
     if heard {
       return Heard
     }
+  }
+  match alarm.fallback() {
+    Ignore => ()
+    Panic => panic()
   }
   Unheard
 }

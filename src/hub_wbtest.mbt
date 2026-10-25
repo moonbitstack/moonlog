@@ -277,6 +277,8 @@ test "an alarm takes the incident to another slot, and the failing one is not as
   let recovered = backup.find("phase=resolved")
   assert_eq(recovered.length(), 1)
   assert_true(recovered[0].line.contains(("level=info" : StringView)))
+  assert_true(recovered[0].line.contains(("works again after 6s" : StringView)))
+  assert_true(recovered[0].line.contains(("failures=\"\"" : StringView)))
 }
 
 ///|
@@ -305,4 +307,73 @@ test "an application can colour a slot's lines" {
   ignore(hub.add(Slot::new(sink, name="mem").coloured(true).at(warn)))
   hub.logger("app").warn("careful")
   assert_true(sink.lines()[0].contains(("\u{1b}[33m" : StringView)))
+}
+
+///|
+/// A sink that logs into the hub it belongs to, which is how a loop starts.
+struct Echo {
+  hub : Array[Hub]
+  lines : Array[String]
+}
+
+///|
+pub impl Sink for Echo with fn write(self, entry) {
+  self.lines.push(entry.line)
+  if self.lines.length() == 1 && self.hub.length() > 0 {
+    self.hub[0].logger("echo").info("from inside a sink")
+  }
+  Ok(())
+}
+
+///|
+pub extend Echo with Sink::{write}
+
+///|
+test "a slot's filter can narrow by the message as well as the target" {
+  let sink = Memory::new()
+  let hub = Hub::new(clock=clock_at(0L))
+  ignore(
+    hub.add(
+      Slot::new(sink, name="sync").filter(Filter::parse("info/sync(ed)?")),
+    ),
+  )
+  let log = hub.logger("app")
+  log.info("idle")
+  log.info("synced 3 files")
+  assert_eq(sink.lines().length(), 1)
+  assert_true(sink.lines()[0].contains(("synced 3 files" : StringView)))
+}
+
+///|
+test "a sink that logs into its own hub is counted, not followed" {
+  let now = [0L]
+  let hub = Hub::new(clock=fn() { now[0] })
+  let echo : Echo = { hub: [], lines: [], }
+  ignore(hub.add(Slot::new(echo, name="echo")))
+  echo.hub.push(hub)
+  hub.logger("app").info("outer")
+  assert_eq(echo.lines.length(), 1)
+  assert_eq(hub.suppressed(), 1L)
+}
+
+///|
+test "a full queue drops and counts, or writes first when told to block" {
+  let sink = Memory::new()
+  let hub = Hub::new(clock=clock_at(0L))
+  ignore(
+    hub.add(
+      Slot::new(sink, name="small").queue(
+        Queue::new(size=2).batch(10).wait(60_000_000_000L),
+      ),
+    ),
+  )
+  let log = hub.logger("app")
+  log.info("one")
+  log.info("two")
+  log.info("three")
+  let status = hub.status()[0]
+  assert_eq(status.dropped, 1L)
+  assert_eq(sink.lines().length(), 0)
+  hub.flush()
+  assert_eq(sink.lines().length(), 2)
 }

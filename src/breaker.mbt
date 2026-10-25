@@ -52,6 +52,7 @@ pub struct Breaker {
   mut next : Int64
   mut told : Int64?
   mut since : Int64
+  mut opened : Int64
   mut opened_at : Int64
   mut skipped : Int64
   mut error : String?
@@ -67,6 +68,7 @@ pub fn Breaker::new(probe : Int64, now : Int64) -> Breaker {
     next: now,
     told: None,
     since: now,
+    opened: 0L,
     opened_at: 0L,
     skipped: 0L,
     error: None,
@@ -100,6 +102,13 @@ pub fn Breaker::since(self : Breaker) -> Int64 {
 /// The latest error.
 pub fn Breaker::error(self : Breaker) -> String? {
   self.error
+}
+
+///|
+/// When the current failure began, which is what an incident calls `since`;
+/// `since` itself moves when the sink recovers.
+pub fn Breaker::failed_since(self : Breaker) -> Int64 {
+  self.opened
 }
 
 ///|
@@ -176,6 +185,7 @@ pub fn Breaker::fault(
       self.gap = self.probe
       self.next = now + self.gap
       self.since = now
+      self.opened = now
       self.opened_at = self.skipped
       match tell {
         Report => {

@@ -152,15 +152,13 @@ test "the star expands once and drops the failing sink" {
 ///|
 test "an incident becomes a record with the phase on it" {
   let incident = Incident::new("loki", "loki", Opened, "connection refused", 0L)
-  let record = incident.describe(now=0L)
+  let record = incident.describe()
   assert_true(record.level == error)
   assert_eq(record.msg, "sink `loki` failed: connection refused")
   assert_true(record.field("phase") is Some(Value::Str("opened")))
   assert_true(record.field("sink") is Some(Value::Str("loki")))
   let resolved = Incident::new("loki", "loki", Resolved, "", 5_000_000_000L)
-  assert_true(resolved.describe(now=65_000_000_000L).level == info)
-  assert_eq(
-    resolved.describe(now=65_000_000_000L).msg,
-    "sink `loki` works again after 60s",
-  )
+  resolved.at = 65_000_000_000L
+  assert_true(resolved.describe().level == info)
+  assert_eq(resolved.describe().msg, "sink `loki` works again after 60s")
 }

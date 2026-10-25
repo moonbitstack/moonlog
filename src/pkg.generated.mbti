@@ -44,12 +44,14 @@ pub struct Breaker {
   mut next : Int64
   mut told : Int64?
   mut since : Int64
+  mut opened : Int64
   mut opened_at : Int64
   mut skipped : Int64
   mut error : String?
 }
 pub fn Breaker::admit(Self, Int64) -> Bool
 pub fn Breaker::error(Self) -> String?
+pub fn Breaker::failed_since(Self) -> Int64
 pub fn Breaker::fault(Self, Int64, String, Int64, Tell) -> Phase?
 pub fn Breaker::health(Self) -> Health
 pub fn Breaker::new(Int64, Int64) -> Self
@@ -213,9 +215,12 @@ pub struct Hub {
   layout : &Layout
   clock : () -> Int64
   mut seq : Int64
+  mut inside : Bool
+  mut suppressed : Int64
 }
 pub fn Hub::add(Self, Slot) -> String raise Refused
 pub fn Hub::deliver(Self, String, Record) -> Result[Unit, String]
+pub fn Hub::dispatch(Self, Record) -> Unit
 pub fn Hub::enabled(Self, Level) -> Bool
 pub fn Hub::filter(Self) -> Filter
 pub fn Hub::flush(Self) -> Unit
@@ -233,6 +238,7 @@ pub fn Hub::set_filter(Self, Filter) -> Unit
 pub fn Hub::set_level(Self, Level) -> Unit
 pub fn Hub::slots(Self) -> Array[Slot]
 pub fn Hub::status(Self) -> Array[Status]
+pub fn Hub::suppressed(Self) -> Int64
 pub fn Hub::write(Self, Level, String, String, fields? : Array[(String, Value)]) -> Unit
 pub impl Desk for Hub
 
@@ -257,8 +263,9 @@ pub(all) struct Incident {
   mut skipped : Int64
   mut dropped : Int64
   mut since : Int64
+  mut at : Int64
 }
-pub fn Incident::describe(Self, now~ : Int64, target? : String) -> Record
+pub fn Incident::describe(Self, target? : String) -> Record
 pub fn Incident::new(String, String, Phase, String, Int64) -> Self
 
 pub struct JsonLine {
@@ -607,6 +614,7 @@ pub struct Slot {
 pub fn Slot::alarm_only(Self) -> Self
 pub fn Slot::at(Self, Level) -> Self
 pub fn Slot::coloured(Self, Bool) -> Self
+pub fn Slot::failed_since(Self) -> Int64
 pub fn Slot::filter(Self, Filter) -> Self
 pub fn Slot::layout(Self, &Layout) -> Self
 pub fn Slot::name(Self) -> String

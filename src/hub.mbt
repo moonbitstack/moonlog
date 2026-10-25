@@ -18,6 +18,8 @@ pub struct Hub {
   layout : &Layout
   clock : () -> Int64
   mut seq : Int64
+  mut inside : Bool
+  mut suppressed : Int64
 }
 
 ///|
@@ -45,6 +47,8 @@ pub fn Hub::new(
     layout: profile_layout(profile),
     clock,
     seq: 0L,
+    inside: false,
+    suppressed: 0L,
   }
 }
 
@@ -205,16 +209,41 @@ fn Hub::alarm(
     None => ""
   }
   let incident = Incident::new(slot.name(), "sink", phase, error, now)
+  if phase == Resolved {
+    // A recovery is not a failure: the sink worked, so nothing failed to deliver.
+    incident.failures.clear()
+  }
   incident.skipped = slot.status().skipped
   incident.dropped = slot.status().dropped
-  incident.since = slot.status().since
+  incident.since = slot.failed_since()
   ignore(sound(alarm, incident, self))
+}
+
+///|
+/// Records made while a sink was running, dropped so a sink that logs cannot
+/// feed itself.
+pub fn Hub::suppressed(self : Hub) -> Int64 {
+  self.suppressed
 }
 
 ///|
 /// Sends `record` everywhere it belongs: through the global chain, then to each
 /// slot's own filter and steps, then to its sink.
-fn Hub::dispatch(self : Hub, record : Record) -> Unit {
+///
+/// A record made while a sink is already running is dropped and counted: a sink
+/// that logs into the hub it belongs to would otherwise never finish.
+pub fn Hub::dispatch(self : Hub, record : Record) -> Unit {
+  if self.inside {
+    self.suppressed = self.suppressed + 1L
+    return
+  }
+  self.inside = true
+  self.send_to_slots(record)
+  self.inside = false
+}
+
+///|
+fn Hub::send_to_slots(self : Hub, record : Record) -> Unit {
   let now = self.now()
   if !self.filter.allows(record.level, record.target) {
     return
@@ -229,7 +258,8 @@ fn Hub::dispatch(self : Hub, record : Record) -> Unit {
   }
   let scene = self.scene()
   for slot in self.slots {
-    if slot.alarm_only || !slot.wants(refined.level, refined.target) {
+    if slot.alarm_only ||
+      !slot.wants(refined.level, refined.target, refined.msg) {
       continue
     }
     let kept = match slot.refine(refined, env) {

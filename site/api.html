@@ -328,7 +328,7 @@
           <div class="sig"><span class="kind ty">type</span><span class="name">Breaker</span></div>
           <p class="what">Up, down or probing; no I/O and no clock, every method takes the instant.</p>
           <p class="params">
-            <b>Breaker::new</b>(probe, now) · <b>::admit</b>(now) → <code>Bool</code> · <b>::fault</b>(now, error, remind, tell) → <code>Phase?</code> · <b>::pass</b>(now) → <code>Phase?</code> · <b>::resting</b>(now) · <b>::wait</b>(now) · <b>::health</b>() · <b>::skipped</b>() · <b>::skipped_now</b>() · <b>::since</b>() · <b>::error</b>()
+            <b>Breaker::new</b>(probe, now) · <b>::admit</b>(now) → <code>Bool</code> · <b>::fault</b>(now, error, remind, tell) → <code>Phase?</code> · <b>::pass</b>(now) → <code>Phase?</code> · <b>::resting</b>(now) · <b>::wait</b>(now) · <b>::health</b>() · <b>::skipped</b>() · <b>::skipped_now</b>() · <b>::since</b>() · <b>::failed_since</b>() · <b>::error</b>()
           </p>
         </div>
         <div class="entry" data-api-entry="Health up down probing">
@@ -357,12 +357,12 @@
         </div>
         <div class="entry" data-api-entry="sound walk incident">
           <div class="sig"><span class="kind fn">fn</span><span class="name">sound</span><span class="rest">(alarm : &amp;Alarm, incident : Incident, desk : &amp;Desk) -> Outcome</span></div>
-          <p class="what">Delivers an incident through the tiers, adding every failed delivery to it. One success ends the walk.</p>
+          <p class="what">Delivers an incident through the tiers, adding every failed delivery to it. One success ends the walk; when none does, the alarm's fallback decides whether the program stops.</p>
         </div>
         <div class="entry" data-api-entry="Incident phase failures skipped dropped since describe">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Incident</span><span class="rest">{ sink, kind, phase, error, failures, skipped, dropped, since }</span></div>
-          <p class="what">A sink's failure, from the first error to its recovery.</p>
-          <p class="params"><b>Incident::new</b>(sink, kind, phase, error, now) · <b>::describe</b>(now~, target? = "moonlog") → <code>Record</code></p>
+          <div class="sig"><span class="kind ty">type</span><span class="name">Incident</span><span class="rest">{ sink, kind, phase, error, failures, skipped, dropped, since, at }</span></div>
+          <p class="what">A sink's failure, from the first error to its recovery. <code>since</code> is when the failure began, <code>at</code> when this report was made.</p>
+          <p class="params"><b>Incident::new</b>(sink, kind, phase, error, now) · <b>::describe</b>(target? = "moonlog") → <code>Record</code></p>
         </div>
         <div class="entry" data-api-entry="Failure one delivery">
           <div class="sig"><span class="kind ty">type</span><span class="name">Failure</span><span class="rest">{ sink : String, error : String, at : Int64 }</span></div>
@@ -387,7 +387,7 @@
           <div class="sig"><span class="kind ty">type</span><span class="name">Hub</span></div>
           <p class="what">The whole of a running logger: global filter, global chain, slot table, identity and clock.</p>
           <p class="params">
-            <b>Hub::new</b>(identity?, profile?, clock?, filter?) · <b>::add</b>(Slot) raise → name · <b>::remove</b>(name) · <b>::slots</b>() · <b>::status</b>() → <code>Array[Status]</code> · <b>::filter</b>() · <b>::set_filter</b>(Filter) · <b>::set_level</b>(Level) · <b>::enabled</b>(Level) · <b>::process</b>(&amp;Processor) · <b>::logger</b>(target) · <b>::write</b>(level, target, msg, fields~) · <b>::flush</b>() · <b>::now</b>() · <b>::identity</b>() · <b>::profile</b>() · <b>::scene</b>()
+            <b>Hub::new</b>(identity?, profile?, clock?, filter?) · <b>::add</b>(Slot) raise → name · <b>::remove</b>(name) · <b>::slots</b>() · <b>::status</b>() → <code>Array[Status]</code> · <b>::filter</b>() · <b>::set_filter</b>(Filter) · <b>::set_level</b>(Level) · <b>::enabled</b>(Level) · <b>::process</b>(&amp;Processor) · <b>::logger</b>(target) · <b>::write</b>(level, target, msg, fields~) · <b>::flush</b>() · <b>::suppressed</b>() · <b>::now</b>() · <b>::identity</b>() · <b>::profile</b>() · <b>::scene</b>()
           </p>
         </div>
         <div class="entry" data-api-entry="Logger target bound under enabled info warn error fatal trace debug log">

@@ -16,7 +16,7 @@ alarms that walk their tiers.
 ## Quick start
 
 ```moonbit
-let sink = @moonlog.Memory::new()
+let sink = @moonlog.Lines::new(fn(line) { println(line) })
 let hub = @moonlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
 let _ = hub.add(
   @moonlog.Slot::new(sink, name="console")
@@ -37,10 +37,10 @@ moon add moonbitstack/moonlog
 ## What it does not do
 
 **It does not read a clock.** Every instant arrives as nanoseconds since the
-epoch, from the `clock` a hub was built with. A logger that stamps the time
-cannot be tested for what it wrote; here a test says exactly which instant it
-means, and the health machine is checked against vectors instead of against a
-stopwatch.
+epoch, from the `clock` a hub was built with. A logger that reads the time
+writes something different every run; here the instant is always one the
+application named, and a minute of sampling replays in a loop without waiting
+for the minute.
 
 **It does not keep a global logger.** A hub is a value and a logger is a value.
 A library takes a `Logger` as a parameter and writes through it; a library that
@@ -222,8 +222,8 @@ A `Slot` is where everything else lives:
 | `on_fail` | `Ignore` | `Panic`, `Ignore`, or `Alarm(tiers)` |
 | `alarm_only` | false | keep it off the log route |
 
-A slot's health is a machine, and it is the same machine in every language that
-follows the shared vectors:
+A slot's health is a machine with three states, and every transition is one
+write:
 
 ```mermaid
 stateDiagram-v2
