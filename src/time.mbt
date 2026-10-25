@@ -58,7 +58,7 @@ pub fn Clock::write(
 
 ///|
 /// `2023-11-14 23:13:20.000`: what a default line puts in front.
-pub fn write_stamp(
+fn write_stamp(
   out : StringBuilder,
   time : Int64,
   offset : Int32,
@@ -69,14 +69,14 @@ pub fn write_stamp(
 
 ///|
 /// `2023-11-14T22:13:20Z`: whole seconds in UTC, as `{time:utc}` writes.
-pub fn write_utc(out : StringBuilder, time : Int64) -> Unit {
+fn write_utc(out : StringBuilder, time : Int64) -> Unit {
   write_parts(out, time, 0, 0, sep="T", zone=false)
   out.write_char('Z')
 }
 
 ///|
 /// `2023-11-14T22:13:20.000Z`: milliseconds, which is what JSON schemas want.
-pub fn write_iso(out : StringBuilder, time : Int64) -> Unit {
+fn write_iso(out : StringBuilder, time : Int64) -> Unit {
   write_parts(out, time, 0, 3, sep="T", zone=false)
   out.write_char('Z')
 }
@@ -84,14 +84,14 @@ pub fn write_iso(out : StringBuilder, time : Int64) -> Unit {
 ///|
 /// `2023-11-14T22:13:20.000000000Z`: nanoseconds, as the OpenTelemetry model
 /// writes a timestamp.
-pub fn write_iso_nanos(out : StringBuilder, time : Int64) -> Unit {
+fn write_iso_nanos(out : StringBuilder, time : Int64) -> Unit {
   write_parts(out, time, 0, 9, sep="T", zone=false)
   out.write_char('Z')
 }
 
 ///|
 /// `2023-11-14T23:13:20.000000+01:00`: local time with its offset.
-pub fn write_offset_stamp(
+fn write_offset_stamp(
   out : StringBuilder,
   time : Int64,
   offset : Int32,
@@ -150,7 +150,7 @@ fn write_zone(out : StringBuilder, offset : Int32) -> Unit {
 
 ///|
 /// Writes `n` with at least `width` digits, zero-padded.
-pub fn write_digits(out : StringBuilder, n : Int32, width : Int32) -> Unit {
+fn write_digits(out : StringBuilder, n : Int32, width : Int32) -> Unit {
   let text = n.to_string()
   let mut pad = width - text.length()
   while pad > 0 {
@@ -194,7 +194,7 @@ fn civil_from_days(days : Int32) -> (Int32, Int32, Int32) {
 ///|
 /// Division that rounds towards negative infinity, so instants before 1970
 /// land on the day they belong to.
-pub fn floor_div(a : Int64, b : Int64) -> Int64 {
+fn floor_div(a : Int64, b : Int64) -> Int64 {
   let q = a / b
   if a % b != 0L && (a < 0L) != (b < 0L) {
     q - 1L
@@ -215,7 +215,7 @@ fn pow10(n : Int32) -> Int32 {
 ///|
 /// strftime, the subset the layouts use: `%Y %m %d %H %M %S %f %z %:z %%`, and
 /// `%.Nf` for N fractional digits.
-pub fn write_strftime(
+fn write_strftime(
   out : StringBuilder,
   time : Int64,
   offset : Int32,

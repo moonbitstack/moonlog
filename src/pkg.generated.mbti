@@ -8,73 +8,27 @@ import {
 }
 
 // Values
-pub fn base_name(StringView) -> String
-
 pub fn built_in() -> Array[Level]
 
-pub fn chars_to_string(ArrayView[Char]) -> String
-
 pub let debug : Level
-
-pub fn default_layout() -> Pattern
-
-pub fn elapsed_ms(Record, Identity) -> Int64
 
 pub let error : Level
 
 pub let fatal : Level
 
-pub fn floor_div(Int64, Int64) -> Int64
-
 pub let info : Level
 
 pub let longest_probe : Int64
 
-pub fn pad(StringView, Int32, Char) -> String
-
-pub fn preset_of(StringView) -> Profile?
-
-pub fn profile_layout(Profile) -> Pattern
-
 pub fn refuse(Int32, String, String) -> Refused
-
-pub fn remind_of(OnFail) -> Int64
-
-pub fn replace_all(@string.Regex, String, String) -> String
 
 pub let reset : String
 
-pub fn run_chain(Array[&Processor], Record, Env) -> Record?
-
-pub fn shorten(StringView, Int32) -> String
-
 pub fn sound(&Alarm, Incident, &Desk) -> Outcome
-
-pub fn tell_of(OnFail) -> Tell
 
 pub let trace : Level
 
 pub let warn : Level
-
-pub fn write_digits(StringBuilder, Int32, Int32) -> Unit
-
-pub fn write_fields(StringBuilder, Record, Bool, Bool) -> Unit
-
-pub fn write_iso(StringBuilder, Int64) -> Unit
-
-pub fn write_iso_nanos(StringBuilder, Int64) -> Unit
-
-pub fn write_json_string(StringBuilder, StringView) -> Unit
-
-pub fn write_logfmt(StringBuilder, StringView) -> Unit
-
-pub fn write_offset_stamp(StringBuilder, Int64, Int32, Int32, sep? : String) -> Unit
-
-pub fn write_stamp(StringBuilder, Int64, Int32, Int32) -> Unit
-
-pub fn write_strftime(StringBuilder, Int64, Int32, String) -> Unit
-
-pub fn write_utc(StringBuilder, Int64) -> Unit
 
 // Errors
 pub(all) suberror Refused {
@@ -227,6 +181,11 @@ pub fn Filter::off() -> Self
 pub fn Filter::parse(StringView) -> Self raise Refused
 pub fn Filter::to_text(Self) -> String
 
+pub struct Fit {
+  align : (Char, Int32)?
+  max : Int32?
+}
+
 pub(all) enum Full {
   Drop
   Block
@@ -256,9 +215,7 @@ pub struct Hub {
   mut seq : Int64
 }
 pub fn Hub::add(Self, Slot) -> String raise Refused
-pub fn Hub::alarm(Self, Slot, Fault?, Phase, Int64) -> Unit
 pub fn Hub::deliver(Self, String, Record) -> Result[Unit, String]
-pub fn Hub::dispatch(Self, Record) -> Unit
 pub fn Hub::enabled(Self, Level) -> Bool
 pub fn Hub::filter(Self) -> Filter
 pub fn Hub::flush(Self) -> Unit
@@ -274,7 +231,6 @@ pub fn Hub::resting(Self, String) -> Bool
 pub fn Hub::scene(Self) -> Scene
 pub fn Hub::set_filter(Self, Filter) -> Unit
 pub fn Hub::set_level(Self, Level) -> Unit
-pub fn Hub::slot(Self, String) -> Slot?
 pub fn Hub::slots(Self) -> Array[Slot]
 pub fn Hub::status(Self) -> Array[Status]
 pub fn Hub::write(Self, Level, String, String, fields? : Array[(String, Value)]) -> Unit
@@ -329,6 +285,32 @@ pub fn Keep::holds(Self, Record) -> Bool
 pub fn Keep::level(Self, Level) -> Self
 pub fn Keep::new() -> Self
 pub fn Keep::tag(Self, String) -> Self
+
+pub enum Kind {
+  Text(String)
+  Time(Clock)
+  Level(Bool)
+  Target(Int32)
+  Module
+  Func
+  File(Bool)
+  Line
+  Thread
+  Tid
+  Task
+  Pid
+  Host
+  App
+  Env
+  Instance
+  Msg(Bool)
+  Fields(Bool)
+  Tags
+  Error
+  Elapsed
+  Seq
+  Spans
+}
 
 pub(all) struct Level {
   name : String
@@ -467,7 +449,10 @@ pub fn Phase::name(Self) -> StringView
 pub fn Phase::not_equal(Self, Self) -> Bool
 pub fn Phase::to_repr(Self) -> @debug.Repr
 
-type Piece
+pub struct Piece {
+  kind : Kind
+  fit : Fit
+}
 
 pub struct Pretty {
 }
@@ -552,7 +537,11 @@ pub(all) struct Report {
   phase : Phase?
 }
 
-type Rule
+pub struct Rule {
+  target : String
+  glob : Bool
+  level : Level?
+}
 
 pub struct Sample {
   first : Int32
@@ -615,29 +604,19 @@ pub struct Slot {
   buffered : Array[Record]
   mut buffered_at : Int64
 }
-pub fn Slot::adopt(Self, &Layout) -> Unit
 pub fn Slot::alarm_only(Self) -> Self
 pub fn Slot::at(Self, Level) -> Self
 pub fn Slot::coloured(Self, Bool) -> Self
-pub fn Slot::deliver(Self, Record, Scene, Int64) -> Report
 pub fn Slot::filter(Self, Filter) -> Self
-pub fn Slot::flush(Self, Scene, Int64) -> Report
 pub fn Slot::layout(Self, &Layout) -> Self
-pub fn Slot::line(Self, Record, Scene) -> String
 pub fn Slot::name(Self) -> String
 pub fn Slot::new(&Sink, name~ : String) -> Self
 pub fn Slot::on_fail(Self, OnFail) -> Self
-pub fn Slot::policy(Self) -> OnFail
 pub fn Slot::probe(Self, Int64) -> Self
 pub fn Slot::process(Self, &Processor) -> Self
 pub fn Slot::queue(Self, Queue) -> Self
-pub fn Slot::refine(Self, Record, Env) -> Record?
-pub fn Slot::renderer(Self) -> &Layout
-pub fn Slot::resting(Self, Int64) -> Bool
 pub fn Slot::retries(Self, Int32) -> Self
-pub fn Slot::send(Self, Record, Scene, Int64) -> Report
 pub fn Slot::status(Self) -> Status
-pub fn Slot::wants(Self, Level, String) -> Bool
 
 pub(all) struct Status {
   name : String

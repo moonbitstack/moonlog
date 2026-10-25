@@ -199,7 +199,7 @@ fn Redact::patterns_at(self : Redact, msg : String) -> String? {
 
 ///|
 /// Every match of `pattern` in `text` replaced by `replacement`.
-pub fn replace_all(
+fn replace_all(
   pattern : @string.Regex,
   text : String,
   replacement : String,

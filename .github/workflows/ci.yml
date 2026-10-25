@@ -45,6 +45,12 @@ jobs:
       - name: moon test (all backends)
         run: moon test --target all
 
+      - name: the examples run
+        run: |
+          moon run src/examples/01-tour > /dev/null
+          moon run src/examples/02-formats > /dev/null
+          moon run src/examples/03-service > /dev/null
+
       - name: lint (fmt is clean)
         run: |
           moon fmt && git diff --exit-code

@@ -3,7 +3,7 @@
 
 ///|
 /// The preset whose pattern is `text`, when `text` is a preset name.
-pub fn preset_of(text : StringView) -> Profile? {
+fn preset_of(text : StringView) -> Profile? {
   match text {
     "serlog" => Some(Profile::Serlog)
     "tracing" => Some(Profile::Tracing)
@@ -19,7 +19,7 @@ pub fn preset_of(text : StringView) -> Profile? {
 ///|
 /// ` key=value` for every field, groups spread as `group.key`; `error` is left
 /// out when the pattern shows it in its own hole.
-pub fn write_fields(
+fn write_fields(
   out : StringBuilder,
   record : Record,
   quoted : Bool,
@@ -62,7 +62,7 @@ fn write_flat(
 ///|
 /// Shortens the leading segments of a target to their first letter until it
 /// fits `width`.
-pub fn shorten(target : StringView, width : Int32) -> String {
+fn shorten(target : StringView, width : Int32) -> String {
   if target.char_length() <= width {
     return target.to_owned()
   }
@@ -107,7 +107,7 @@ fn join(parts : Array[String], sep : String) -> String {
 
 ///|
 /// A run of characters as a string.
-pub fn chars_to_string(chars : ArrayView[Char]) -> String {
+fn chars_to_string(chars : ArrayView[Char]) -> String {
   let out = StringBuilder()
   for c in chars {
     out.write_char(c)
@@ -117,7 +117,7 @@ pub fn chars_to_string(chars : ArrayView[Char]) -> String {
 
 ///|
 /// The last segment of a path, whichever separator the platform writes.
-pub fn base_name(path : StringView) -> String {
+fn base_name(path : StringView) -> String {
   let chars = path.to_array()
   let mut start = 0
   for i, c in chars {
@@ -130,7 +130,7 @@ pub fn base_name(path : StringView) -> String {
 
 ///|
 /// Milliseconds from the identity's start to the record's instant.
-pub fn elapsed_ms(record : Record, identity : Identity) -> Int64 {
+fn elapsed_ms(record : Record, identity : Identity) -> Int64 {
   if identity.start == 0L {
     return 0L
   }

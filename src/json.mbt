@@ -307,7 +307,9 @@ pub fn JsonLine::encode(
     }
     Ecs => {
       o.key("@timestamp")
+      quote_open(o.out)
       write_iso(o.out, record.time)
+      quote_close(o.out)
       self.name_or(o, "log.level", level)
       o.str("message", record.msg)
       o.str("ecs.version", "8.11.0")

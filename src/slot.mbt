@@ -138,7 +138,7 @@ pub fn Slot::new(sink : &Sink, name~ : String) -> Slot {
 
 ///|
 /// The pattern this library writes when a slot is given no layout.
-pub fn default_layout() -> Pattern {
+fn default_layout() -> Pattern {
   Pattern::parse(Profile::Serlog.pattern()) catch {
     _ => panic()
   }
@@ -174,7 +174,7 @@ pub fn Slot::layout(self : Slot, layout : &Layout) -> Slot {
 
 ///|
 /// What happens when the sink fails.
-pub fn Slot::policy(self : Slot) -> OnFail {
+fn Slot::policy(self : Slot) -> OnFail {
   self.on_fail
 }
 
@@ -227,14 +227,8 @@ pub fn Slot::name(self : Slot) -> String {
 }
 
 ///|
-/// The layout it writes through.
-pub fn Slot::renderer(self : Slot) -> &Layout {
-  self.layout
-}
-
-///|
 /// The layout the hub's profile chose, when the slot was given none.
-pub fn Slot::adopt(self : Slot, layout : &Layout) -> Unit {
+fn Slot::adopt(self : Slot, layout : &Layout) -> Unit {
   if !self.layout_given {
     self.layout = layout
   }
@@ -256,13 +250,13 @@ pub fn Slot::status(self : Slot) -> Status {
 
 ///|
 /// Whether the slot is resting at `now`, so an alarm leaves it out.
-pub fn Slot::resting(self : Slot, now : Int64) -> Bool {
+fn Slot::resting(self : Slot, now : Int64) -> Bool {
   self.breaker.resting(now)
 }
 
 ///|
 /// Whether records at this level and target reach the sink at all.
-pub fn Slot::wants(self : Slot, level : Level, target : String) -> Bool {
+fn Slot::wants(self : Slot, level : Level, target : String) -> Bool {
   match self.filter {
     Some(filter) => filter.allows(level, target)
     None => true
@@ -271,20 +265,20 @@ pub fn Slot::wants(self : Slot, level : Level, target : String) -> Bool {
 
 ///|
 /// Runs the slot's steps over `record`, or `None` when one drops it.
-pub fn Slot::refine(self : Slot, record : Record, env : Env) -> Record? {
+fn Slot::refine(self : Slot, record : Record, env : Env) -> Record? {
   run_chain(self.chain, record, env)
 }
 
 ///|
 /// The line this slot would write for `record`.
-pub fn Slot::line(self : Slot, record : Record, scene : Scene) -> String {
+fn Slot::line(self : Slot, record : Record, scene : Scene) -> String {
   self.layout.render(record, scene.coloured(self.colour))
 }
 
 ///|
 /// Takes a record the slot wants: straight to the sink when it runs direct, or
 /// into the queue.
-pub fn Slot::send(
+fn Slot::send(
   self : Slot,
   record : Record,
   scene : Scene,
@@ -324,7 +318,7 @@ pub fn Slot::send(
 ///|
 /// Writes what the queue holds. A batch that fails is kept and tried again at
 /// the next probe; nothing is lost because a sink had a bad second.
-pub fn Slot::flush(self : Slot, scene : Scene, now : Int64) -> Report {
+fn Slot::flush(self : Slot, scene : Scene, now : Int64) -> Report {
   if self.buffered.length() == 0 {
     return { fault: None, phase: None, }
   }
@@ -373,7 +367,7 @@ pub fn Slot::flush(self : Slot, scene : Scene, now : Int64) -> Report {
 ///|
 /// Writes `record` to the sink now, whatever the queue holds, and drives the
 /// health machine from what the sink says.
-pub fn Slot::deliver(
+fn Slot::deliver(
   self : Slot,
   record : Record,
   scene : Scene,
@@ -420,7 +414,7 @@ fn Slot::attempt(self : Slot, entry : Entry) -> Result[Unit, String] {
 ///|
 /// The reminder interval of an alarm, in nanoseconds; a slot without one never
 /// reminds.
-pub fn remind_of(on_fail : OnFail) -> Int64 {
+fn remind_of(on_fail : OnFail) -> Int64 {
   match on_fail {
     Alarm(alarm) => alarm.remind()
     _ => 9_000_000_000_000_000_000L
@@ -429,7 +423,7 @@ pub fn remind_of(on_fail : OnFail) -> Int64 {
 
 ///|
 /// How a failure under this policy is told.
-pub fn tell_of(on_fail : OnFail) -> Tell {
+fn tell_of(on_fail : OnFail) -> Tell {
   match on_fail {
     Alarm(_) => Report
     _ => Silent
@@ -438,11 +432,7 @@ pub fn tell_of(on_fail : OnFail) -> Tell {
 
 ///|
 /// Runs a chain; `None` when a step dropped the record.
-pub fn run_chain(
-  chain : Array[&Processor],
-  record : Record,
-  env : Env,
-) -> Record? {
+fn run_chain(chain : Array[&Processor], record : Record, env : Env) -> Record? {
   let mut current = record
   for step in chain {
     match step.process(current, env) {

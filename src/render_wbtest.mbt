@@ -117,6 +117,9 @@ test "ten schemas keep the keys their tools expect" {
     let schema = Schema::parse(name)
     let json = JsonLine::new(schema).render(record, scene)
     assert_eq(join(top_keys(json), ","), keys)
+    // A timestamp is a string in every one of them; a bare `2023` would be a
+    // document no reader accepts.
+    assert_false(json.contains(("\":2" : StringView)))
   }
   let pino = JsonLine::new(Schema::Pino).render(record, scene)
   assert_true(pino.contains(("\"level\":40" : StringView)))

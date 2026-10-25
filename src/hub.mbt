@@ -50,7 +50,7 @@ pub fn Hub::new(
 
 ///|
 /// The pattern a profile uses as its default line.
-pub fn profile_layout(profile : Profile) -> Pattern {
+fn profile_layout(profile : Profile) -> Pattern {
   Pattern::parse(profile.pattern()) catch {
     _ => default_layout()
   }
@@ -172,7 +172,7 @@ pub fn Hub::status(self : Hub) -> Array[Status] {
 
 ///|
 /// The slot called `name`, if there is one.
-pub fn Hub::slot(self : Hub, name : String) -> Slot? {
+fn Hub::slot(self : Hub, name : String) -> Slot? {
   for slot in self.slots {
     if slot.name() == name {
       return Some(slot)
@@ -189,7 +189,7 @@ pub fn Hub::logger(self : Hub, target : String) -> Logger {
 
 ///|
 /// Raises an incident through `on_fail`'s alarm, if it has one.
-pub fn Hub::alarm(
+fn Hub::alarm(
   self : Hub,
   slot : Slot,
   fault : Fault?,
@@ -214,7 +214,7 @@ pub fn Hub::alarm(
 ///|
 /// Sends `record` everywhere it belongs: through the global chain, then to each
 /// slot's own filter and steps, then to its sink.
-pub fn Hub::dispatch(self : Hub, record : Record) -> Unit {
+fn Hub::dispatch(self : Hub, record : Record) -> Unit {
   let now = self.now()
   if !self.filter.allows(record.level, record.target) {
     return

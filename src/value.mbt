@@ -201,7 +201,7 @@ pub fn Value::write_json(self : Value, out : StringBuilder) -> Unit {
 
 ///|
 /// Writes `s` as a JSON string, quotes and control characters escaped.
-pub fn write_json_string(out : StringBuilder, s : StringView) -> Unit {
+fn write_json_string(out : StringBuilder, s : StringView) -> Unit {
   out.write_char('"')
   for c in s {
     match c {
@@ -236,7 +236,7 @@ fn hex_digit(n : Int32) -> Char {
 ///|
 /// `s` bare when it cannot be mistaken for two fields, quoted the logfmt way
 /// otherwise: empty, or holding a space, a quote or an `=`.
-pub fn write_logfmt(out : StringBuilder, s : StringView) -> Unit {
+fn write_logfmt(out : StringBuilder, s : StringView) -> Unit {
   let mut bare = s.length() > 0
   if bare {
     for c in s {

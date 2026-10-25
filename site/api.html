@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>API reference — moonlog</title>
+    <meta name="description" content="Every type, trait, function and parameter moonlog exposes, grouped the way the library is built." />
+    <meta name="theme-color" content="#f7f5ef" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312151a'/%3E%3Crect x='6' y='9' width='20' height='2' fill='%23e8e4da'/%3E%3Crect x='6' y='15' width='14' height='2' fill='%237a828c'/%3E%3Crect x='6' y='21' width='17' height='2' fill='%23ff8a5b'/%3E%3C/svg%3E" />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("moonlog-theme");
+          document.documentElement.setAttribute(
+            "data-theme",
+            saved ||
+              (window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light")
+          );
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="inner">
+        <a class="wordmark" href="index.html">
+          <span class="glyph">≡</span>
+          <span>moonlog</span>
+          <span class="ver">0.2.0</span>
+        </a>
+        <nav class="site" aria-label="Main">
+          <a href="index.html">Home</a>
+          <a href="docs.html">Guide</a>
+          <a href="api.html" aria-current="page">API</a>
+          <a href="inside.html">Inside</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Switch theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+          </button>
+          <a class="icon-button" href="https://github.com/moonbitstack/moonlog" aria-label="moonlog on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" /></svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="rail" aria-label="Sections">
+        <div class="group">Groups</div>
+        <a href="#levels">Levels</a>
+        <a href="#values">Values and records</a>
+        <a href="#errors">Errors</a>
+        <a href="#filters">Filters</a>
+        <a href="#steps">Steps</a>
+        <a href="#layouts">Layouts</a>
+        <a href="#sinks">Sinks</a>
+        <a href="#slots">Slots and health</a>
+        <a href="#alarms">Alarms</a>
+        <a href="#hub">Hub and logger</a>
+        <a href="#profiles">Profiles</a>
+      </aside>
+
+      <main class="doc">
+        <h1>API reference</h1>
+        <p class="sub">
+          Everything the package exports, grouped by what it does rather than
+          alphabetically: a reader looking for a name usually knows which part
+          of the pipeline it belongs to. Times are nanoseconds since the epoch
+          and durations the same; a text that is not a <code>String</code> is a
+          <code>StringView</code>.
+        </p>
+
+        <div class="filterbar">
+          <input type="search" placeholder="filter by name, signature or word…" data-api-filter aria-label="Filter the reference" />
+          <span class="count" data-api-count></span>
+        </div>
+
+        <h2 id="levels" data-api-group>Levels</h2>
+
+        <div class="entry" data-api-entry="Level level severity number name colour">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Level</span><span class="rest">{ name : String, value : Int, colour : Colour }</span></div>
+          <p class="what">How severe a record is. A value rather than an enumeration, so an application can define its own; only <code>value</code> counts when comparing.</p>
+        </div>
+        <div class="entry" data-api-entry="trace debug info warn error fatal constants">
+          <div class="sig"><span class="kind fn">let</span><span class="name">trace · debug · info · warn · error · fatal</span><span class="rest">Level</span></div>
+          <p class="what">The six built-in levels, numbered 10 to 60.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::parse level name number">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::parse</span><span class="rest">(name : StringView) -> Level raise Refused</span></div>
+          <p class="what">A level by name in any capitalisation, or by number from 0 to 255. <code>warning</code> is <code>warn</code> and <code>critical</code> is <code>fatal</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::value name colour">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::value</span><span class="rest">(Self) -> Int</span></div>
+          <p class="what">Its number. <code>Level::name</code> answers the lower-case name, <code>Level::colour</code> the colour a terminal uses.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::label profile python slog warning">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::label</span><span class="rest">(Self, Profile) -> String</span></div>
+          <p class="what">How a profile's logger writes it: <code>WARNING</code> for <code>python</code>, <code>DEBUG-4</code> and <code>ERROR+4</code> for <code>slog</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::at_least compare">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::at_least</span><span class="rest">(Self, Level) -> Bool</span></div>
+          <p class="what">Whether this level passes a minimum. <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code> and <code>&gt;=</code> work too.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::named rename custom">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::named</span><span class="rest">(Self, String) -> Level</span></div>
+          <p class="what">The same level under another name, which is how a profile's vocabulary reaches a layout.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::syslog logstash otel severity numbers">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::syslog · ::logstash · ::otel</span><span class="rest">(Self) -> Int</span></div>
+          <p class="what">The three numberings other schemas want: syslog severity, Logstash's 5000 to 40000, and OpenTelemetry's 1 to 21.</p>
+        </div>
+        <div class="entry" data-api-entry="Colour colour red green cyan alarm">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Colour</span><span class="rest">Plain · Red · Green · Yellow · Blue · Magenta · Cyan · White · Grey · Alarm</span></div>
+          <p class="what">A terminal colour. <code>Colour::ansi</code> answers the escape, <code>::name</code> the word, <code>::parse</code> a word back to a colour (<code>gray</code> is <code>grey</code>).</p>
+        </div>
+
+        <h2 id="values" data-api-group>Values and records</h2>
+
+        <div class="entry" data-api-entry="Value typed field null bool int float string list map error">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Value</span><span class="rest">Null · Bool(Bool) · Int(Int64) · Float(Double) · Str(String) · List(Array[Value]) · Map(Array[(String, Value)]) · Error(String, Array[String]) · Other(String)</span></div>
+          <p class="what">A field's value, typed until a layout writes it. Constructors: <code>of_null</code>, <code>of_bool</code>, <code>of_int</code>, <code>of_long</code>, <code>of_float</code>, <code>of_str</code>, <code>of_list</code>, <code>of_map</code>, <code>of_error</code>, <code>of_other</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::to_text encode json">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::to_text · ::encode · ::write_json</span><span class="rest">(Self) -> String / (Self, StringBuilder) -> Unit</span></div>
+          <p class="what">The text form (<code>[a, b]</code>, <code>{k=v}</code>, <code>connect: refused</code>) and the JSON form.</p>
+        </div>
+        <div class="entry" data-api-entry="Caller module func file line">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Caller</span><span class="rest">{ module_path : String?, func : String?, file : String?, line : Int? }</span></div>
+          <p class="what">Where in the source a record was made. Every part may be unknown; a layout writes <code>?</code> for the ones that are.</p>
+        </div>
+        <div class="entry" data-api-entry="Identity app env instance host pid start offset">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Identity</span><span class="rest">{ app, env, instance, host : String; pid : Int; start : Int64; offset : (Int64) -> Int }</span></div>
+          <p class="what">The process and deployment: what <code>{app}</code>, <code>{host}</code>, <code>{pid}</code> and friends write, and the offset local time is shifted by.</p>
+          <p class="params"><b>Identity::of</b>(app~, env?, instance?, host?, pid?, start?, offset?) — the parts a deployment knows. <b>Identity::new</b>() names nobody.</p>
+        </div>
+        <div class="entry" data-api-entry="Record event fields level target msg tags caller thread spans time seq">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Record</span><span class="rest">{ level, target, msg, fields : Array[(String, Value)], tags, caller, thread, spans, time : Int64, seq : Int64 }</span></div>
+          <p class="what">One log event, as every sink sees it. <code>fields</code> is ordered; a later field of the same name replaces the earlier one where it stands.</p>
+          <p class="params">
+            <b>Record::of</b>(level, target, msg) · <b>::set</b>(key, value) · <b>::sets</b>(pairs) · <b>::unset</b>(key) · <b>::say</b>(msg) · <b>::at</b>(level) · <b>::tag</b>(tag) · <b>::stamped</b>(nanos) · <b>::numbered</b>(seq) · <b>::located</b>(file, line~) · <b>::on</b>(thread) — each answers a copy.
+          </p>
+          <p class="params"><b>::field</b>(key) → <code>Value?</code> · <b>::has</b>(key) · <b>::tagged</b>(tag) · <b>::copy</b>()</p>
+        </div>
+
+        <h2 id="errors" data-api-group>Errors</h2>
+
+        <div class="entry" data-api-entry="Refused error at got want parse">
+          <div class="sig"><span class="kind ty">error</span><span class="name">Refused</span><span class="rest">{ at : Int, got : String, want : String }</span></div>
+          <p class="what">A value the library will not take: the offset it stopped at, what was there, and what would have been taken. Answered by <code>Level::parse</code>, <code>Filter::parse</code>, <code>Pattern::parse</code>, <code>Schema::parse</code>, <code>Profile::parse</code>, <code>Stream::parse</code>, <code>Colour::parse</code>, <code>Levels::parse</code>, <code>Redact::pattern</code> and <code>Hub::add</code>. <code>to_text()</code> writes it as one line.</p>
+        </div>
+
+        <h2 id="filters" data-api-group>Filters</h2>
+
+        <div class="entry" data-api-entry="Filter parse directives target regex off">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Filter</span></div>
+          <p class="what">Which records pass, by target, level and optionally message. The syntax is the one <code>RUST_LOG</code> made familiar.</p>
+          <p class="params">
+            <b>Filter::parse</b>(spec) raise · <b>::at</b>(level) · <b>::off</b>() · <b>::allows</b>(level, target) · <b>::admits</b>(level, target, msg) · <b>::lowest</b>() → <code>Level?</code> · <b>::has_pattern</b>() · <b>::to_text</b>()
+          </p>
+        </div>
+
+        <h2 id="steps" data-api-group>Steps</h2>
+
+        <div class="entry" data-api-entry="Processor trait process chain">
+          <div class="sig"><span class="kind tr">trait</span><span class="name">Processor</span><span class="rest">process(Self, Record, Env) -> Record?</span></div>
+          <p class="what">One step in a chain. Return the record it was given when nothing changes, a copy when something does, and <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Env now instant">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Env</span><span class="rest">{ now : Int64 }</span></div>
+          <p class="what">The moment a step runs at, in nanoseconds. <code>Env::at(nanos)</code> builds one; the hub passes its own.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact mask keys paths patterns">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Redact</span></div>
+          <p class="what">Masks fields by name at any depth, at a dotted path, and matches in the message.</p>
+          <p class="params"><b>Redact::new</b>() · <b>::key</b>(name) · <b>::path</b>("req.headers.auth") · <b>::pattern</b>(regex) raise · <b>::mask</b>("***")</p>
+        </div>
+        <div class="entry" data-api-entry="Sanitise control characters escape">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Sanitise</span></div>
+          <p class="what">Escapes line breaks, tabs and control characters in the message and in string fields, so a message cannot forge a second line.</p>
+          <p class="params"><b>Sanitise::new</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="Fields set constants">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Fields</span></div>
+          <p class="what">Sets the same fields on every record that passes.</p>
+          <p class="params"><b>Fields::new</b>() · <b>::set</b>(key, value)</p>
+        </div>
+        <div class="entry" data-api-entry="Keep conditions tags fields level">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Keep</span></div>
+          <p class="what">Conditions on tags, fields and level; every one given must hold. <code>Keep::holds(record)</code> answers whether they do.</p>
+          <p class="params"><b>Keep::new</b>() · <b>::tag</b>(tag) · <b>::field</b>(key, text) · <b>::level</b>(min)</p>
+        </div>
+        <div class="entry" data-api-entry="Match keep only">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Match</span></div>
+          <p class="what">Keeps a record only when every condition holds. The same three conditions as <code>Keep</code>.</p>
+          <p class="params"><b>Match::new</b>() · <b>::tag</b>(tag) · <b>::field</b>(key, text) · <b>::level</b>(min)</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude drop">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Exclude</span></div>
+          <p class="what">Drops a record when every condition holds — the inverse of <code>Match</code>.</p>
+          <p class="params"><b>Exclude::new</b>() · <b>::tag</b>(tag) · <b>::field</b>(key, text) · <b>::level</b>(min)</p>
+        </div>
+        <div class="entry" data-api-entry="Sample first every per window">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Sample</span></div>
+          <p class="what">Per level and message, keeps the first <code>first</code> records in each <code>per</code>, then one in <code>every</code>.</p>
+          <p class="params"><b>Sample::new</b>(first~, every~ = 1, per~)</p>
+        </div>
+        <div class="entry" data-api-entry="Limit token bucket rate burst">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Limit</span></div>
+          <p class="what">A token bucket: <code>rate</code> records a second, holding up to <code>burst</code>.</p>
+          <p class="params"><b>Limit::new</b>(rate~ : Double, burst~ : Double)</p>
+        </div>
+        <div class="entry" data-api-entry="Dedupe repeat within window">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Dedupe</span></div>
+          <p class="what">Drops a record with the level, target and message of one kept within the window; the next one kept carries <code>repeated</code>, the number dropped.</p>
+          <p class="params"><b>Dedupe::new</b>(within~ : Int64)</p>
+        </div>
+
+        <h2 id="layouts" data-api-group>Layouts</h2>
+
+        <div class="entry" data-api-entry="Layout trait render">
+          <div class="sig"><span class="kind tr">trait</span><span class="name">Layout</span><span class="rest">render(Self, Record, Scene) -> String</span></div>
+          <p class="what">Turns a record into one line. Implemented by <code>Pattern</code>, <code>Logfmt</code>, <code>Pretty</code> and <code>JsonLine</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Scene profile colour identity">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Scene</span><span class="rest">{ profile : Profile, colour : Bool, identity : Identity }</span></div>
+          <p class="what">How a record is shown: whose vocabulary, whether a terminal takes colour, and who is writing.</p>
+          <p class="params"><b>Scene::new</b>(identity?, profile?, colour?) · <b>::at</b>(profile) · <b>::coloured</b>(bool)</p>
+        </div>
+        <div class="entry" data-api-entry="Pattern parse tokens preset strftime">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Pattern</span></div>
+          <p class="what">Literal text with <code>{token}</code> or <code>{token:options}</code> holes; <code>{{</code> and <code>}}</code> are braces. A preset name stands wherever a pattern does.</p>
+          <p class="params"><b>Pattern::parse</b>(text) raise · <b>::source</b>() · <b>::render</b>(record, scene) via <code>Layout</code></p>
+        </div>
+        <div class="entry" data-api-entry="Logfmt key=value">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Logfmt</span></div>
+          <p class="what"><code>time=… level=warn target=app msg="…" key=value</code>: one line a shell pipeline can cut.</p>
+          <p class="params"><b>Logfmt::new</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="Pretty aligned fields terminal">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Pretty</span></div>
+          <p class="what">A first line with time, level, target and message, then one aligned <code>key = value</code> line per field.</p>
+          <p class="params"><b>Pretty::new</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine schema rename levels nest">
+          <div class="sig"><span class="kind ty">type</span><span class="name">JsonLine</span></div>
+          <p class="what">One object in a schema, with keys renamed, levels written by name or number, and fields at the top or under one key.</p>
+          <p class="params"><b>JsonLine::new</b>(schema) · <b>::rename</b>(key, to) · <b>::levels</b>(Levels) · <b>::nest</b>(key) · <b>::encode</b>(record, scene)</p>
+        </div>
+        <div class="entry" data-api-entry="Schema serlog pino bunyan zap slog structlog logstash ecs gelf otel">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Schema</span><span class="rest">Serlog · Pino · Bunyan · Zap · Slog · Structlog · Logstash · Ecs · Gelf · Otel</span></div>
+          <p class="what">A JSON shape other tools already read. <code>Schema::name</code> answers the word, <code>::parse</code> a word back to a schema.</p>
+        </div>
+        <div class="entry" data-api-entry="Levels name number">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Levels</span><span class="rest">Name · Number</span></div>
+          <p class="what">How a JSON layout writes a level, when the schema's own choice is not what a pipeline wants.</p>
+        </div>
+        <div class="entry" data-api-entry="Clock local utc rfc3339 unix strftime">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Clock</span><span class="rest">Local · Utc · Rfc3339 · Unix · UnixMs · UnixNs · Custom(String)</span></div>
+          <p class="what">How an instant is written. <code>Custom</code> is strftime: <code>%Y %m %d %H %M %S %f %z %:z %%</code> and <code>%.Nf</code>.</p>
+          <p class="params"><b>Clock::parse</b>(spec) · <b>::write</b>(out, nanos, offset)</p>
+        </div>
+
+        <h2 id="sinks" data-api-group>Sinks</h2>
+
+        <div class="entry" data-api-entry="Sink trait write entry">
+          <div class="sig"><span class="kind tr">trait</span><span class="name">Sink</span><span class="rest">write(Self, Entry) -> Result[Unit, String]</span></div>
+          <p class="what">Where entries go. One method; <code>Err</code> is what went wrong, worth telling an alarm about.</p>
+        </div>
+        <div class="entry" data-api-entry="Entry record line">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Entry</span><span class="rest">{ record : Record, line : String }</span></div>
+          <p class="what">What a sink is handed: the record, and the line its slot's layout made of it.</p>
+        </div>
+        <div class="entry" data-api-entry="Lines function print">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Lines</span></div>
+          <p class="what">A sink that writes each line through a function — the seam between this library and wherever you print.</p>
+          <p class="params"><b>Lines::new</b>(write : (String) -> Unit)</p>
+        </div>
+        <div class="entry" data-api-entry="Memory records lines find clear test">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Memory</span></div>
+          <p class="what">A sink that keeps the newest entries, for a test or a status page.</p>
+          <p class="params"><b>Memory::new</b>(size~ = 0, everything) · <b>::records</b>() · <b>::lines</b>() · <b>::find</b>(text) → <code>Array[Entry]</code> · <b>::clear</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="Discard drop nothing">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Discard</span></div>
+          <p class="what">A sink that drops everything, for an application that configures logging off.</p>
+          <p class="params"><b>Discard::new</b>()</p>
+        </div>
+
+        <h2 id="slots" data-api-group>Slots and health</h2>
+
+        <div class="entry" data-api-entry="Slot sink filter process layout queue retries probe colour">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span></div>
+          <p class="what">One sink with the settings around it. A value: an application builds it and hands it to a hub.</p>
+          <p class="params">
+            <b>Slot::new</b>(sink, name~) · <b>::filter</b>(Filter) · <b>::at</b>(Level) · <b>::process</b>(&amp;Processor) · <b>::layout</b>(&amp;Layout) · <b>::coloured</b>(Bool) · <b>::queue</b>(Queue) · <b>::retries</b>(Int) · <b>::probe</b>(nanos) · <b>::on_fail</b>(OnFail) · <b>::alarm_only</b>() · <b>::name</b>() · <b>::status</b>() → <code>Status</code>
+          </p>
+        </div>
+        <div class="entry" data-api-entry="Queue batch wait full drop block">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Queue</span><span class="rest">{ size : Int, batch : Int, wait : Int64, full : Full }</span></div>
+          <p class="what">A buffer in front of a sink, drained by the hub when it holds <code>batch</code> records, when <code>wait</code> passes, or at <code>hub.flush()</code>.</p>
+          <p class="params"><b>Queue::new</b>(size~) · <b>::batch</b>(Int) · <b>::wait</b>(nanos) · <b>::full</b>(Full)</p>
+        </div>
+        <div class="entry" data-api-entry="Full drop block">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Full</span><span class="rest">Drop · Block</span></div>
+          <p class="what">What a full queue does with a record that arrives: count it as dropped, or write first and make room.</p>
+        </div>
+        <div class="entry" data-api-entry="OnFail panic ignore alarm">
+          <div class="sig"><span class="kind ty">type</span><span class="name">OnFail</span><span class="rest">Panic · Ignore · Alarm(&amp;Alarm)</span></div>
+          <p class="what">What a slot does when its sink fails.</p>
+        </div>
+        <div class="entry" data-api-entry="Status name health skipped dropped suppressed since error">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Status</span><span class="rest">{ name, health, skipped, dropped, suppressed, since, error }</span></div>
+          <p class="what">A slot's state, as <code>Hub::status()</code> reports it.</p>
+        </div>
+        <div class="entry" data-api-entry="Fault Report failure phase">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Fault</span><span class="rest">{ error : String, phase : Phase? }</span></div>
+          <p class="what">What went wrong on the way to a sink, and whether an alarm is owed for it.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker health machine admit fault pass resting wait">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Breaker</span></div>
+          <p class="what">Up, down or probing; no I/O and no clock, every method takes the instant.</p>
+          <p class="params">
+            <b>Breaker::new</b>(probe, now) · <b>::admit</b>(now) → <code>Bool</code> · <b>::fault</b>(now, error, remind, tell) → <code>Phase?</code> · <b>::pass</b>(now) → <code>Phase?</code> · <b>::resting</b>(now) · <b>::wait</b>(now) · <b>::health</b>() · <b>::skipped</b>() · <b>::skipped_now</b>() · <b>::since</b>() · <b>::error</b>()
+          </p>
+        </div>
+        <div class="entry" data-api-entry="Health up down probing">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Health</span><span class="rest">Up · Down · Probing</span></div>
+          <p class="what">Whether a sink is writing, skipping, or having its one probing write.</p>
+        </div>
+        <div class="entry" data-api-entry="Tell report silent folded">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Tell</span><span class="rest">Report · Silent · Folded</span></div>
+          <p class="what">How a failure is told: an incident, silence, or folded into another sink's incident so only the recovery is told.</p>
+        </div>
+
+        <h2 id="alarms" data-api-group>Alarms</h2>
+
+        <div class="entry" data-api-entry="Alarm trait route fallback remind tiers">
+          <div class="sig"><span class="kind tr">trait</span><span class="name">Alarm</span><span class="rest">route(Self, Incident) -> Array[Array[String]] · fallback(Self) -> Fallback · remind(Self) -> Int64</span></div>
+          <p class="what">Chooses which sinks an incident is offered to, on which tier, and how long a silence lasts.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers from fallback remind star">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Tiers</span></div>
+          <p class="what">The built-in alarm: fixed tiers of names, where <code>*</code> stands for every sink on the log route.</p>
+          <p class="params"><b>Tiers::from</b>([["loki"], ["mail"]]) · <b>Tiers::new</b>() (standard error alone) · <b>::with_fallback</b>(Fallback) · <b>::with_remind</b>(nanos) · <b>::tiers</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="Desk trait logs resting deliver">
+          <div class="sig"><span class="kind tr">trait</span><span class="name">Desk</span><span class="rest">logs(Self) -> Array[String] · resting(Self, String) -> Bool · deliver(Self, String, Record) -> Result[Unit, String]</span></div>
+          <p class="what">What an alarm walk needs from the sinks around it. A <code>Hub</code> is one; a test is another.</p>
+        </div>
+        <div class="entry" data-api-entry="sound walk incident">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">sound</span><span class="rest">(alarm : &amp;Alarm, incident : Incident, desk : &amp;Desk) -> Outcome</span></div>
+          <p class="what">Delivers an incident through the tiers, adding every failed delivery to it. One success ends the walk.</p>
+        </div>
+        <div class="entry" data-api-entry="Incident phase failures skipped dropped since describe">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Incident</span><span class="rest">{ sink, kind, phase, error, failures, skipped, dropped, since }</span></div>
+          <p class="what">A sink's failure, from the first error to its recovery.</p>
+          <p class="params"><b>Incident::new</b>(sink, kind, phase, error, now) · <b>::describe</b>(now~, target? = "moonlog") → <code>Record</code></p>
+        </div>
+        <div class="entry" data-api-entry="Failure one delivery">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Failure</span><span class="rest">{ sink : String, error : String, at : Int64 }</span></div>
+          <p class="what">One failed delivery, on the way to an alarm.</p>
+        </div>
+        <div class="entry" data-api-entry="Phase opened reminder resolved">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Phase</span><span class="rest">Opened · Reminder · Resolved</span></div>
+          <p class="what">Which report of an incident this is.</p>
+        </div>
+        <div class="entry" data-api-entry="Fallback panic ignore">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Fallback</span><span class="rest">Panic · Ignore</span></div>
+          <p class="what">What an alarm does when no tier took the incident.</p>
+        </div>
+        <div class="entry" data-api-entry="Outcome heard unheard">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Outcome</span><span class="rest">Heard · Unheard</span></div>
+          <p class="what">How a walk ended.</p>
+        </div>
+
+        <h2 id="hub" data-api-group>Hub and logger</h2>
+
+        <div class="entry" data-api-entry="Hub new add remove status filter process logger flush clock identity">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Hub</span></div>
+          <p class="what">The whole of a running logger: global filter, global chain, slot table, identity and clock.</p>
+          <p class="params">
+            <b>Hub::new</b>(identity?, profile?, clock?, filter?) · <b>::add</b>(Slot) raise → name · <b>::remove</b>(name) · <b>::slots</b>() · <b>::status</b>() → <code>Array[Status]</code> · <b>::filter</b>() · <b>::set_filter</b>(Filter) · <b>::set_level</b>(Level) · <b>::enabled</b>(Level) · <b>::process</b>(&amp;Processor) · <b>::logger</b>(target) · <b>::write</b>(level, target, msg, fields~) · <b>::flush</b>() · <b>::now</b>() · <b>::identity</b>() · <b>::profile</b>() · <b>::scene</b>()
+          </p>
+        </div>
+        <div class="entry" data-api-entry="Logger target bound under enabled info warn error fatal trace debug log">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Logger</span><span class="rest">{ hub, target, fields }</span></div>
+          <p class="what">A target and the fields bound to it. A value, passed in; a library handed none writes nothing.</p>
+          <p class="params">
+            <b>Logger::new</b>(hub, target) · <b>::bound</b>(key, value) · <b>::under</b>(target) · <b>::target</b>() · <b>::enabled</b>(Level) · <b>::log</b>(level, msg, fields~) · <b>::trace · ::debug · ::info · ::warn · ::error · ::fatal</b>(msg, fields~)
+          </p>
+        </div>
+
+        <h2 id="profiles" data-api-group>Profiles</h2>
+
+        <div class="entry" data-api-entry="Profile serlog tracing env_logger python logback slog pino">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Profile</span><span class="rest">Serlog · Tracing · EnvLogger · Python · Logback · Slog · Pino</span></div>
+          <p class="what">Another logger's defaults: the line, the console stream, the starting level and the filter variable.</p>
+          <p class="params"><b>Profile::parse</b>(word) raise · <b>::pattern</b>() · <b>::stream</b>() · <b>::level</b>() · <b>::env</b>() · <b>::name</b>()</p>
+        </div>
+        <div class="entry" data-api-entry="Stream stdout stderr auto">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Stream</span><span class="rest">Stdout · Stderr · Auto</span></div>
+          <p class="what">Where a console writes: out, err, or errors to err and the rest out.</p>
+          <p class="params"><b>Stream::parse</b>(word) raise · <b>::name</b>()</p>
+        </div>
+
+        <div class="next" style="margin-top: 34px">
+          <a href="docs.html">
+            <span class="dir">back</span>
+            <strong>The guide</strong>
+            <em>the same surface, in order, with runnable examples</em>
+          </a>
+          <a href="inside.html">
+            <span class="dir">next</span>
+            <strong>Inside</strong>
+            <em>the dispatch order, the time model and the vectors</em>
+          </a>
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      <div class="wrap">
+        <span>moonlog 0.2.0 · Apache-2.0</span>
+        <span class="sep"></span>
+        <a href="https://github.com/moonbitstack/moonlog">github.com/moonbitstack/moonlog</a>
+        <a href="https://github.com/moonbitstack/moonlog/issues">issues</a>
+        <a href="https://mooncakes.io">mooncakes</a>
+      </div>
+    </footer>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>

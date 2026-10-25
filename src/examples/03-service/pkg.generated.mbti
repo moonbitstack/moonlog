@@ -1,0 +1,18 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog/examples/03-service"
+
+import {
+  "moonbitstack/moonlog",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+type Remote
+pub impl @moonlog.Sink for Remote
+
+// Type aliases
+
+// Traits

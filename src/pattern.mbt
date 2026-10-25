@@ -17,20 +17,20 @@ pub struct Pattern {
 
 ///|
 /// One part of a pattern: a hole, or the text between two of them.
-struct Piece {
+pub struct Piece {
   kind : Kind
   fit : Fit
 }
 
 ///|
-priv struct Fit {
+pub struct Fit {
   align : (Char, Int32)?
   max : Int32?
 }
 
 ///|
 /// What a hole asks for.
-priv enum Kind {
+pub enum Kind {
   Text(String)
   Time(Clock)
   Level(Bool)
@@ -304,7 +304,7 @@ fn fit(text : String, fit : Fit) -> String {
 
 ///|
 /// Pads `text` to `width` characters; `^` leaves the extra space on the right.
-pub fn pad(text : StringView, width : Int32, mark : Char) -> String {
+fn pad(text : StringView, width : Int32, mark : Char) -> String {
   let length = text.char_length()
   if length >= width {
     return text.to_owned()

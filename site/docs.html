@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>The guide — moonlog</title>
+    <meta name="description" content="A progressive tour of moonlog: from one line of output to a hub with slots, filters, steps, layouts, a health machine and an alarm." />
+    <meta name="theme-color" content="#f7f5ef" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312151a'/%3E%3Crect x='6' y='9' width='20' height='2' fill='%23e8e4da'/%3E%3Crect x='6' y='15' width='14' height='2' fill='%237a828c'/%3E%3Crect x='6' y='21' width='17' height='2' fill='%23ff8a5b'/%3E%3C/svg%3E" />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("moonlog-theme");
+          document.documentElement.setAttribute(
+            "data-theme",
+            saved ||
+              (window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light")
+          );
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="inner">
+        <a class="wordmark" href="index.html">
+          <span class="glyph">≡</span>
+          <span>moonlog</span>
+          <span class="ver">0.2.0</span>
+        </a>
+        <nav class="site" aria-label="Main">
+          <a href="index.html">Home</a>
+          <a href="docs.html" aria-current="page">Guide</a>
+          <a href="api.html">API</a>
+          <a href="inside.html">Inside</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Switch theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+          </button>
+          <a class="icon-button" href="https://github.com/moonbitstack/moonlog" aria-label="moonlog on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" /></svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="rail" aria-label="On this page">
+        <div class="group">Start</div>
+        <a href="#line">One line</a>
+        <a href="#levels">Levels and filters</a>
+        <div class="group">Records</div>
+        <a href="#fields">Fields keep their type</a>
+        <a href="#steps">Steps in a chain</a>
+        <div class="group">Output</div>
+        <a href="#layouts">Layouts</a>
+        <a href="#sinks">Sinks</a>
+        <div class="group">Running</div>
+        <a href="#slots">Slots</a>
+        <a href="#failure">When a sink fails</a>
+        <a href="#profiles">Profiles</a>
+        <div class="group">Elsewhere</div>
+        <a href="api.html">API reference</a>
+        <a href="inside.html">Inside</a>
+      </aside>
+
+      <main class="doc">
+        <h1>The guide</h1>
+        <p class="sub">
+          Twelve steps from a line of output to a hub that keeps writing while
+          one of its sinks is down. Every snippet on this page runs; the
+          examples in the repository are the same code with more words around
+          it.
+        </p>
+
+        <h2 id="line">One line</h2>
+        <p>
+          A logger needs somewhere to write. The smallest useful sink is
+          <code>Lines</code>, which hands each rendered line to a function — so
+          a program that prints is a program that logs.
+        </p>
+        <div class="code">
+          <header><span class="tag">one.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(clock=<span class="kw">fn</span>() { <span class="n">1_700_000_000_000_000_000L</span> })
+<span class="kw">let</span> sink = <span class="fn">@moonlog.Lines::new</span>(<span class="kw">fn</span>(line) { <span class="fn">println</span>(line) })
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"console"</span>))
+hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn">info</span>(<span class="s">"listening"</span>)
+<span class="c">// 2023-11-14 22:13:20.000 INFO  app: listening</span></pre>
+        </div>
+        <p>
+          The default line is <code>{time} {level:&lt;5} {target}: {msg}{fields}</code>:
+          local time with milliseconds, the level padded to five columns, where
+          the record came from, the message, then the fields. Nothing is
+          coloured unless you say so.
+        </p>
+
+        <h2 id="levels">Levels and filters</h2>
+        <p>
+          Six levels ship: <code>trace</code>, <code>debug</code>,
+          <code>info</code>, <code>warn</code>, <code>error</code>,
+          <code>fatal</code>. They compare by number, so a level you define
+          yourself — 35, say, between info and warn — sorts where it should.
+        </p>
+        <div class="code">
+          <header><span class="tag">levels.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> notice : <span class="ty">@moonlog.Level</span> = {
+  name: <span class="s">"notice"</span>, value: <span class="n">35</span>, colour: <span class="fn">@moonlog.Colour::Blue</span>,
+}
+<span class="kw">let</span> quiet = <span class="fn">@moonlog.Filter::parse</span>(<span class="s">"warn, app=debug, app::net=off"</span>)
+quiet.<span class="fn">allows</span>(<span class="fn">@moonlog.debug</span>, <span class="s">"app::sync"</span>)   <span class="c">// true</span>
+quiet.<span class="fn">allows</span>(<span class="fn">@moonlog.error</span>, <span class="s">"app::net"</span>)   <span class="c">// false</span>
+quiet.<span class="fn">lowest</span>()                                <span class="c">// Some(debug)</span></pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Directive</th><th>Means</th></tr></thead>
+            <tbody>
+              <tr><td>info</td><td>the default level, for targets no other directive names</td></tr>
+              <tr><td>app=debug</td><td><code>app</code> and everything under it writes at debug and above</td></tr>
+              <tr><td>app</td><td>everything for <code>app</code></td></tr>
+              <tr><td>app=off</td><td>nothing for <code>app</code></td></tr>
+              <tr><td>web:*=error</td><td><code>*</code> matches any run of characters</td></tr>
+              <tr><td>info/sync(ed)?</td><td>the message must also match the expression</td></tr>
+              <tr><td>off</td><td>nothing at all</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          A target matches itself and everything under it, split at
+          <code>::</code>, <code>.</code>, <code>:</code> or <code>/</code>; the
+          most specific directive wins. The hub's filter decides once for every
+          slot; a slot may then narrow it further with <code>.at(level)</code> or
+          <code>.filter(f)</code>.
+        </p>
+        <div class="code">
+          <header><span class="tag">filters.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(
+  clock=<span class="kw">fn</span>() { <span class="n">0L</span> },
+  filter=<span class="fn">Some</span>(<span class="fn">@moonlog.Filter::parse</span>(<span class="s">"info,mirror::sync=debug"</span>)),
+)
+hub.<span class="fn">set_level</span>(<span class="fn">@moonlog.warn</span>)              <span class="c">// replace it at run time</span>
+hub.<span class="fn">enabled</span>(<span class="fn">@moonlog.debug</span>)                  <span class="c">// ask before building a message</span></pre>
+        </div>
+
+        <h2 id="fields">Fields keep their type</h2>
+        <p>
+          A field is a <code>(String, Value)</code> pair. Values are typed —
+          null, bool, int, float, string, list, map, error — so the layout, not
+          the call site, decides how they read. That is what makes redaction by
+          name and JSON output possible from the same record.
+        </p>
+        <div class="code">
+          <header><span class="tag">fields.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> log = hub.<span class="fn">logger</span>(<span class="s">"sync"</span>)
+log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
+  (<span class="s">"error"</span>, <span class="fn">@moonlog.Value::of_error</span>(message=<span class="s">"connect"</span>, causes=[<span class="s">"refused"</span>])),
+  (<span class="s">"tries"</span>, <span class="fn">@moonlog.Value::of_int</span>(<span class="n">3</span>)),
+  (<span class="s">"req"</span>, <span class="fn">@moonlog.Value::of_map</span>([(<span class="s">"id"</span>, <span class="fn">@moonlog.Value::of_int</span>(<span class="n">7</span>))])),
+])
+<span class="c">// sync: gave up error=connect: refused tries=3 req.id=7</span></pre>
+        </div>
+        <p>
+          A map is spread into <code>req.id=7</code> on a text line and kept as
+          an object in JSON. An error keeps its causes: <code>connect: refused</code>
+          on a line, <code>{"message":"connect","causes":["refused"]}</code> in a
+          document. A later field of the same name replaces the earlier one where
+          it stands, so scope comes before logger, and logger before the call.
+        </p>
+
+        <h2 id="steps">Steps in a chain</h2>
+        <p>
+          A <code>Processor</code> may change a record or drop it. The hub's
+          chain runs first, then each slot's own. Eight are built in, and a step
+          of your own is one method.
+        </p>
+        <div class="code">
+          <header><span class="tag">steps.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> slot = <span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"audit"</span>)
+  .<span class="fn">process</span>(<span class="fn">@moonlog.Redact::new</span>().<span class="fn">key</span>(<span class="s">"authorization"</span>).<span class="fn">path</span>(<span class="s">"req.headers.auth"</span>))
+  .<span class="fn">process</span>(<span class="fn">@moonlog.Sanitise::new</span>())
+  .<span class="fn">process</span>(<span class="fn">@moonlog.Sample::new</span>(first=<span class="n">2</span>, every=<span class="n">10</span>, per=<span class="n">60_000_000_000L</span>))
+
+<span class="c">// Your own: return the record, a changed copy, or None to drop it.</span>
+<span class="kw">struct</span> <span class="ty">Region</span> { }
+
+<span class="kw">pub impl</span> <span class="fn">@moonlog.Processor</span> <span class="kw">for</span> <span class="ty">Region</span> <span class="kw">with</span> <span class="fn">process</span>(_self, record, _env) {
+  <span class="fn">Some</span>(record.<span class="fn">set</span>(<span class="s">"region"</span>, <span class="fn">@moonlog.Value::of_str</span>(<span class="s">"eu"</span>)))
+}</pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Step</th><th>Does</th></tr></thead>
+            <tbody>
+              <tr><td>Redact</td><td>masks fields by name at any depth, at a dotted path, and matches in the message</td></tr>
+              <tr><td>Sanitise</td><td>escapes line breaks and control characters, against log forging</td></tr>
+              <tr><td>Fields</td><td>sets the same fields on every record</td></tr>
+              <tr><td>Match</td><td>keeps a record only when every condition holds</td></tr>
+              <tr><td>Exclude</td><td>drops a record when every condition holds</td></tr>
+              <tr><td>Sample</td><td>the first few of a burst, then one in so many</td></tr>
+              <tr><td>Limit</td><td>a token bucket: a rate per second with a burst allowance</td></tr>
+              <tr><td>Dedupe</td><td>drops repeats within a window; the next one kept carries <code>repeated</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The three that need a moment get one: <code>process(record, env)</code>,
+          where <code>env.now</code> is the hub's instant in nanoseconds. No step
+          reads a clock, so a test can drive a minute of sampling in a loop.
+        </p>
+
+        <h2 id="layouts">Layouts</h2>
+        <p>
+          A layout turns a record into one line. A pattern is literal text with
+          holes; every token but <code>time</code> may be padded
+          (<code>&lt;5</code>, <code>&gt;5</code>, <code>^7</code>) and truncated
+          (<code>.4</code>).
+        </p>
+        <div class="code">
+          <header><span class="tag">layouts.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> line = <span class="fn">@moonlog.Pattern::parse</span>(<span class="s">"{time:%H:%M:%S%.3f} {level:&lt;5} {target:~24}: {msg}{fields}"</span>)
+<span class="kw">let</span> json = <span class="fn">@moonlog.JsonLine::new</span>(<span class="fn">@moonlog.Schema::Ecs</span>)
+<span class="kw">let</span> custom = <span class="fn">@moonlog.JsonLine::new</span>(<span class="fn">@moonlog.Schema::Serlog</span>)
+  .<span class="fn">rename</span>(<span class="s">"msg"</span>, <span class="s">"message"</span>)
+  .<span class="fn">nest</span>(<span class="s">"data"</span>)
+
+<span class="c">// A preset name stands wherever a pattern does.</span>
+<span class="fn">@moonlog.Pattern::parse</span>(<span class="s">"logback"</span>)</pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Token</th><th>Writes</th></tr></thead>
+            <tbody>
+              <tr><td>time</td><td>local by default; <code>utc</code>, <code>rfc3339</code>, <code>unix</code>, <code>unix_ms</code>, <code>unix_ns</code>, or strftime such as <code>%H:%M:%S%.3f</code></td></tr>
+              <tr><td>level</td><td>the level, as the preset or profile spells it; <code>lower</code> for lower case</td></tr>
+              <tr><td>target</td><td>where it came from; <code>~24</code> shortens leading segments to fit 24 columns</td></tr>
+              <tr><td>module func file line</td><td>the caller; <code>?</code> when unknown, <code>file:base</code> for the name alone</td></tr>
+              <tr><td>thread tid task</td><td>where it ran</td></tr>
+              <tr><td>pid host app env instance</td><td>the identity the hub was built with</td></tr>
+              <tr><td>msg fields</td><td>the message, and <code> key=value</code> per field; <code>:q</code> quotes the logfmt way</td></tr>
+              <tr><td>tags error spans</td><td>tags, the error field with its causes, the span chain</td></tr>
+              <tr><td>elapsed seq</td><td>milliseconds since the identity's start, the record's number</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="sinks">Sinks</h2>
+        <p>
+          A sink is one method. That is the whole contract: entries arrive
+          already rendered, and a failure is a string.
+        </p>
+        <div class="code">
+          <header><span class="tag">sink.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">struct</span> <span class="ty">Counter</span> { mut lines : <span class="ty">Int</span> }
+
+<span class="kw">pub impl</span> <span class="fn">@moonlog.Sink</span> <span class="kw">for</span> <span class="ty">Counter</span> <span class="kw">with</span> <span class="fn">write</span>(self, entry) {
+  <span class="kw">let</span> _ = entry
+  self.lines = self.lines + <span class="n">1</span>
+  <span class="fn">Ok</span>(())
+}
+
+<span class="kw">let</span> counted = <span class="ty">Counter</span>::{ lines: <span class="n">0</span> }
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(counted, name=<span class="s">"count"</span>))</pre>
+        </div>
+        <p>
+          <code>Lines</code> takes a function, <code>Memory</code> keeps the
+          newest entries so a test can read what was written,
+          <code>Discard</code> throws them away. Nothing in this package opens a
+          file or a socket: those are sinks too, and a sink you write is a sink
+          you can test.
+        </p>
+
+        <h2 id="slots">Slots</h2>
+        <p>
+          A slot wraps one sink with everything the sink should not know:
+          filter, steps, layout, colour, queue, retries, probe interval and what
+          to do on failure.
+        </p>
+        <div class="code">
+          <header><span class="tag">slots.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> _ = hub.<span class="fn">add</span>(
+  <span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"archive"</span>)
+  .<span class="fn">at</span>(<span class="fn">@moonlog.info</span>)
+  .<span class="fn">layout</span>(<span class="fn">@moonlog.JsonLine::new</span>(<span class="fn">@moonlog.Schema::Serlog</span>))
+  .<span class="fn">queue</span>(<span class="fn">@moonlog.Queue::new</span>(size=<span class="n">4096</span>).<span class="fn">batch</span>(<span class="n">200</span>).<span class="fn">wait</span>(<span class="n">1_000_000_000L</span>))
+  .<span class="fn">retries</span>(<span class="n">3</span>)
+  .<span class="fn">probe</span>(<span class="n">5_000_000_000L</span>),
+)
+
+<span class="kw">for</span> slot <span class="kw">in</span> hub.<span class="fn">status</span>() {
+  <span class="fn">println</span>(slot.name + <span class="s">": "</span> + slot.health.<span class="fn">name</span>().<span class="fn">to_owned</span>())
+}</pre>
+        </div>
+        <p>
+          A queue holds records until it has <code>batch</code> of them, until
+          <code>wait</code> has passed since the first, or until
+          <code>hub.flush()</code>. With no runtime to hand behind it, the hub
+          drains it — the same policy a background task would follow, with the
+          clock still yours. When it is full, <code>Full::Drop</code> counts the
+          loss and <code>Full::Block</code> writes first.
+        </p>
+
+        <h2 id="failure">When a sink fails</h2>
+        <p>
+          A failed write moves the breaker to <code>down</code>. Records for that
+          slot are counted and dropped until its next probe; the probe is one
+          write, and it decides. Repeated failures double the wait, up to five
+          minutes; a success puts the slot back and starts the wait over.
+        </p>
+        <div class="code">
+          <header><span class="tag">alarm.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> oncall = <span class="fn">@moonlog.Tiers::from</span>([[<span class="s">"loki"</span>], [<span class="s">"mail"</span>], [<span class="s">"stderr"</span>]])
+  .<span class="fn">with_fallback</span>(<span class="fn">@moonlog.Fallback::Ignore</span>)
+  .<span class="fn">with_remind</span>(<span class="n">1_800_000_000_000L</span>)
+
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(
+  <span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"loki"</span>).<span class="fn">on_fail</span>(<span class="fn">@moonlog.OnFail::Alarm</span>(oncall)),
+)</pre>
+        </div>
+        <p>
+          An incident is delivered through the tiers in order. The failing sink
+          is never asked, a sink that is resting is left out, and a sink already
+          tried is not tried twice. <code>*</code> stands for every sink on the
+          log route. The walk stops at the first tier where one sink took the
+          record, and the incident record carries <code>sink</code>,
+          <code>phase</code>, <code>failures</code> and what was lost.
+        </p>
+        <p>
+          <code>OnFail::Ignore</code> counts and says nothing;
+          <code>OnFail::Panic</code> stops the program.
+        </p>
+
+        <h2 id="profiles">Profiles</h2>
+        <p>
+          A profile is four defaults at once: the line, the console stream, the
+          starting level and which variable a filter is read from. It exists so
+          that a deployment moving from another logger does not have to relearn
+          its own conventions.
+        </p>
+        <div class="code">
+          <header><span class="tag">profiles.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(profile=<span class="fn">@moonlog.Profile::Python</span>, clock=<span class="kw">fn</span>() { <span class="n">0L</span> })
+hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn">warn</span>(<span class="s">"careful"</span>)
+<span class="c">// WARNING:app:careful</span></pre>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Profile</th><th>Console</th><th>Level</th><th>Variable</th></tr></thead>
+            <tbody>
+              <tr><td>serlog</td><td>stdout</td><td>info</td><td>SERLOG_FILTER</td></tr>
+              <tr><td>tracing</td><td>stdout</td><td>info</td><td>RUST_LOG</td></tr>
+              <tr><td>env_logger</td><td>stderr</td><td>error</td><td>RUST_LOG</td></tr>
+              <tr><td>python</td><td>stderr</td><td>warn</td><td>—</td></tr>
+              <tr><td>logback</td><td>stdout</td><td>debug</td><td>—</td></tr>
+              <tr><td>slog</td><td>stdout</td><td>info</td><td>—</td></tr>
+              <tr><td>pino</td><td>stdout</td><td>info</td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2>Where to go next</h2>
+        <p>
+          The <a href="api.html">API reference</a> lists every name with its
+          parameters. <a href="inside.html">Inside</a> explains why the pieces
+          are shaped this way — the dispatch order, the time model, the health
+          machine and the alarm walk. The repository holds three runnable
+          examples under <code>src/examples</code>.
+        </p>
+
+        <div class="next" style="margin-top: 30px">
+          <a href="api.html">
+            <span class="dir">next</span>
+            <strong>API reference</strong>
+            <em>every type, trait and function, searchable</em>
+          </a>
+          <a href="https://github.com/moonbitstack/moonlog">
+            <span class="dir">source</span>
+            <strong>github.com/moonbitstack/moonlog</strong>
+            <em>code, examples, issues</em>
+          </a>
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      <div class="wrap">
+        <span>moonlog 0.2.0 · Apache-2.0</span>
+        <span class="sep"></span>
+        <a href="https://github.com/moonbitstack/moonlog">github.com/moonbitstack/moonlog</a>
+        <a href="https://github.com/moonbitstack/moonlog/issues">issues</a>
+        <a href="https://mooncakes.io">mooncakes</a>
+      </div>
+    </footer>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>
