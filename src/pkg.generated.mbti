@@ -191,11 +191,6 @@ pub fn Filter::off() -> Self
 pub fn Filter::parse(StringView) -> Self raise Refused
 pub fn Filter::to_text(Self) -> String
 
-pub struct Fit {
-  align : (Char, Int32)?
-  max : Int32?
-}
-
 pub(all) enum Full {
   Drop
   Block
@@ -224,6 +219,7 @@ pub struct Hub {
   clock : () -> Int64
   mut seq : Int64
   mut inside : Bool
+  mut writing : Int32
   mut suppressed : Int64
 }
 pub fn Hub::add(Self, Slot) -> String raise Refused
@@ -299,33 +295,9 @@ pub fn Keep::field(Self, String, String) -> Self
 pub fn Keep::holds(Self, Record) -> Bool
 pub fn Keep::level(Self, Level) -> Self
 pub fn Keep::new() -> Self
+pub fn Keep::process(Self, Record, Env) -> Record?
 pub fn Keep::tag(Self, String) -> Self
-
-pub enum Kind {
-  Text(String)
-  Time(Clock)
-  Level(Bool)
-  Target(Int32)
-  Module
-  Func
-  File(Bool)
-  Line
-  Thread
-  Tid
-  Task
-  Pid
-  Host
-  App
-  Env
-  Instance
-  Msg(Bool)
-  Fields(Bool)
-  Tags
-  Error
-  Elapsed
-  Seq
-  Spans
-}
+pub impl Processor for Keep
 
 pub(all) struct Level {
   name : String
@@ -406,16 +378,6 @@ pub fn Logger::trace(Self, String, fields? : Array[(String, Value)]) -> Unit
 pub fn Logger::under(Self, String) -> Self
 pub fn Logger::warn(Self, String, fields? : Array[(String, Value)]) -> Unit
 
-pub struct Match {
-  keep : Keep
-}
-pub fn Match::field(Self, String, String) -> Self
-pub fn Match::level(Self, Level) -> Self
-pub fn Match::new() -> Self
-pub fn Match::process(Self, Record, Env) -> Record?
-pub fn Match::tag(Self, String) -> Self
-pub impl Processor for Match
-
 pub struct Memory {
   size : Int32
   entries : Array[Entry]
@@ -450,7 +412,6 @@ pub struct Pattern {
 }
 pub fn Pattern::parse(StringView) -> Self raise Refused
 pub fn Pattern::render(Self, Record, Scene) -> String
-pub fn Pattern::render_line(Self, Record, Scene) -> String
 pub fn Pattern::source(Self) -> String
 pub impl Layout for Pattern
 
@@ -464,10 +425,7 @@ pub fn Phase::name(Self) -> StringView
 pub fn Phase::not_equal(Self, Self) -> Bool
 pub fn Phase::to_repr(Self) -> @debug.Repr
 
-pub struct Piece {
-  kind : Kind
-  fit : Fit
-}
+type Piece
 
 pub struct Pretty {
 }
@@ -552,11 +510,7 @@ pub(all) struct Report {
   phase : Phase?
 }
 
-pub struct Rule {
-  target : String
-  glob : Bool
-  level : Level?
-}
+type Rule
 
 pub struct Sample {
   first : Int32
@@ -603,6 +557,7 @@ pub fn Schema::to_repr(Self) -> @debug.Repr
 
 pub struct Slot {
   name : String
+  mut kind : String
   sink : &Sink
   mut filter : Filter?
   chain : Array[&Processor]
@@ -615,7 +570,7 @@ pub struct Slot {
   mut retries : Int32
   mut breaker : Breaker
   mut dropped : Int64
-  suppressed : Int64
+  mut suppressed : Int64
   buffered : Array[Record]
   mut buffered_at : Int64
 }
@@ -624,6 +579,7 @@ pub fn Slot::at(Self, Level) -> Self
 pub fn Slot::coloured(Self, Bool) -> Self
 pub fn Slot::failed_since(Self) -> Int64
 pub fn Slot::filter(Self, Filter) -> Self
+pub fn Slot::kind(Self, String) -> Self
 pub fn Slot::layout(Self, &Layout) -> Self
 pub fn Slot::name(Self) -> String
 pub fn Slot::new(&Sink, name~ : String) -> Self
@@ -636,6 +592,7 @@ pub fn Slot::status(Self) -> Status
 
 pub(all) struct Status {
   name : String
+  kind : String
   health : Health
   skipped : Int64
   dropped : Int64

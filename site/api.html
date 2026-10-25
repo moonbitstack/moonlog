@@ -75,7 +75,10 @@
           alphabetically: a reader looking for a name usually knows which part
           of the pipeline it belongs to. Times are nanoseconds since the epoch
           and durations the same; a text that is not a <code>String</code> is a
-          <code>StringView</code>.
+          <code>StringView</code>. Every value type derives <code>Eq</code> and
+          <code>Debug</code>, so <code>equal</code>, <code>not_equal</code> and
+          <code>to_repr</code> exist wherever a value does; they are not listed
+          one by one.
         </p>
 
         <div class="filterbar">
@@ -91,7 +94,11 @@
         </div>
         <div class="entry" data-api-entry="trace debug info warn error fatal constants">
           <div class="sig"><span class="kind fn">let</span><span class="name">trace · debug · info · warn · error · fatal</span><span class="rest">Level</span></div>
-          <p class="what">The six built-in levels, numbered 10 to 60.</p>
+          <p class="what">The six built-in levels, numbered 10 to 60. A level is <code>Eq</code>, <code>Compare</code> (by value), <code>Show</code> and <code>Debug</code>, so <code>==</code>, <code>&lt;</code> and interpolation all work without a conversion.</p>
+        </div>
+        <div class="entry" data-api-entry="built_in every level">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">built_in</span><span class="rest">() -> Array[Level]</span></div>
+          <p class="what">The six, quietest first — for a settings page that lists them without writing the list again.</p>
         </div>
         <div class="entry" data-api-entry="Level::parse level name number">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Level::parse</span><span class="rest">(name : StringView) -> Level raise Refused</span></div>
@@ -194,17 +201,12 @@
         </div>
         <div class="entry" data-api-entry="Keep conditions tags fields level">
           <div class="sig"><span class="kind ty">type</span><span class="name">Keep</span></div>
-          <p class="what">Conditions on tags, fields and level; every one given must hold. <code>Keep::holds(record)</code> answers whether they do.</p>
+          <p class="what">Conditions on tags, fields and level; every one given must hold. As a step it keeps the record when they do; <code>Keep::holds(record)</code> asks the question alone.</p>
           <p class="params"><b>Keep::new</b>() · <b>::tag</b>(tag) · <b>::field</b>(key, text) · <b>::level</b>(min)</p>
-        </div>
-        <div class="entry" data-api-entry="Match keep only">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Match</span></div>
-          <p class="what">Keeps a record only when every condition holds. The same three conditions as <code>Keep</code>.</p>
-          <p class="params"><b>Match::new</b>() · <b>::tag</b>(tag) · <b>::field</b>(key, text) · <b>::level</b>(min)</p>
         </div>
         <div class="entry" data-api-entry="Exclude drop">
           <div class="sig"><span class="kind ty">type</span><span class="name">Exclude</span></div>
-          <p class="what">Drops a record when every condition holds — the inverse of <code>Match</code>.</p>
+          <p class="what">Drops a record when every condition holds — the inverse of <code>Keep</code>.</p>
           <p class="params"><b>Exclude::new</b>() · <b>::tag</b>(tag) · <b>::field</b>(key, text) · <b>::level</b>(min)</p>
         </div>
         <div class="entry" data-api-entry="Sample first every per window">
@@ -300,7 +302,7 @@
           <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span></div>
           <p class="what">One sink with the settings around it. A value: an application builds it and hands it to a hub.</p>
           <p class="params">
-            <b>Slot::new</b>(sink, name~) · <b>::filter</b>(Filter) · <b>::at</b>(Level) · <b>::process</b>(&amp;Processor) · <b>::layout</b>(&amp;Layout) · <b>::coloured</b>(Bool) · <b>::queue</b>(Queue) · <b>::retries</b>(Int) · <b>::probe</b>(nanos) · <b>::on_fail</b>(OnFail) · <b>::alarm_only</b>() · <b>::name</b>() · <b>::status</b>() → <code>Status</code>
+            <b>Slot::new</b>(sink, name~) · <b>::filter</b>(Filter) · <b>::at</b>(Level) · <b>::process</b>(&amp;Processor) · <b>::layout</b>(&amp;Layout) · <b>::coloured</b>(Bool) · <b>::queue</b>(Queue) · <b>::retries</b>(Int) · <b>::probe</b>(nanos) · <b>::on_fail</b>(OnFail) · <b>::alarm_only</b>() · <b>::kind</b>(name) · <b>::name</b>() · <b>::status</b>() → <code>Status</code>
           </p>
         </div>
         <div class="entry" data-api-entry="Queue batch wait full drop block">
@@ -316,9 +318,9 @@
           <div class="sig"><span class="kind ty">type</span><span class="name">OnFail</span><span class="rest">Panic · Ignore · Alarm(&amp;Alarm)</span></div>
           <p class="what">What a slot does when its sink fails.</p>
         </div>
-        <div class="entry" data-api-entry="Status name health skipped dropped suppressed since error">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Status</span><span class="rest">{ name, health, skipped, dropped, suppressed, since, error }</span></div>
-          <p class="what">A slot's state, as <code>Hub::status()</code> reports it.</p>
+        <div class="entry" data-api-entry="Status name kind health skipped dropped suppressed since error">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Status</span><span class="rest">{ name, kind, health, skipped, dropped, suppressed, since, error }</span></div>
+          <p class="what">A slot's state, as <code>Hub::status()</code> reports it: the sink's <code>kind</code>, where its health stands, what it skipped while down, dropped from a full queue and suppressed to stop a loop, when that health began, and the latest error.</p>
         </div>
         <div class="entry" data-api-entry="Fault Report failure phase">
           <div class="sig"><span class="kind ty">type</span><span class="name">Fault</span><span class="rest">{ error : String, phase : Phase? }</span></div>
@@ -331,9 +333,9 @@
             <b>Breaker::new</b>(probe, now) · <b>::admit</b>(now) → <code>Bool</code> · <b>::fault</b>(now, error, remind, tell) → <code>Phase?</code> · <b>::pass</b>(now) → <code>Phase?</code> · <b>::resting</b>(now) · <b>::wait</b>(now) · <b>::health</b>() · <b>::skipped</b>() · <b>::skipped_now</b>() · <b>::since</b>() · <b>::failed_since</b>() · <b>::error</b>()
           </p>
         </div>
-        <div class="entry" data-api-entry="probe_default batch_default wait_default defaults numbers policy">
-          <div class="sig"><span class="kind fn">let</span><span class="name">probe_default · batch_default · wait_default</span><span class="rest">5 s · 1000 · 1 s</span></div>
-          <p class="what">The policy numbers a slot and a queue start with, named so a caller can read one instead of writing it again.</p>
+        <div class="entry" data-api-entry="probe_default batch_default wait_default longest_probe defaults numbers policy">
+          <div class="sig"><span class="kind fn">let</span><span class="name">probe_default · batch_default · wait_default · longest_probe</span><span class="rest">5 s · 1000 · 1 s · 5 min</span></div>
+          <p class="what">The policy numbers a slot and a queue start with, named so a caller can read one instead of writing it again. <code>longest_probe</code> is the ceiling a doubling wait stops at.</p>
         </div>
         <div class="entry" data-api-entry="Health up down probing">
           <div class="sig"><span class="kind ty">type</span><span class="name">Health</span><span class="rest">Up · Down · Probing</span></div>

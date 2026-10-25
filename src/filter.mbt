@@ -4,7 +4,7 @@
 ///|
 /// One directive of a filter: a target and the level it lets through, or `None`
 /// for `off`.
-pub struct Rule {
+struct Rule {
   target : String
   glob : Bool
   level : Level?

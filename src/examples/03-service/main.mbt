@@ -36,7 +36,9 @@ fn main raise {
   )
 
   let _ = hub.add(
-    @moonlog.Slot::new(console, name="console").layout(
+    @moonlog.Slot::new(console, name="console")
+    .kind("memory")
+    .layout(
       @moonlog.Pattern::parse(
         "{time:%H:%M:%S%.3f} {level:<5} {target}: {msg}{fields}",
       ),
@@ -44,11 +46,13 @@ fn main raise {
   )
   let _ = hub.add(
     @moonlog.Slot::new(status, name="status")
+    .kind("memory")
     .at(@moonlog.warn)
     .process(@moonlog.Redact::new().key("authorization")),
   )
   let _ = hub.add(
     @moonlog.Slot::new(sampled, name="sampled")
+    .kind("memory")
     .at(@moonlog.trace)
     .layout(@moonlog.Logfmt::new())
     .process(@moonlog.Sample::new(first=2, every=10, per=60_000_000_000L)),
@@ -58,6 +62,7 @@ fn main raise {
   let oncall = @moonlog.Tiers::from([["console"]])
   let _ = hub.add(
     @moonlog.Slot::new(remote, name="remote")
+    .kind("remote")
     .layout(@moonlog.Logfmt::new())
     .on_fail(@moonlog.OnFail::Alarm(oncall)),
   )
@@ -113,7 +118,9 @@ fn main raise {
     println(
       "  " +
       slot.name +
-      ": " +
+      " (" +
+      slot.kind +
+      "): " +
       slot.health.name().to_owned() +
       ", dropped " +
       slot.dropped.to_string() +

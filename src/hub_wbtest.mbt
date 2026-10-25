@@ -158,7 +158,7 @@ test "sanitise escapes the line break a message tried to smuggle in" {
 test "keep and exclude decide on tags, fields and level" {
   let kept = Memory::new()
   let hub = Hub::new(clock=clock_at(0L))
-  let only_audit = Match::new().tag("audit")
+  let only_audit = Keep::new().tag("audit")
   ignore(hub.add(Slot::new(kept, name="audit").process(only_audit)))
   let log = hub.logger("app")
   log.info("quiet")
@@ -262,7 +262,13 @@ test "an alarm takes the incident to another slot, and the failing one is not as
   let flaky = Flaky::new()
   let backup = Memory::new()
   let oncall = Tiers::from([["backup"]])
-  ignore(hub.add(Slot::new(flaky, name="flaky").on_fail(OnFail::Alarm(oncall))))
+  ignore(
+    hub.add(
+      Slot::new(flaky, name="flaky")
+      .kind("remote")
+      .on_fail(OnFail::Alarm(oncall)),
+    ),
+  )
   ignore(hub.add(Slot::new(backup, name="backup").layout(Logfmt::new())))
   flaky.broken = true
   hub.logger("app").info("first")
@@ -270,6 +276,8 @@ test "an alarm takes the incident to another slot, and the failing one is not as
   assert_eq(incidents.length(), 1)
   assert_true(incidents[0].line.contains(("level=error" : StringView)))
   assert_true(incidents[0].line.contains(("sink `flaky` failed" : StringView)))
+  // The incident carries the failing sink's kind, not a generic word.
+  assert_true(incidents[0].line.contains(("kind=remote" : StringView)))
   assert_eq(flaky.lines.length(), 0)
   now[0] = 6_000_000_000L
   flaky.broken = false
@@ -376,4 +384,43 @@ test "a full queue drops and counts, or writes first when told to block" {
   assert_eq(sink.lines().length(), 0)
   hub.flush()
   assert_eq(sink.lines().length(), 2)
+}
+
+///|
+test "a slot reports the kind of sink it is, and custom until told" {
+  let hub = Hub::new(clock=clock_at(0L))
+  ignore(hub.add(Slot::new(Memory::new(), name="kept")))
+  ignore(hub.add(Slot::new(Memory::new(), name="archive").kind("file")))
+  let status = hub.status()
+  assert_eq(status[0].kind, "custom")
+  assert_eq(status[1].kind, "file")
+}
+
+///|
+test "a sink reading its own output is counted against that slot" {
+  let now = [0L]
+  let hub = Hub::new(clock=fn() { now[0] })
+  let echo : Echo = { hub: [], lines: [], }
+  ignore(hub.add(Slot::new(echo, name="echo").kind("echo")))
+  echo.hub.push(hub)
+  hub.logger("app").info("outer")
+  let status = hub.status()[0]
+  assert_eq(status.suppressed, 1L)
+  assert_eq(status.kind, "echo")
+  assert_eq(hub.suppressed(), 1L)
+}
+
+///|
+test "a memory sink keeps the newest it was told to keep" {
+  let memory = Memory::new(size=2)
+  for i in 0..<4 {
+    ignore(
+      memory.write({
+        record: Record::of(info, "app", i.to_string()),
+        line: i.to_string(),
+      }),
+    )
+  }
+  assert_eq(memory.lines().length(), 2)
+  assert_eq(join(memory.lines(), ","), "2,3")
 }

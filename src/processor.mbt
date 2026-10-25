@@ -321,7 +321,8 @@ pub impl Processor for Fields with fn process(self, record, _env) {
 pub extend Fields with Processor::{process}
 
 ///|
-/// Conditions on tags, fields and level; every one given must hold.
+/// Conditions on tags, fields and level; every one given must hold. As a step,
+/// keeps the record only when they do — the `match` of the specification.
 pub struct Keep {
   tags : Array[String]
   equals : Array[(String, String)]
@@ -376,37 +377,8 @@ pub fn Keep::holds(self : Keep, record : Record) -> Bool {
 }
 
 ///|
-/// Keeps a record only when every condition holds — the `match` step.
-pub struct Match {
-  keep : Keep
-}
-
-///|
-pub fn Match::new() -> Match {
-  { keep: Keep::new(), }
-}
-
-///|
-pub fn Match::tag(self : Match, tag : String) -> Match {
-  ignore(self.keep.tag(tag))
-  self
-}
-
-///|
-pub fn Match::field(self : Match, key : String, value : String) -> Match {
-  ignore(self.keep.field(key, value))
-  self
-}
-
-///|
-pub fn Match::level(self : Match, min : Level) -> Match {
-  ignore(self.keep.level(min))
-  self
-}
-
-///|
-pub impl Processor for Match with fn process(self, record, _env) {
-  if self.keep.holds(record) {
+pub impl Processor for Keep with fn process(self, record, _env) {
+  if self.holds(record) {
     Some(record)
   } else {
     None
@@ -414,7 +386,7 @@ pub impl Processor for Match with fn process(self, record, _env) {
 }
 
 ///|
-pub extend Match with Processor::{process}
+pub extend Keep with Processor::{process}
 
 ///|
 /// Drops a record when every condition holds.

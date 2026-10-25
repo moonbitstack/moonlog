@@ -76,7 +76,7 @@
         <h1>The guide</h1>
         <p class="sub">
           From one line of output to a hub that keeps writing while one of its
-          sinks is down, in ten short sections. Every snippet on this page was
+          sinks is down, in nine short sections. Every snippet on this page was
           compiled; the examples in the repository are the same code with more
           words around it.
         </p>
@@ -202,7 +202,7 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
               <tr><td>Redact</td><td>masks fields by name at any depth, at a dotted path, and matches in the message</td></tr>
               <tr><td>Sanitise</td><td>escapes line breaks and control characters, against log forging</td></tr>
               <tr><td>Fields</td><td>sets the same fields on every record</td></tr>
-              <tr><td>Match</td><td>keeps a record only when every condition holds</td></tr>
+              <tr><td>Keep</td><td>keeps a record only when every condition holds</td></tr>
               <tr><td>Exclude</td><td>drops a record when every condition holds</td></tr>
               <tr><td>Sample</td><td>the first few of a burst, then one in so many</td></tr>
               <tr><td>Limit</td><td>a token bucket: a rate per second with a burst allowance</td></tr>
@@ -281,12 +281,14 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
         <p>
           A slot wraps one sink with everything the sink should not know:
           filter, steps, layout, colour, queue, retries, probe interval and what
-          to do on failure.
+          to do on failure. <code>kind</code> names what the sink is, so a status
+          page can say more than <code>custom</code>.
         </p>
         <div class="code">
           <header><span class="tag">slots.mbt</span><button class="copy" data-copy>copy</button></header>
           <pre><span class="kw">let</span> _ = hub.<span class="fn">add</span>(
   <span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"archive"</span>)
+  .<span class="fn">kind</span>(<span class="s">"file"</span>)
   .<span class="fn">at</span>(<span class="fn">@moonlog.info</span>)
   .<span class="fn">layout</span>(<span class="fn">@moonlog.JsonLine::new</span>(<span class="fn">@moonlog.Schema::Serlog</span>))
   .<span class="fn">queue</span>(<span class="fn">@moonlog.Queue::new</span>(size=<span class="n">4096</span>).<span class="fn">batch</span>(<span class="n">200</span>).<span class="fn">wait</span>(<span class="n">1_000_000_000L</span>))
@@ -295,7 +297,7 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
 )
 
 <span class="kw">for</span> slot <span class="kw">in</span> hub.<span class="fn">status</span>() {
-  <span class="fn">println</span>(slot.name + <span class="s">": "</span> + slot.health.<span class="fn">name</span>().<span class="fn">to_owned</span>())
+  <span class="fn">println</span>(slot.name + <span class="s">" ("</span> + slot.kind + <span class="s">"): "</span> + slot.health.<span class="fn">name</span>().<span class="fn">to_owned</span>())
 }</pre>
         </div>
         <p>

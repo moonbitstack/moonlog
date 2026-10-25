@@ -221,4 +221,7 @@ pub fn Breaker::fault(
 
 ///|
 /// Five minutes: the longest a failed sink waits between probes.
+///
+/// The cap the health cases stop at: the wait doubles up to this and no
+/// further, however long the outage lasts.
 pub let longest_probe : Int64 = 300_000_000_000L

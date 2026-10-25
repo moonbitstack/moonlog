@@ -17,20 +17,20 @@ pub struct Pattern {
 
 ///|
 /// One part of a pattern: a hole, or the text between two of them.
-pub struct Piece {
+struct Piece {
   kind : Kind
   fit : Fit
 }
 
 ///|
-pub struct Fit {
+priv struct Fit {
   align : (Char, Int32)?
   max : Int32?
 }
 
 ///|
 /// What a hole asks for.
-pub enum Kind {
+priv enum Kind {
   Text(String)
   Time(Clock)
   Level(Bool)
@@ -257,7 +257,7 @@ pub fn Pattern::source(self : Pattern) -> String {
 
 ///|
 /// Writes one record through the pattern.
-pub fn Pattern::render_line(
+fn Pattern::render_line(
   self : Pattern,
   record : Record,
   scene : Scene,

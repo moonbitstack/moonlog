@@ -142,7 +142,7 @@ each slot's own.
 | `Redact` | `key`, `path`, `pattern`, `mask` | masks fields by name at any depth, at a dotted path, and matches in the message |
 | `Sanitise` | — | escapes line breaks, tabs and control characters as `\n`, `\r`, `\t`, `\u{0007}` |
 | `Fields` | key-value pairs | sets fields on every record |
-| `Match` | `tag`, `field`, `level` | keeps a record only when every condition holds |
+| `Keep` | `tag`, `field`, `level` | keeps a record only when every condition holds |
 | `Exclude` | the same | drops a record when every condition holds |
 | `Sample` | `first`, `every`, `per` | per level and message, keeps the first `first` in each `per`, then one in `every` |
 | `Limit` | `rate`, `burst` | a token bucket of `rate` a second holding up to `burst` |
@@ -212,6 +212,7 @@ A `Slot` is where everything else lives:
 | Setting | Default | What it does |
 |:--|:--|:--|
 | `name` | — | how an alarm names it; `*` is refused |
+| `kind` | `custom` | what the sink is, for a status page |
 | `filter` / `at` | the hub's filter alone | what reaches this sink |
 | `process` | none | steps that run for this slot only |
 | `layout` | the profile's pattern | how entries are written |
@@ -239,6 +240,11 @@ stateDiagram-v2
 is one write deciding. A first failure opens an incident; a failure during a
 probe doubles the wait, up to five minutes, and reminds once the alarm's
 interval has passed; a success resolves it, and the wait starts over.
+
+`hub.status()` reports one `Status` per slot: its `name` and `kind`, its
+`health`, the records it `skipped` while down, the records its queue `dropped`,
+the records it `suppressed` because its own sink wrote them, when the current
+health began, and the latest `error` while it is not up.
 
 ### Alarms
 

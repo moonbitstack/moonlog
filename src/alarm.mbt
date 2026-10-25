@@ -164,6 +164,9 @@ pub struct Tiers {
 
 ///|
 /// One hour: how long an alarm stays quiet about a sink that is still down.
+///
+/// The interval the alarm cases are written with, so a tier built with the
+/// defaults reports a long outage at the same moments they describe.
 pub let remind_default : Int64 = 3_600_000_000_000L
 
 ///|

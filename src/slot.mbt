@@ -30,14 +30,23 @@ pub(all) struct Queue {
 
 ///|
 /// How many records a queue writes at once when nothing says otherwise.
+///
+/// Chosen here rather than taken from a case file: a thousand lines is one
+/// sensible write, and a queue that is told otherwise says so.
 pub let batch_default : Int32 = 1000
 
 ///|
 /// One second: how long a queue waits for its batch to fill.
+///
+/// Chosen here: long enough to gather a burst, short enough that a quiet
+/// service still sees its last line promptly.
 pub let wait_default : Int64 = 1_000_000_000L
 
 ///|
 /// Five seconds: the first wait before a failed sink is probed again.
+///
+/// The interval the health cases are written with, so a slot built with the
+/// defaults is the slot those cases describe.
 pub let probe_default : Int64 = 5_000_000_000L
 
 ///|
@@ -90,6 +99,7 @@ pub(all) struct Report {
 /// A slot's state, for a status page.
 pub(all) struct Status {
   name : String
+  kind : String
   health : Health
   skipped : Int64
   dropped : Int64
@@ -107,6 +117,7 @@ pub(all) struct Status {
 /// formats and neither knows about the other.
 pub struct Slot {
   name : String
+  mut kind : String
   sink : &Sink
   mut filter : Filter?
   chain : Array[&Processor]
@@ -119,7 +130,7 @@ pub struct Slot {
   mut retries : Int32
   mut breaker : Breaker
   mut dropped : Int64
-  suppressed : Int64
+  mut suppressed : Int64
   buffered : Array[Record]
   mut buffered_at : Int64
 }
@@ -131,6 +142,7 @@ pub fn Slot::new(sink : &Sink, name~ : String) -> Slot {
   let layout : &Layout = default_layout()
   {
     name,
+    kind: "custom",
     sink,
     filter: None,
     chain: [],
@@ -155,6 +167,21 @@ fn default_layout() -> Pattern {
   Pattern::parse(Profile::Serlog.pattern()) catch {
     _ => panic()
   }
+}
+
+///|
+/// Names the kind of sink this is, for a status page: `memory`, `file`, `loki`,
+/// or whatever a sink of your own calls itself. `custom` until it is said.
+pub fn Slot::kind(self : Slot, kind : String) -> Slot {
+  self.kind = kind
+  self
+}
+
+///|
+/// Counts one record this slot's own code made while writing, which was dropped
+/// to keep a sink from feeding itself.
+fn Slot::note_suppressed(self : Slot) -> Unit {
+  self.suppressed = self.suppressed + 1L
 }
 
 ///|
@@ -252,6 +279,7 @@ fn Slot::adopt(self : Slot, layout : &Layout) -> Unit {
 pub fn Slot::status(self : Slot) -> Status {
   {
     name: self.name,
+    kind: self.kind,
     health: self.breaker.health(),
     skipped: self.breaker.skipped(),
     dropped: self.dropped,

@@ -19,6 +19,7 @@ pub struct Hub {
   clock : () -> Int64
   mut seq : Int64
   mut inside : Bool
+  mut writing : Int32
   mut suppressed : Int64
 }
 
@@ -48,6 +49,7 @@ pub fn Hub::new(
     clock,
     seq: 0L,
     inside: false,
+    writing: -1,
     suppressed: 0L,
   }
 }
@@ -208,7 +210,13 @@ fn Hub::alarm(
     Some(fault) => fault.error
     None => ""
   }
-  let incident = Incident::new(slot.name(), "sink", phase, error, now)
+  let incident = Incident::new(
+    slot.name(),
+    slot.status().kind,
+    phase,
+    error,
+    now,
+  )
   if phase == Resolved {
     // A recovery is not a failure: the sink worked, so nothing failed to deliver.
     incident.failures.clear()
@@ -235,6 +243,11 @@ pub fn Hub::suppressed(self : Hub) -> Int64 {
 pub fn Hub::dispatch(self : Hub, record : Record) -> Unit {
   if self.inside {
     self.suppressed = self.suppressed + 1L
+    if self.writing >= 0 {
+      // The slot whose sink is running is the one that made this record, so
+      // the count belongs in its status as well as the hub's.
+      self.slots[self.writing].note_suppressed()
+    }
     return
   }
   self.inside = true
@@ -257,20 +270,28 @@ fn Hub::send_to_slots(self : Hub, record : Record) -> Unit {
     None => return
   }
   let scene = self.scene()
+  let mut index = 0
   for slot in self.slots {
     if slot.alarm_only ||
       !slot.wants(refined.level, refined.target, refined.msg) {
+      index = index + 1
       continue
     }
     let kept = match slot.refine(refined, env) {
       Some(kept) => kept
-      None => continue
+      None => {
+        index = index + 1
+        continue
+      }
     }
+    self.writing = index
     let report = slot.send(kept, scene, now)
+    self.writing = -1
     match report.phase {
       Some(phase) => self.alarm(slot, report.fault, phase, now)
       None => ()
     }
+    index = index + 1
   }
 }
 
