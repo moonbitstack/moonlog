@@ -33,7 +33,7 @@ pub fn Hub::new(
   identity~ : Identity = Identity::new(),
   profile~ : Profile = Profile::Serlog,
   clock~ : () -> Int64 = fn() { 0L },
-  filter~ : Filter? = None,
+  filter? : Filter,
 ) -> Hub {
   let chosen = match filter {
     Some(given) => given

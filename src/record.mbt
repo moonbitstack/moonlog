@@ -20,6 +20,7 @@ pub extend Caller with Debug::{to_repr}
 pub extend Caller with Eq::{equal, not_equal}
 
 ///|
+/// A caller with no part known; set the parts that are.
 pub fn Caller::new() -> Caller {
   { module_path: None, func: None, file: None, line: None, }
 }

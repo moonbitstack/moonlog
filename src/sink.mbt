@@ -17,6 +17,7 @@ pub(all) struct Entry {
 /// and nothing more. `Err` is a failure worth telling someone about; a sink that
 /// cannot fail answers `Ok`.
 pub(open) trait Sink {
+  /// Writes one entry; `Err` says why it could not.
   fn write(Self, Entry) -> Result[Unit, String]
 }
 
@@ -31,6 +32,7 @@ pub struct Lines {
 }
 
 ///|
+/// A sink that hands each line to `write`.
 pub fn Lines::new(write : (String) -> Unit) -> Lines {
   { write, }
 }
@@ -50,6 +52,7 @@ pub extend Lines with Sink::{write}
 pub struct Discard {}
 
 ///|
+/// A sink that accepts every entry and keeps none.
 pub fn Discard::new() -> Discard {
   Discard::{ }
 }

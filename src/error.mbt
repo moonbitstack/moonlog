@@ -21,6 +21,6 @@ pub fn Refused::to_text(self : Refused) -> String {
 
 ///|
 /// A refusal at `at`, having found `got` where `want` was expected.
-pub fn refuse(at : Int32, got : String, want : String) -> Refused {
+fn refuse(at : Int32, got : String, want : String) -> Refused {
   Refused(at~, got~, want~)
 }

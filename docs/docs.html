@@ -32,7 +32,7 @@
         <a class="wordmark" href="index.html">
           <span class="glyph">≡</span>
           <span>moonlog</span>
-          <span class="ver">0.2.0</span>
+          <span class="ver">0.1.1</span>
         </a>
         <nav class="site" aria-label="Main">
           <a href="index.html">Home</a>
@@ -144,7 +144,7 @@ quiet.<span class="fn">lowest</span>()                                <span clas
           <header><span class="tag">filters.mbt</span><button class="copy" data-copy>copy</button></header>
           <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(
   clock=<span class="kw">fn</span>() { <span class="n">0L</span> },
-  filter=<span class="fn">Some</span>(<span class="fn">@moonlog.Filter::parse</span>(<span class="s">"info,mirror::sync=debug"</span>)),
+  filter=<span class="fn">@moonlog.Filter::parse</span>(<span class="s">"info,mirror::sync=debug"</span>),
 )
 hub.<span class="fn">set_level</span>(<span class="fn">@moonlog.warn</span>)              <span class="c">// replace it at run time</span>
 hub.<span class="fn">enabled</span>(<span class="fn">@moonlog.debug</span>)                  <span class="c">// ask before building a message</span></pre>
@@ -393,7 +393,7 @@ hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn
 
     <footer>
       <div class="wrap">
-        <span>moonlog 0.2.0 · Apache-2.0</span>
+        <span>moonlog 0.1.1 · Apache-2.0</span>
         <span class="sep"></span>
         <a href="https://github.com/moonbitstack/moonlog">github.com/moonbitstack/moonlog</a>
         <a href="https://github.com/moonbitstack/moonlog/issues">issues</a>

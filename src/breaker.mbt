@@ -76,6 +76,8 @@ pub fn Breaker::new(probe : Int64, now : Int64) -> Breaker {
 }
 
 ///|
+/// Where the sink stands now: `Up`, `Down`, or `Probing` while a trial write is
+/// due.
 pub fn Breaker::health(self : Breaker) -> Health {
   self.health
 }

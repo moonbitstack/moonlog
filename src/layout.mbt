@@ -7,6 +7,7 @@
 /// A layout knows nothing about where the line goes; a sink is handed the line
 /// its slot's layout made of the record.
 pub(open) trait Layout {
+  /// The record as one line of text, without the line break.
   fn render(Self, Record, Scene) -> String
 }
 
@@ -27,6 +28,7 @@ pub extend Pattern with Layout::{render}
 pub struct Logfmt {}
 
 ///|
+/// The layout; it has nothing to configure.
 pub fn Logfmt::new() -> Logfmt {
   Logfmt::{ }
 }
@@ -57,6 +59,7 @@ pub extend Logfmt with Layout::{render}
 pub struct Pretty {}
 
 ///|
+/// The layout; it has nothing to configure.
 pub fn Pretty::new() -> Pretty {
   Pretty::{ }
 }

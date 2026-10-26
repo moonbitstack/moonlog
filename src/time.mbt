@@ -260,7 +260,12 @@ fn write_strftime(
       'Y' => write_digits(out, year, 4)
       'm' => write_digits(out, month, 2)
       'd' => write_digits(out, day, 2)
-      'e' => write_digits(out, day, 2)
+      'e' => {
+        if day < 10 {
+          out.write_char(' ')
+        }
+        out.write_string(day.to_string())
+      }
       'H' => write_digits(out, hour, 2)
       'M' => write_digits(out, minute, 2)
       'S' => write_digits(out, second, 2)

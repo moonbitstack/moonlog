@@ -13,8 +13,8 @@ struct Rule {
 ///|
 /// Which records pass, by target, level and optionally message.
 ///
-/// The syntax is the one `RUST_LOG` made familiar: comma-separated directives,
-/// `app=debug` for a target, `app` for everything a target writes, `off` for
+/// Comma-separated directives: a bare level for the default, `app=debug` for a
+/// target, `app` for everything a target writes, `off` for
 /// nothing, `*` inside a target, and a `/regex` at the end that the message must
 /// match. A target matches itself and everything under it, split at `::`, `.`,
 /// `:` or `/`, and the most specific directive wins.
@@ -38,6 +38,8 @@ pub fn Filter::off() -> Filter {
 }
 
 ///|
+/// Reads the directives described on `Filter`; a malformed one is refused with
+/// its offset.
 pub fn Filter::parse(spec : StringView) -> Filter raise Refused {
   let text = spec.to_owned()
   let (body, pattern_text) = match text.find(("/" : StringView)) {

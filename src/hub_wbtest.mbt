@@ -48,10 +48,7 @@ test "a logger writes what its hub lets through" {
 ///|
 test "the hub's filter decides once, for every slot" {
   let sink = Memory::new()
-  let hub = Hub::new(
-    clock=clock_at(0L),
-    filter=Some(Filter::parse("warn,app=debug")),
-  )
+  let hub = Hub::new(clock=clock_at(0L), filter=Filter::parse("warn,app=debug"))
   ignore(hub.add(Slot::new(sink, name="mem")))
   let log = hub.logger("app::sync")
   log.debug("seen")

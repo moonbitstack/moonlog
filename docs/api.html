@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>API reference — moonlog</title>
+    <meta name="description" content="Every type, trait, function and parameter moonlog exposes, grouped the way the library is built." />
+    <meta name="theme-color" content="#f7f5ef" />
+    <link rel="stylesheet" href="assets/style.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2312151a'/%3E%3Crect x='6' y='9' width='20' height='2' fill='%23e8e4da'/%3E%3Crect x='6' y='15' width='14' height='2' fill='%237a828c'/%3E%3Crect x='6' y='21' width='17' height='2' fill='%23ff8a5b'/%3E%3C/svg%3E" />
+    <script>
+      (function () {
+        try {
+          var saved = localStorage.getItem("moonlog-theme");
+          document.documentElement.setAttribute(
+            "data-theme",
+            saved ||
+              (window.matchMedia &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light")
+          );
+        } catch (e) {
+          document.documentElement.setAttribute("data-theme", "light");
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="inner">
+        <a class="wordmark" href="index.html">
+          <span class="glyph">≡</span>
+          <span>moonlog</span>
+          <span class="ver">0.1.1</span>
+        </a>
+        <nav class="site" aria-label="Main">
+          <a href="index.html">Home</a>
+          <a href="docs.html">Guide</a>
+          <a href="api.html" aria-current="page">API</a>
+          <a href="inside.html">Inside</a>
+        </nav>
+        <div class="tools">
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Switch theme">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" /></svg>
+          </button>
+          <a class="icon-button" href="https://github.com/moonbitstack/moonlog" aria-label="moonlog on GitHub">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.7-5.5 6 .4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5z" /></svg>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell">
+      <aside class="rail" aria-label="Sections">
+        <div class="group">Groups</div>
+        <a href="#levels">Levels</a>
+        <a href="#values">Values and records</a>
+        <a href="#errors">Errors</a>
+        <a href="#filters">Filters</a>
+        <a href="#steps">Steps</a>
+        <a href="#layouts">Layouts</a>
+        <a href="#sinks">Sinks</a>
+        <a href="#slots">Slots and health</a>
+        <a href="#alarms">Alarms</a>
+        <a href="#hub">Hub and logger</a>
+        <a href="#profiles">Profiles</a>
+      </aside>
+
+      <main class="doc">
+        <h1>API reference</h1>
+        <p class="sub">
+          Everything the package exports, grouped by what it does rather than
+          alphabetically: a reader looking for a name usually knows which part
+          of the pipeline it belongs to. Times are nanoseconds since the epoch
+          and durations the same; a text that is not a <code>String</code> is a
+          <code>StringView</code>. Every value type derives <code>Eq</code> and
+          <code>Debug</code>, so <code>equal</code>, <code>not_equal</code> and
+          <code>to_repr</code> exist wherever a value does; they are not listed
+          one by one. This page is generated from the package's interface.
+        </p>
+
+        <div class="filterbar">
+          <input type="search" placeholder="filter by name, signature or word…" data-api-filter aria-label="Filter the reference" />
+          <span class="count" data-api-count></span>
+        </div>
+
+        <h2 id="levels" data-api-group>Levels</h2>
+
+        <div class="entry" data-api-entry="Colour Colour a colour a terminal understands    alarm  is white on red  which is what a fatal line is worth   plain  writes no escape at all  so a value that never reached a terminal is unchanged ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Colour</span><span class="rest">Plain · Red · Green · Yellow · Blue · Magenta · Cyan · White · Grey · Alarm</span></div>
+          <p class="what">A colour a terminal understands.  <code>Alarm</code> is white on red, which is what a fatal line is worth. <code>Plain</code> writes no escape at all, so a value that never reached a terminal is unchanged.</p>
+        </div>
+        <div class="entry" data-api-entry="Colour::ansi ansi the escape that starts this colour  empty for  plain  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Colour::ansi</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The escape that starts this colour, empty for <code>Plain</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Colour::name name the name used in configuration  filters and vector files ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Colour::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name used in configuration, filters and vector files.</p>
+        </div>
+        <div class="entry" data-api-entry="Colour::parse parse a colour by name   gray  included  which is how american spelling arrives ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Colour::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">A colour by name, <code>gray</code> included, which is how American spelling arrives.</p>
+        </div>
+        <div class="entry" data-api-entry="Level Level how severe a record is   a level is a value rather than an enumeration so an application can define its own    level    name   notice   value  35  colour  blue      and have it work in filters  calls and layouts alike  only  value  counts when levels are compared   name  is what filters and labels read  implements  compare    eq    show  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Level</span><span class="rest">name : String, value : Int32, colour : Colour</span></div>
+          <p class="what">How severe a record is.  A level is a value rather than an enumeration so an application can define its own — <code>Level::{ name: "notice", value: 35, colour: Blue }</code> — and have it work in filters, calls and layouts alike. Only <code>value</code> counts when levels are compared; <code>name</code> is what filters and labels read. Implements <code>Compare</code>, <code>Eq</code>, <code>Show</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::at_least at_least whether this level passes a minimum ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::at_least</span><span class="rest">(Self, Self) -&gt; Bool</span></div>
+          <p class="what">Whether this level passes a minimum.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::colour colour its colour in a terminal ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::colour</span><span class="rest">(Self) -&gt; Colour</span></div>
+          <p class="what">Its colour in a terminal.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::label label how a profile s logger writes this level   a pattern preset uses its own logger s vocabulary  every other layout uses the profile in force  python s  warning  and  critical   and  slog  s numeric names for the two levels it has no word for  are the only differences   which is the point of a profile ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::label</span><span class="rest">(Self, Profile) -&gt; String</span></div>
+          <p class="what">How a profile's logger writes this level.  A pattern preset uses its own logger's vocabulary; every other layout uses the profile in force. Python's <code>WARNING</code> and <code>CRITICAL</code>, and <code>slog</code>'s numeric names for the two levels it has no word for, are the only differences — which is the point of a profile.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::logstash logstash the number logstash writes  5000 to 40000 ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::logstash</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">The number Logstash writes, 5000 to 40000.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::name name its lower case name  as filters  labels and configuration files write it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::name</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">Its lower-case name, as filters, labels and configuration files write it.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::named named the same level under another name  which is how a profile s vocabulary reaches a json document ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::named</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">The same level under another name, which is how a profile's vocabulary reaches a JSON document.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::otel otel the severity number of the opentelemetry log model ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::otel</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">The severity number of the OpenTelemetry log model.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::parse parse a level by name or by number  in any capitalisation    warning  is  warn    critical  is  fatal   and  0  to  255  is a level by value  so a level defined by an application is still spelled the same way once it reaches a filter ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">A level by name or by number, in any capitalisation.  <code>warning</code> is <code>warn</code>, <code>critical</code> is <code>fatal</code>, and <code>0</code> to <code>255</code> is a level by value, so a level defined by an application is still spelled the same way once it reaches a filter.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::syslog syslog the syslog severity  for gelf and anything else shaped like syslog ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::syslog</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">The syslog severity, for GELF and anything else shaped like syslog.</p>
+        </div>
+        <div class="entry" data-api-entry="Level::value value its number ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Level::value</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">Its number.</p>
+        </div>
+        <div class="entry" data-api-entry="built_in built_in the six built in levels  quietest first ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">built_in</span><span class="rest">() -&gt; Array[Level]</span></div>
+          <p class="what">The six built-in levels, quietest first.</p>
+        </div>
+        <div class="entry" data-api-entry="debug debug diagnostics for developers ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">debug</span><span class="rest">Level</span></div>
+          <p class="what">Diagnostics for developers.</p>
+        </div>
+        <div class="entry" data-api-entry="error error a failure that needs attention ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">error</span><span class="rest">Level</span></div>
+          <p class="what">A failure that needs attention.</p>
+        </div>
+        <div class="entry" data-api-entry="fatal fatal a failure the program cannot carry on from ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">fatal</span><span class="rest">Level</span></div>
+          <p class="what">A failure the program cannot carry on from.</p>
+        </div>
+        <div class="entry" data-api-entry="info info normal operation ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">info</span><span class="rest">Level</span></div>
+          <p class="what">Normal operation.</p>
+        </div>
+        <div class="entry" data-api-entry="reset reset the escape that ends every colour ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">reset</span><span class="rest">String</span></div>
+          <p class="what">The escape that ends every colour.</p>
+        </div>
+        <div class="entry" data-api-entry="trace trace step by step detail ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">trace</span><span class="rest">Level</span></div>
+          <p class="what">Step-by-step detail.</p>
+        </div>
+        <div class="entry" data-api-entry="warn warn something unexpected that the program survived ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">warn</span><span class="rest">Level</span></div>
+          <p class="what">Something unexpected that the program survived.</p>
+        </div>
+
+        <h2 id="values" data-api-group>Values and records</h2>
+
+        <div class="entry" data-api-entry="Caller Caller where in the source a record was made   every part may be unknown  a layout writes     for the ones that are  which is what a call site without debug information looks like ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Caller</span><span class="rest">module_path : String?, func : String?, file : String?, line : Int32?</span></div>
+          <p class="what">Where in the source a record was made.  Every part may be unknown; a layout writes <code>?</code> for the ones that are, which is what a call site without debug information looks like.</p>
+        </div>
+        <div class="entry" data-api-entry="Caller::new new a caller with no part known  set the parts that are ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Caller::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">A caller with no part known; set the parts that are.</p>
+        </div>
+        <div class="entry" data-api-entry="Identity Identity the process and the deployment it is one instance of   this is the only place where the library can learn who is writing  it is passed in  never probed  so a test writes the identity it wants to check   offset  answers the seconds east of utc at an instant  which is how a local timestamp is written without the library owning a time zone database ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Identity</span><span class="rest">app : String, env : String, instance : String, host : String, pid : Int32, start : Int64, offset : (Int64) -&gt; Int32</span></div>
+          <p class="what">The process and the deployment it is one instance of.  This is the only place where the library can learn who is writing: it is passed in, never probed, so a test writes the identity it wants to check. <code>offset</code> answers the seconds east of UTC at an instant, which is how a local timestamp is written without the library owning a time zone database.</p>
+        </div>
+        <div class="entry" data-api-entry="Identity::new new an identity that names nobody  the deployment a library has not been told about ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Identity::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">An identity that names nobody: the deployment a library has not been told about.</p>
+        </div>
+        <div class="entry" data-api-entry="Identity::of of an identity with the parts a deployment knows ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Identity::of</span><span class="rest">(app~ : String, env? : String, instance? : String, host? : String, pid? : Int32, start? : Int64, offset? : (Int64) -&gt; Int32) -&gt; Self</span></div>
+          <p class="what">An identity with the parts a deployment knows.</p>
+        </div>
+        <div class="entry" data-api-entry="Record Record one log event  as every sink sees it   there is no clock in here either   time  is what was handed in  in nanoseconds since the epoch  and 0 means nobody said ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Record</span><span class="rest">mut level : Level, target : String, mut msg : String, mut fields : Array[(String, Value)], tags : Array[String], mut caller : Caller, mut thread : String?, mut spans : String?, mut time : Int64, mut seq : Int64</span></div>
+          <p class="what">One log event, as every sink sees it.  There is no clock in here either: <code>time</code> is what was handed in, in nanoseconds since the epoch, and 0 means nobody said.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::at at the same record at another level ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::at</span><span class="rest">(Self, Level) -&gt; Self</span></div>
+          <p class="what">The same record at another level.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::copy copy a copy  with the arrays copied too  so an edit cannot be seen elsewhere ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::copy</span><span class="rest">(Self) -&gt; Self</span></div>
+          <p class="what">A copy, with the arrays copied too, so an edit cannot be seen elsewhere.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::field field the last field called  key  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::field</span><span class="rest">(Self, String) -&gt; Value?</span></div>
+          <p class="what">The last field called <code>key</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::has has whether any field is called  key  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::has</span><span class="rest">(Self, String) -&gt; Bool</span></div>
+          <p class="what">Whether any field is called <code>key</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::located located the same record carrying a source file and line ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::located</span><span class="rest">(Self, String, line? : Int32) -&gt; Self</span></div>
+          <p class="what">The same record carrying a source file and line.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::numbered numbered the same record numbered  seq  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::numbered</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same record numbered <code>seq</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::of of a record with everything but its level  target and message left empty ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::of</span><span class="rest">(Level, String, String) -&gt; Self</span></div>
+          <p class="what">A record with everything but its level, target and message left empty.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::on on the same record carrying a thread name ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::on</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">The same record carrying a thread name.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::say say the same record with another message ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::say</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">The same record with another message.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::set set the same record with  key  set  an earlier field of that name takes the new value where it stands  and a new name is appended  so the order a reader sees is scope  then logger  then the call ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::set</span><span class="rest">(Self, String, Value) -&gt; Self</span></div>
+          <p class="what">The same record with <code>key</code> set: an earlier field of that name takes the new value where it stands, and a new name is appended, so the order a reader sees is scope, then logger, then the call.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::sets sets the same record with every pair set in turn ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::sets</span><span class="rest">(Self, Array[(String, Value)]) -&gt; Self</span></div>
+          <p class="what">The same record with every pair set in turn.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::stamped stamped the same record at an instant  in nanoseconds since the epoch ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::stamped</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same record at an instant, in nanoseconds since the epoch.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::tag tag the same record carrying one more tag ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::tag</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">The same record carrying one more tag.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::tagged tagged whether the record carries  tag  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::tagged</span><span class="rest">(Self, String) -&gt; Bool</span></div>
+          <p class="what">Whether the record carries <code>tag</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Record::unset unset the same record with  key  gone ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Record::unset</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">The same record with <code>key</code> gone.</p>
+        </div>
+        <div class="entry" data-api-entry="Value Value a field s value  typed   fields are carried as values rather than as text so a layout decides how they read   7  and   7   are the same three characters on a line and different things in a json document ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Value</span><span class="rest">Null · Bool(Bool) · Int(Int64) · Float(Double) · Str(String) · List(Array[Value]) · Map(Array[(String, Value)]) · Error(String, Array[String]) · Other(String)</span></div>
+          <p class="what">A field's value, typed.  Fields are carried as values rather than as text so a layout decides how they read: <code>7</code> and <code>"7"</code> are the same three characters on a line and different things in a JSON document.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::encode encode the value as json ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::encode</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The value as JSON.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_bool of_bool a  bool  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_bool</span><span class="rest">(Bool) -&gt; Self</span></div>
+          <p class="what">A <code>Bool</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_error of_error an error with its chain of causes  the way  error  travels as a field ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_error</span><span class="rest">(message~ : String, causes? : Array[String]) -&gt; Self</span></div>
+          <p class="what">An error with its chain of causes, the way <code>error</code> travels as a field.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_float of_float a  float  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_float</span><span class="rest">(Double) -&gt; Self</span></div>
+          <p class="what">A <code>Float</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_int of_int an  int   widened to 64 bits ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_int</span><span class="rest">(Int32) -&gt; Self</span></div>
+          <p class="what">An <code>Int</code>, widened to 64 bits.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_list of_list a  list  of values ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_list</span><span class="rest">(Array[Self]) -&gt; Self</span></div>
+          <p class="what">A <code>List</code> of values.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_long of_long an  int  from a 64 bit integer ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_long</span><span class="rest">(Int64) -&gt; Self</span></div>
+          <p class="what">An <code>Int</code> from a 64-bit integer.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_map of_map a  map   its pairs kept in the order given ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_map</span><span class="rest">(Array[(String, Self)]) -&gt; Self</span></div>
+          <p class="what">A <code>Map</code>, its pairs kept in the order given.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_null of_null  null  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_null</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what"><code>Null</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_other of_other anything else  shown as text ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_other</span><span class="rest">(String) -&gt; Self</span></div>
+          <p class="what">Anything else, shown as text.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::of_str of_str a  str  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::of_str</span><span class="rest">(StringView) -&gt; Self</span></div>
+          <p class="what">A <code>Str</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::to_text to_text the text form  bare strings    a  b   for a list    k v   for a map  and an error with its causes after colons ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::to_text</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The text form: bare strings, <code>[a, b]</code> for a list, <code>{k=v}</code> for a map, and an error with its causes after colons.</p>
+        </div>
+        <div class="entry" data-api-entry="Value::write_json write_json writes the value as json into  out  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Value::write_json</span><span class="rest">(Self, StringBuilder) -&gt; Unit</span></div>
+          <p class="what">Writes the value as JSON into <code>out</code>.</p>
+        </div>
+
+        <h2 id="errors" data-api-group>Errors</h2>
+
+        <div class="entry" data-api-entry="Refused Refused a value the library will not take  and why    at  is the offset in the input  counted in characters   got  is what was there and  want  names what would have been taken  parsing answers this rather than a default  a configuration file with a typo in it should say so  not run at a verbosity nobody asked for ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Refused</span><span class="rest">Refused(at~ : Int32, got~ : String, want~ : String)</span></div>
+          <p class="what">A value the library will not take, and why.  <code>at</code> is the offset in the input, counted in characters; <code>got</code> is what was there and <code>want</code> names what would have been taken. Parsing answers this rather than a default: a configuration file with a typo in it should say so, not run at a verbosity nobody asked for.</p>
+        </div>
+        <div class="entry" data-api-entry="Refused::to_text to_text the refusal as one line  for a terminal ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Refused::to_text</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The refusal as one line, for a terminal.</p>
+        </div>
+
+        <h2 id="filters" data-api-group>Filters</h2>
+
+        <div class="entry" data-api-entry="Filter Filter which records pass  by target  level and optionally message   comma separated directives  a bare level for the default   app debug  for a target   app  for everything a target writes   off  for nothing      inside a target  and a   regex  at the end that the message must match  a target matches itself and everything under it  split at                or      and the most specific directive wins ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Filter</span><span class="rest">mut base : Level?, rules : Array[Rule], mut pattern : @string.Regex?, mut pattern_text : String</span></div>
+          <p class="what">Which records pass, by target, level and optionally message.  Comma-separated directives: a bare level for the default, <code>app=debug</code> for a target, <code>app</code> for everything a target writes, <code>off</code> for nothing, <code>*</code> inside a target, and a <code>/regex</code> at the end that the message must match. A target matches itself and everything under it, split at <code>::</code>, <code>.</code>, <code>:</code> or <code>/</code>, and the most specific directive wins.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::admits admits whether the message passes the   regex  part  when there is one ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::admits</span><span class="rest">(Self, Level, String, String) -&gt; Bool</span></div>
+          <p class="what">Whether the message passes the <code>/regex</code> part, when there is one.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::allows allows whether a record at  level  from  target  passes  before its message is read ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::allows</span><span class="rest">(Self, Level, String) -&gt; Bool</span></div>
+          <p class="what">Whether a record at <code>level</code> from <code>target</code> passes, before its message is read.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::at at a filter that lets  min  and above through for every target ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::at</span><span class="rest">(Level) -&gt; Self</span></div>
+          <p class="what">A filter that lets <code>min</code> and above through for every target.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::has_pattern has_pattern whether there is a   regex  part ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::has_pattern</span><span class="rest">(Self) -&gt; Bool</span></div>
+          <p class="what">Whether there is a <code>/regex</code> part.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::lowest lowest the lowest level any target lets through  or  none  when everything is off ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::lowest</span><span class="rest">(Self) -&gt; Level?</span></div>
+          <p class="what">The lowest level any target lets through, or <code>None</code> when everything is off.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::off off a filter that lets nothing through ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::off</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">A filter that lets nothing through.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::parse parse reads the directives described on  filter   a malformed one is refused with its offset ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">Reads the directives described on <code>Filter</code>; a malformed one is refused with its offset.</p>
+        </div>
+        <div class="entry" data-api-entry="Filter::to_text to_text the spec this filter reads back as ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Filter::to_text</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The spec this filter reads back as.</p>
+        </div>
+
+        <h2 id="steps" data-api-group>Steps</h2>
+
+        <div class="entry" data-api-entry="Dedupe Dedupe drops a record that repeats one kept within the window  the next record kept carries  repeated   the number dropped in between  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Dedupe</span><span class="rest">within : Int64, seen : Map[String, (Int64, Int32)]</span></div>
+          <p class="what">Drops a record that repeats one kept within the window; the next record kept carries <code>repeated</code>, the number dropped in between. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Dedupe::new new drops repeats kept within  within  nanoseconds of each other ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Dedupe::new</span><span class="rest">(within~ : Int64) -&gt; Self</span></div>
+          <p class="what">Drops repeats kept within <code>within</code> nanoseconds of each other.</p>
+        </div>
+        <div class="entry" data-api-entry="Dedupe::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Dedupe::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Env Env what a step may know about the moment it runs  the instant  in nanoseconds since the epoch  handed in by whoever owns the clock ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Env</span><span class="rest">now : Int64</span></div>
+          <p class="what">What a step may know about the moment it runs: the instant, in nanoseconds since the epoch, handed in by whoever owns the clock.</p>
+        </div>
+        <div class="entry" data-api-entry="Env::at at the environment at  now   in nanoseconds since the epoch ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Env::at</span><span class="rest">(Int64) -&gt; Self</span></div>
+          <p class="what">The environment at <code>now</code>, in nanoseconds since the epoch.</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude Exclude drops a record when every condition holds  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Exclude</span><span class="rest">keep : Keep</span></div>
+          <p class="what">Drops a record when every condition holds. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude::field field requires a field whose text is  value  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Exclude::field</span><span class="rest">(Self, String, String) -&gt; Self</span></div>
+          <p class="what">Requires a field whose text is <code>value</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude::level level requires the level to be at least  min  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Exclude::level</span><span class="rest">(Self, Level) -&gt; Self</span></div>
+          <p class="what">Requires the level to be at least <code>min</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude::new new no conditions yet  a step with none drops every record  so add the ones that pick what to drop ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Exclude::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">No conditions yet; a step with none drops every record, so add the ones that pick what to drop.</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Exclude::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Exclude::tag tag requires the record to carry  tag  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Exclude::tag</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">Requires the record to carry <code>tag</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Fields Fields adds the same fields to every record  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Fields</span><span class="rest">pairs : Array[(String, Value)]</span></div>
+          <p class="what">Adds the same fields to every record. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Fields::new new no fields yet  add them with  set  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Fields::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">No fields yet; add them with <code>set</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Fields::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Fields::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Fields::set set adds  key  with  value  to every record  replacing a field of that name where it stands ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Fields::set</span><span class="rest">(Self, String, Value) -&gt; Self</span></div>
+          <p class="what">Adds <code>key</code> with <code>value</code> to every record, replacing a field of that name where it stands.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep Keep conditions on tags  fields and level  every one given must hold  as a step  keeps the record only when they do   the  match  of the specification  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Keep</span><span class="rest">tags : Array[String], equals : Array[(String, String)], mut level : Level?</span></div>
+          <p class="what">Conditions on tags, fields and level; every one given must hold. As a step, keeps the record only when they do — the <code>match</code> of the specification. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep::field field requires a field whose text is  value  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Keep::field</span><span class="rest">(Self, String, String) -&gt; Self</span></div>
+          <p class="what">Requires a field whose text is <code>value</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep::holds holds whether every condition holds for  record  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Keep::holds</span><span class="rest">(Self, Record) -&gt; Bool</span></div>
+          <p class="what">Whether every condition holds for <code>record</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep::level level requires  min  and above ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Keep::level</span><span class="rest">(Self, Level) -&gt; Self</span></div>
+          <p class="what">Requires <code>min</code> and above.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep::new new no conditions yet  so every record passes until one is added ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Keep::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">No conditions yet, so every record passes until one is added.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Keep::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Keep::tag tag requires a tag ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Keep::tag</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">Requires a tag.</p>
+        </div>
+        <div class="entry" data-api-entry="Limit Limit a token bucket   rate  records a second  with bursts of up to  burst   implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Limit</span><span class="rest">rate : Double, burst : Double, mut level : Double, mut at : Int64, mut started : Bool</span></div>
+          <p class="what">A token bucket: <code>rate</code> records a second, with bursts of up to <code>burst</code>. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Limit::new new  rate  records a second on average  and up to  burst  at once  a burst below one is raised to one ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limit::new</span><span class="rest">(rate~ : Double, burst~ : Double) -&gt; Self</span></div>
+          <p class="what"><code>rate</code> records a second on average, and up to <code>burst</code> at once; a burst below one is raised to one.</p>
+        </div>
+        <div class="entry" data-api-entry="Limit::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limit::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Processor Processor a step in a processor chain  it may change the record  or drop it   a step that only decides returns the record it was given  untouched  so the other slots still see what was written  the first step that changes anything returns a copy ">
+          <div class="sig"><span class="kind ty">trait</span><span class="name">Processor</span><span class="rest">fn process(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">A step in a processor chain: it may change the record, or drop it.  A step that only decides returns the record it was given, untouched, so the other slots still see what was written. The first step that changes anything returns a copy.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact Redact masks fields by name at any depth or at a dotted path  and parts of the message that match a pattern  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Redact</span><span class="rest">keys : Array[String], paths : Array[Array[String]], patterns : Array[@string.Regex], mut mask : String</span></div>
+          <p class="what">Masks fields by name at any depth or at a dotted path, and parts of the message that match a pattern. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact::key key masks these names wherever they appear ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Redact::key</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">Masks these names wherever they appear.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact::mask mask what a masked value becomes        unless set ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Redact::mask</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">What a masked value becomes; <code>***</code> unless set.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact::new new a step that masks nothing yet ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Redact::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">A step that masks nothing yet.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact::path path masks the field at a dotted path  such as  req headers authorization  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Redact::path</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">Masks the field at a dotted path, such as <code>req.headers.authorization</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact::pattern pattern replaces whatever matches in the message ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Redact::pattern</span><span class="rest">(Self, StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">Replaces whatever matches in the message.</p>
+        </div>
+        <div class="entry" data-api-entry="Redact::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Redact::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Sample Sample keeps the first records of each level and message every period  then one in so many after that  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Sample</span><span class="rest">first : Int32, every : Int32, per : Int64, seen : Map[String, (Int64, Int32)]</span></div>
+          <p class="what">Keeps the first records of each level and message every period, then one in so many after that. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Sample::new new keeps the first  first  records per  per  nanoseconds  then one in  every  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Sample::new</span><span class="rest">(first~ : Int32, every? : Int32, per~ : Int64) -&gt; Self</span></div>
+          <p class="what">Keeps the first <code>first</code> records per <code>per</code> nanoseconds, then one in <code>every</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Sample::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Sample::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+        <div class="entry" data-api-entry="Sanitise Sanitise escapes line breaks  tabs and other control characters  so a message cannot forge a second line  implements  processor  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Sanitise</span><span class="rest"></span></div>
+          <p class="what">Escapes line breaks, tabs and other control characters, so a message cannot forge a second line. Implements <code>Processor</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Sanitise::new new the step  it has nothing to configure ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Sanitise::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">The step; it has nothing to configure.</p>
+        </div>
+        <div class="entry" data-api-entry="Sanitise::process process as a  processor   the record  changed or as it was  or  none  to drop it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Sanitise::process</span><span class="rest">(Self, Record, Env) -&gt; Record?</span></div>
+          <p class="what">As a <code>Processor</code>: The record, changed or as it was, or <code>None</code> to drop it.</p>
+        </div>
+
+        <h2 id="layouts" data-api-group>Layouts</h2>
+
+        <div class="entry" data-api-entry="Clock Clock how an instant is written   the library holds no clock  so every instant here arrives as nanoseconds since the epoch and every local time is the instant shifted by an offset that was handed in  a  custom  spec is strftime  the subset below ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Clock</span><span class="rest">Local · Utc · Rfc3339 · Unix · UnixMs · UnixNs · Custom(String)</span></div>
+          <p class="what">How an instant is written.  The library holds no clock, so every instant here arrives as nanoseconds since the epoch and every local time is the instant shifted by an offset that was handed in. A <code>Custom</code> spec is strftime, the subset below.</p>
+        </div>
+        <div class="entry" data-api-entry="Clock::parse parse a clock spec  as a   time     hole spells it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Clock::parse</span><span class="rest">(StringView) -&gt; Self</span></div>
+          <p class="what">A clock spec, as a <code>{time:…}</code> hole spells it.</p>
+        </div>
+        <div class="entry" data-api-entry="Clock::write write writes  time  in this clock s form   offset  is seconds east of utc ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Clock::write</span><span class="rest">(Self, StringBuilder, Int64, Int32) -&gt; Unit</span></div>
+          <p class="what">Writes <code>time</code> in this clock's form; <code>offset</code> is seconds east of UTC.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine JsonLine one record as a json object in a schema  with any key renamed  implements  layout  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">JsonLine</span><span class="rest">schema : Schema, keys : Array[(String, String)], mut levels : Levels?, mut nest : String?</span></div>
+          <p class="what">One record as a JSON object in a schema, with any key renamed. Implements <code>Layout</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine::encode encode writes one record as a json object ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">JsonLine::encode</span><span class="rest">(Self, Record, Scene) -&gt; String</span></div>
+          <p class="what">Writes one record as a JSON object.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine::levels levels writes levels by name or by number  whatever the schema does by default ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">JsonLine::levels</span><span class="rest">(Self, Levels) -&gt; Self</span></div>
+          <p class="what">Writes levels by name or by number, whatever the schema does by default.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine::nest nest puts the fields under one key instead of at the top ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">JsonLine::nest</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">Puts the fields under one key instead of at the top.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine::new new lines in  schema   with its own key names and level spelling ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">JsonLine::new</span><span class="rest">(Schema) -&gt; Self</span></div>
+          <p class="what">Lines in <code>schema</code>, with its own key names and level spelling.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine::rename rename writes  key  as  to   such as  msg  as  message  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">JsonLine::rename</span><span class="rest">(Self, String, String) -&gt; Self</span></div>
+          <p class="what">Writes <code>key</code> as <code>to</code>, such as <code>msg</code> as <code>message</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="JsonLine::render render as a  layout   the record as one line of text  without the line break ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">JsonLine::render</span><span class="rest">(Self, Record, Scene) -&gt; String</span></div>
+          <p class="what">As a <code>Layout</code>: The record as one line of text, without the line break.</p>
+        </div>
+        <div class="entry" data-api-entry="Layout Layout how a record becomes one line   a layout knows nothing about where the line goes  a sink is handed the line its slot s layout made of the record ">
+          <div class="sig"><span class="kind ty">trait</span><span class="name">Layout</span><span class="rest">fn render(Self, Record, Scene) -&gt; String</span></div>
+          <p class="what">How a record becomes one line.  A layout knows nothing about where the line goes; a sink is handed the line its slot's layout made of the record.</p>
+        </div>
+        <div class="entry" data-api-entry="Levels Levels how levels are written  when a schema is told to write them another way ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Levels</span><span class="rest">Name · Number</span></div>
+          <p class="what">How levels are written, when a schema is told to write them another way.</p>
+        </div>
+        <div class="entry" data-api-entry="Levels::parse parse  name  or  number   how a json line writes the level ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Levels::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what"><code>name</code> or <code>number</code>: how a JSON line writes the level.</p>
+        </div>
+        <div class="entry" data-api-entry="Logfmt Logfmt one  key value  line per record   time   level   target   msg   key value    values are quoted the logfmt way  so a message with a space in it cannot be mistaken for two fields  this is the shape a shell pipeline reads with  cut  and  awk   implements  layout  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Logfmt</span><span class="rest"></span></div>
+          <p class="what">One <code>key=value</code> line per record: <code>time=… level=… target=… msg=… key=value</code>.  Values are quoted the logfmt way, so a message with a space in it cannot be mistaken for two fields. This is the shape a shell pipeline reads with <code>cut</code> and <code>awk</code>. Implements <code>Layout</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logfmt::new new the layout  it has nothing to configure ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logfmt::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">The layout; it has nothing to configure.</p>
+        </div>
+        <div class="entry" data-api-entry="Logfmt::render render as a  layout   the record as one line of text  without the line break ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logfmt::render</span><span class="rest">(Self, Record, Scene) -&gt; String</span></div>
+          <p class="what">As a <code>Layout</code>: The record as one line of text, without the line break.</p>
+        </div>
+        <div class="entry" data-api-entry="Pattern Pattern a line template  literal text with   token   or   token options   holes  and      and      for literal braces   every token but  time  may end with   n     n  or   n  to pad to n columns  then   m  to keep at most m characters      puts the extra space on the right  which is what centred columns do in the loggers this reproduces  implements  layout  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Pattern</span><span class="rest">source : String, pieces : Array[Piece], shows_error : Bool, labels : Profile?</span></div>
+          <p class="what">A line template: literal text with <code>{token}</code> or <code>{token:options}</code> holes, and <code>{{</code> and <code>}}</code> for literal braces.  Every token but <code>time</code> may end with <code>&lt;N</code>, <code>&gt;N</code> or <code>^N</code> to pad to N columns, then <code>.M</code> to keep at most M characters. <code>^</code> puts the extra space on the right, which is what centred columns do in the loggers this reproduces. Implements <code>Layout</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Pattern::parse parse a pattern  or the name of a preset standing for one ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Pattern::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">A pattern, or the name of a preset standing for one.</p>
+        </div>
+        <div class="entry" data-api-entry="Pattern::render render as a  layout   the record as one line of text  without the line break ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Pattern::render</span><span class="rest">(Self, Record, Scene) -&gt; String</span></div>
+          <p class="what">As a <code>Layout</code>: The record as one line of text, without the line break.</p>
+        </div>
+        <div class="entry" data-api-entry="Pattern::source source the text it was parsed from ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Pattern::source</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The text it was parsed from.</p>
+        </div>
+        <div class="entry" data-api-entry="Pretty Pretty a first line with the time  level  target and message  then one aligned  key   value  line per field  what a person reads in a terminal when the fields matter more than the bytes  implements  layout  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Pretty</span><span class="rest"></span></div>
+          <p class="what">A first line with the time, level, target and message, then one aligned <code>key = value</code> line per field. What a person reads in a terminal when the fields matter more than the bytes. Implements <code>Layout</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Pretty::new new the layout  it has nothing to configure ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Pretty::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">The layout; it has nothing to configure.</p>
+        </div>
+        <div class="entry" data-api-entry="Pretty::render render as a  layout   the record as one line of text  without the line break ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Pretty::render</span><span class="rest">(Self, Record, Scene) -&gt; String</span></div>
+          <p class="what">As a <code>Layout</code>: The record as one line of text, without the line break.</p>
+        </div>
+        <div class="entry" data-api-entry="Schema Schema a json shape other tools already read ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Schema</span><span class="rest">Serlog · Pino · Bunyan · Zap · Slog · Structlog · Logstash · Ecs · Gelf · Otel</span></div>
+          <p class="what">A JSON shape other tools already read.</p>
+        </div>
+        <div class="entry" data-api-entry="Schema::name name the name used in configuration files and vector files ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Schema::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name used in configuration files and vector files.</p>
+        </div>
+        <div class="entry" data-api-entry="Schema::parse parse a schema by name   serlog    pino    bunyan    zap    slog    structlog    logstash    ecs    gelf  or  otel  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Schema::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">A schema by name: <code>serlog</code>, <code>pino</code>, <code>bunyan</code>, <code>zap</code>, <code>slog</code>, <code>structlog</code>, <code>logstash</code>, <code>ecs</code>, <code>gelf</code> or <code>otel</code>.</p>
+        </div>
+
+        <h2 id="sinks" data-api-group>Sinks</h2>
+
+        <div class="entry" data-api-entry="Discard Discard a sink that drops everything  for an application that configures logging off and a test that would rather not have output  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Discard</span><span class="rest"></span></div>
+          <p class="what">A sink that drops everything, for an application that configures logging off and a test that would rather not have output. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Discard::new new a sink that accepts every entry and keeps none ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Discard::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">A sink that accepts every entry and keeps none.</p>
+        </div>
+        <div class="entry" data-api-entry="Discard::write write as a  sink   writes one entry   err  says why it could not ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Discard::write</span><span class="rest">(Self, Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">As a <code>Sink</code>: Writes one entry; <code>Err</code> says why it could not.</p>
+        </div>
+        <div class="entry" data-api-entry="Entry Entry what a sink is handed  the record  and the line its slot s layout made of it  the line is made once  whether or not the sink reads it ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Entry</span><span class="rest">record : Record, line : String</span></div>
+          <p class="what">What a sink is handed: the record, and the line its slot's layout made of it. The line is made once, whether or not the sink reads it.</p>
+        </div>
+        <div class="entry" data-api-entry="Lines Lines a sink that writes each line through a function   this is the seam   lines  new fn line    println line      prints  and  lines  new fn line    held push line      is how a test reads what was written without a terminal in the way  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Lines</span><span class="rest">write : (String) -&gt; Unit</span></div>
+          <p class="what">A sink that writes each line through a function.  This is the seam: <code>Lines::new(fn(line) { println(line) })</code> prints, and <code>Lines::new(fn(line) { held.push(line) })</code> is how a test reads what was written without a terminal in the way. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Lines::new new a sink that hands each line to  write  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Lines::new</span><span class="rest">((String) -&gt; Unit) -&gt; Self</span></div>
+          <p class="what">A sink that hands each line to <code>write</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Lines::write write as a  sink   writes one entry   err  says why it could not ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Lines::write</span><span class="rest">(Self, Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">As a <code>Sink</code>: Writes one entry; <code>Err</code> says why it could not.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory Memory a sink that keeps the newest entries in memory  for a test or a status page  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Memory</span><span class="rest">size : Int32, entries : Array[Entry]</span></div>
+          <p class="what">A sink that keeps the newest entries in memory, for a test or a status page. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory::clear clear forgets everything it kept ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Memory::clear</span><span class="rest">(Self) -&gt; Unit</span></div>
+          <p class="what">Forgets everything it kept.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory::find find the entries whose line contains  text  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Memory::find</span><span class="rest">(Self, String) -&gt; Array[Entry]</span></div>
+          <p class="what">The entries whose line contains <code>text</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory::lines lines the lines it kept  oldest first ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Memory::lines</span><span class="rest">(Self) -&gt; Array[String]</span></div>
+          <p class="what">The lines it kept, oldest first.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory::new new keeps the newest  size  entries  0 keeps everything ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Memory::new</span><span class="rest">(size? : Int32) -&gt; Self</span></div>
+          <p class="what">Keeps the newest <code>size</code> entries; 0 keeps everything.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory::records records the records it kept  oldest first ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Memory::records</span><span class="rest">(Self) -&gt; Array[Record]</span></div>
+          <p class="what">The records it kept, oldest first.</p>
+        </div>
+        <div class="entry" data-api-entry="Memory::write write as a  sink   writes one entry   err  says why it could not ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Memory::write</span><span class="rest">(Self, Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">As a <code>Sink</code>: Writes one entry; <code>Err</code> says why it could not.</p>
+        </div>
+        <div class="entry" data-api-entry="Sink Sink where entries go   only  write  is required  queues  retries  health and alarms belong to the slot the sink is registered in  so a sink delivers and says what went wrong and nothing more   err  is a failure worth telling someone about  a sink that cannot fail answers  ok  ">
+          <div class="sig"><span class="kind ty">trait</span><span class="name">Sink</span><span class="rest">fn write(Self, Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Where entries go.  Only <code>write</code> is required. Queues, retries, health and alarms belong to the slot the sink is registered in, so a sink delivers and says what went wrong and nothing more. <code>Err</code> is a failure worth telling someone about; a sink that cannot fail answers <code>Ok</code>.</p>
+        </div>
+
+        <h2 id="slots" data-api-group>Slots and health</h2>
+
+        <div class="entry" data-api-entry="Breaker Breaker a slot s health  up  down  or one write testing whether it works again   it knows no i o and reads no clock   every method takes the instant   which is what makes the machine checkable against vectors instead of against a stopwatch ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Breaker</span><span class="rest">probe : Int64, mut health : Health, mut gap : Int64, mut next : Int64, mut told : Int64?, mut since : Int64, mut opened : Int64, mut opened_at : Int64, mut skipped : Int64, mut error : String?</span></div>
+          <p class="what">A slot's health: up, down, or one write testing whether it works again.  It knows no I/O and reads no clock — every method takes the instant — which is what makes the machine checkable against vectors instead of against a stopwatch.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::admit admit whether a write may go ahead at  now   turns a due  down  into  probing   and counts a skip otherwise ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::admit</span><span class="rest">(Self, Int64) -&gt; Bool</span></div>
+          <p class="what">Whether a write may go ahead at <code>now</code>: turns a due <code>Down</code> into <code>Probing</code>, and counts a skip otherwise.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::error error the latest error ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::error</span><span class="rest">(Self) -&gt; String?</span></div>
+          <p class="what">The latest error.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::failed_since failed_since when the current failure began  which is what an incident calls  since    since  itself moves when the sink recovers ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::failed_since</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">When the current failure began, which is what an incident calls <code>since</code>; <code>since</code> itself moves when the sink recovers.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::fault fault a write failed   opened  or  reminder  when that is to be told ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::fault</span><span class="rest">(Self, Int64, String, Int64, Tell) -&gt; Phase?</span></div>
+          <p class="what">A write failed; <code>Opened</code> or <code>Reminder</code> when that is to be told.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::health health where the sink stands now   up    down   or  probing  while a trial write is due ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::health</span><span class="rest">(Self) -&gt; Health</span></div>
+          <p class="what">Where the sink stands now: <code>Up</code>, <code>Down</code>, or <code>Probing</code> while a trial write is due.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::new new a healthy machine that first probes  probe  nanoseconds after a failure ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::new</span><span class="rest">(Int64, Int64) -&gt; Self</span></div>
+          <p class="what">A healthy machine that first probes <code>probe</code> nanoseconds after a failure.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::pass pass a write went through   resolved  when the failure had been told ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::pass</span><span class="rest">(Self, Int64) -&gt; Phase?</span></div>
+          <p class="what">A write went through; <code>Resolved</code> when the failure had been told.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::resting resting whether a sink is skipped at  now  without counting anything  for choosing alarm targets ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::resting</span><span class="rest">(Self, Int64) -&gt; Bool</span></div>
+          <p class="what">Whether a sink is skipped at <code>now</code> without counting anything, for choosing alarm targets.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::since since when the current health began ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::since</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">When the current health began.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::skipped skipped records skipped while down  over the slot s life ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::skipped</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">Records skipped while down, over the slot's life.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::skipped_now skipped_now records skipped since the current failure began ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::skipped_now</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">Records skipped since the current failure began.</p>
+        </div>
+        <div class="entry" data-api-entry="Breaker::wait wait how long until the next probe ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Breaker::wait</span><span class="rest">(Self, Int64) -&gt; Int64</span></div>
+          <p class="what">How long until the next probe.</p>
+        </div>
+        <div class="entry" data-api-entry="Fault Fault what went wrong on the way to a sink  and whether the failure is one the alarm policy has been told about ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Fault</span><span class="rest">error : String, phase : Phase?</span></div>
+          <p class="what">What went wrong on the way to a sink, and whether the failure is one the alarm policy has been told about.</p>
+        </div>
+        <div class="entry" data-api-entry="Full Full what a full queue does with a record that arrives ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Full</span><span class="rest">Drop · Block</span></div>
+          <p class="what">What a full queue does with a record that arrives.</p>
+        </div>
+        <div class="entry" data-api-entry="Health Health whether a sink is working ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Health</span><span class="rest">Up · Down · Probing</span></div>
+          <p class="what">Whether a sink is working.</p>
+        </div>
+        <div class="entry" data-api-entry="Health::name name the name used in configuration  status and the shared vectors ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Health::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name used in configuration, status and the shared vectors.</p>
+        </div>
+        <div class="entry" data-api-entry="OnFail OnFail what a slot does when its sink fails ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">OnFail</span><span class="rest">Panic · Ignore · Alarm(&amp;Alarm)</span></div>
+          <p class="what">What a slot does when its sink fails.</p>
+        </div>
+        <div class="entry" data-api-entry="Queue Queue a buffer in front of a sink  written in batches   without a runtime to hand  the buffer is drained by the hub  when it holds  batch  records  when  wait  has passed since the first one  or at  flush   that is the policy a background task would follow  with the clock still in the caller s hands ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Queue</span><span class="rest">size : Int32, batch : Int32, wait : Int64, full : Full</span></div>
+          <p class="what">A buffer in front of a sink, written in batches.  Without a runtime to hand, the buffer is drained by the hub: when it holds <code>batch</code> records, when <code>wait</code> has passed since the first one, or at <code>flush</code>. That is the policy a background task would follow, with the clock still in the caller's hands.</p>
+        </div>
+        <div class="entry" data-api-entry="Queue::batch batch the same queue  written  batch  records at a time ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Queue::batch</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
+          <p class="what">The same queue, written <code>batch</code> records at a time.</p>
+        </div>
+        <div class="entry" data-api-entry="Queue::full full the same queue  with  full  deciding what an arriving record meets when it is full ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Queue::full</span><span class="rest">(Self, Full) -&gt; Self</span></div>
+          <p class="what">The same queue, with <code>full</code> deciding what an arriving record meets when it is full.</p>
+        </div>
+        <div class="entry" data-api-entry="Queue::new new holds  size  records  written  batch_default  at a time or  wait_default  after the first ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Queue::new</span><span class="rest">(size~ : Int32) -&gt; Self</span></div>
+          <p class="what">Holds <code>size</code> records, written <code>batch_default</code> at a time or <code>wait_default</code> after the first.</p>
+        </div>
+        <div class="entry" data-api-entry="Queue::wait wait the same queue  flushed at most  wait  nanoseconds after its first record ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Queue::wait</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same queue, flushed at most <code>wait</code> nanoseconds after its first record.</p>
+        </div>
+        <div class="entry" data-api-entry="Report Report what a delivery did  the failure it met  if any  and the phase an alarm is owed  if any  a recovery is a phase too  which is why this is not a  result  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Report</span><span class="rest">fault : Fault?, phase : Phase?</span></div>
+          <p class="what">What a delivery did: the failure it met, if any, and the phase an alarm is owed, if any. A recovery is a phase too, which is why this is not a <code>Result</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot Slot one sink with the settings around it  name  filter  processors  layout  colour  queue  retries  health and the policy for failure   a slot is a value an application builds and hands to a hub  nothing about it is process wide  so two hubs can hold two slots writing the same file in two formats and neither knows about the other ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span><span class="rest">name : String, mut kind : String, sink : &amp;Sink, mut filter : Filter?, chain : Array[&amp;Processor], mut layout : &amp;Layout, mut layout_given : Bool, mut colour : Bool, mut alarm_only : Bool, mut on_fail : OnFail, mut queue : Queue?, mut retries : Int32, mut breaker : Breaker, mut dropped : Int64, mut suppressed : Int64, buffered : Array[Record], mut buffered_at : Int64</span></div>
+          <p class="what">One sink with the settings around it: name, filter, processors, layout, colour, queue, retries, health and the policy for failure.  A slot is a value an application builds and hands to a hub. Nothing about it is process-wide, so two hubs can hold two slots writing the same file in two formats and neither knows about the other.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::alarm_only alarm_only keeps it off the log route  for alarms only ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::alarm_only</span><span class="rest">(Self) -&gt; Self</span></div>
+          <p class="what">Keeps it off the log route, for alarms only.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::at at takes only  min  and above ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::at</span><span class="rest">(Self, Level) -&gt; Self</span></div>
+          <p class="what">Takes only <code>min</code> and above.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::coloured coloured whether this slot s lines are coloured ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::coloured</span><span class="rest">(Self, Bool) -&gt; Self</span></div>
+          <p class="what">Whether this slot's lines are coloured.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::failed_since failed_since when the current failure began  for the incident an alarm carries ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::failed_since</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">When the current failure began, for the incident an alarm carries.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::filter filter takes only what  filter  lets through ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::filter</span><span class="rest">(Self, Filter) -&gt; Self</span></div>
+          <p class="what">Takes only what <code>filter</code> lets through.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::kind kind names the kind of sink this is  for a status page   memory    file    loki   or whatever a sink of your own calls itself   custom  until it is said ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::kind</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">Names the kind of sink this is, for a status page: <code>memory</code>, <code>file</code>, <code>loki</code>, or whatever a sink of your own calls itself. <code>custom</code> until it is said.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::layout layout lays entries out this way instead of the profile s pattern ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::layout</span><span class="rest">(Self, &amp;Layout) -&gt; Self</span></div>
+          <p class="what">Lays entries out this way instead of the profile's pattern.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::name name the slot s name ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::name</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The slot's name.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::new new a slot named  name  writing to  sink   with the library s own pattern as its layout until one is given ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::new</span><span class="rest">(&amp;Sink, name~ : String) -&gt; Self</span></div>
+          <p class="what">A slot named <code>name</code> writing to <code>sink</code>, with the library's own pattern as its layout until one is given.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::on_fail on_fail what happens when the sink fails ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::on_fail</span><span class="rest">(Self, OnFail) -&gt; Self</span></div>
+          <p class="what">What happens when the sink fails.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::probe probe first wait before probing a failed sink  it doubles up to five minutes ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::probe</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">First wait before probing a failed sink; it doubles up to five minutes.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::process process adds a step that runs for this slot only ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::process</span><span class="rest">(Self, &amp;Processor) -&gt; Self</span></div>
+          <p class="what">Adds a step that runs for this slot only.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::queue queue runs the sink behind  queue  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::queue</span><span class="rest">(Self, Queue) -&gt; Self</span></div>
+          <p class="what">Runs the sink behind <code>queue</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::retries retries tries a failed write this many more times  without pausing ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::retries</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
+          <p class="what">Tries a failed write this many more times, without pausing.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::status status where it stands ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::status</span><span class="rest">(Self) -&gt; Status</span></div>
+          <p class="what">Where it stands.</p>
+        </div>
+        <div class="entry" data-api-entry="Status Status a slot s state  for a status page ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Status</span><span class="rest">name : String, kind : String, health : Health, skipped : Int64, dropped : Int64, suppressed : Int64, since : Int64, error : String?</span></div>
+          <p class="what">A slot's state, for a status page.</p>
+        </div>
+        <div class="entry" data-api-entry="Tell Tell how a failure is told ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Tell</span><span class="rest">Report · Silent · Folded</span></div>
+          <p class="what">How a failure is told.</p>
+        </div>
+        <div class="entry" data-api-entry="batch_default batch_default how many records a queue writes at once when nothing says otherwise   chosen here rather than taken from a case file  a thousand lines is one sensible write  and a queue that is told otherwise says so ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">batch_default</span><span class="rest">Int32</span></div>
+          <p class="what">How many records a queue writes at once when nothing says otherwise.  Chosen here rather than taken from a case file: a thousand lines is one sensible write, and a queue that is told otherwise says so.</p>
+        </div>
+        <div class="entry" data-api-entry="longest_probe longest_probe five minutes  the longest a failed sink waits between probes   the cap the health cases stop at  the wait doubles up to this and no further  however long the outage lasts ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">longest_probe</span><span class="rest">Int64</span></div>
+          <p class="what">Five minutes: the longest a failed sink waits between probes.  The cap the health cases stop at: the wait doubles up to this and no further, however long the outage lasts.</p>
+        </div>
+        <div class="entry" data-api-entry="probe_default probe_default five seconds  the first wait before a failed sink is probed again   the interval the health cases are written with  so a slot built with the defaults is the slot those cases describe ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">probe_default</span><span class="rest">Int64</span></div>
+          <p class="what">Five seconds: the first wait before a failed sink is probed again.  The interval the health cases are written with, so a slot built with the defaults is the slot those cases describe.</p>
+        </div>
+        <div class="entry" data-api-entry="wait_default wait_default one second  how long a queue waits for its batch to fill   chosen here  long enough to gather a burst  short enough that a quiet service still sees its last line promptly ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">wait_default</span><span class="rest">Int64</span></div>
+          <p class="what">One second: how long a queue waits for its batch to fill.  Chosen here: long enough to gather a burst, short enough that a quiet service still sees its last line promptly.</p>
+        </div>
+
+        <h2 id="alarms" data-api-group>Alarms</h2>
+
+        <div class="entry" data-api-entry="Alarm Alarm chooses where an incident goes   the runtime walks the tiers  skips the failing sink and any that are resting  and stops at the first tier where one sink took the record   so an implementation only has to say which sinks to try ">
+          <div class="sig"><span class="kind ty">trait</span><span class="name">Alarm</span><span class="rest">fn route(Self, Incident) -&gt; Array[Array[String]], fn fallback(Self) -&gt; Fallback, fn remind(Self) -&gt; Int64</span></div>
+          <p class="what">Chooses where an incident goes.  The runtime walks the tiers, skips the failing sink and any that are resting, and stops at the first tier where one sink took the record — so an implementation only has to say which sinks to try.</p>
+        </div>
+        <div class="entry" data-api-entry="Desk Desk what the alarm walk needs from the sinks around it ">
+          <div class="sig"><span class="kind ty">trait</span><span class="name">Desk</span><span class="rest">fn logs(Self) -&gt; Array[String], fn resting(Self, String) -&gt; Bool, fn deliver(Self, String, Record) -&gt; Result[Unit, String]</span></div>
+          <p class="what">What the alarm walk needs from the sinks around it.</p>
+        </div>
+        <div class="entry" data-api-entry="Failure Failure one failed delivery  on the way to an alarm ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Failure</span><span class="rest">sink : String, error : String, at : Int64</span></div>
+          <p class="what">One failed delivery, on the way to an alarm.</p>
+        </div>
+        <div class="entry" data-api-entry="Fallback Fallback what an alarm does when no tier took the incident ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Fallback</span><span class="rest">Panic · Ignore</span></div>
+          <p class="what">What an alarm does when no tier took the incident.</p>
+        </div>
+        <div class="entry" data-api-entry="Incident Incident a sink s failure  from the first error to its recovery   a phase is a fresh incident each time   opened  when the sink first failed   reminder  while it is still down   resolved  when it writes again  each carries what is known at that moment  which is why the type is a value and not a handle ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Incident</span><span class="rest">sink : String, kind : String, phase : Phase, error : String, failures : Array[Failure], mut skipped : Int64, mut dropped : Int64, mut since : Int64, mut at : Int64</span></div>
+          <p class="what">A sink's failure, from the first error to its recovery.  A phase is a fresh incident each time: <code>Opened</code> when the sink first failed, <code>Reminder</code> while it is still down, <code>Resolved</code> when it writes again. Each carries what is known at that moment, which is why the type is a value and not a handle.</p>
+        </div>
+        <div class="entry" data-api-entry="Incident::describe describe the record an incident becomes   error  when something failed   info  when something works again  with the failures on one field ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Incident::describe</span><span class="rest">(Self, target? : String) -&gt; Record</span></div>
+          <p class="what">The record an incident becomes: <code>error</code> when something failed, <code>info</code> when something works again, with the failures on one field.</p>
+        </div>
+        <div class="entry" data-api-entry="Incident::new new a fresh incident   sink   a sink of  kind   failed with  error  at  now   in  phase  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Incident::new</span><span class="rest">(String, String, Phase, String, Int64) -&gt; Self</span></div>
+          <p class="what">A fresh incident: <code>sink</code>, a sink of <code>kind</code>, failed with <code>error</code> at <code>now</code>, in <code>phase</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Outcome Outcome how an alarm walk ended ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Outcome</span><span class="rest">Heard · Unheard</span></div>
+          <p class="what">How an alarm walk ended.</p>
+        </div>
+        <div class="entry" data-api-entry="Phase Phase which report of an incident this is ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Phase</span><span class="rest">Opened · Reminder · Resolved</span></div>
+          <p class="what">Which report of an incident this is.</p>
+        </div>
+        <div class="entry" data-api-entry="Phase::name name the name used in a record s  phase  field and in the shared vectors ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Phase::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name used in a record's <code>phase</code> field and in the shared vectors.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers Tiers fixed tiers of sink names      loki      oncall      stderr      implements  alarm  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Tiers</span><span class="rest">tiers : Array[Array[String]], fallback : Fallback, remind : Int64</span></div>
+          <p class="what">Fixed tiers of sink names: <code>[["loki"], ["oncall"], ["stderr"]]</code>. Implements <code>Alarm</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::fallback fallback as a  alarm   what happens when no tier took the incident ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::fallback</span><span class="rest">(Self) -&gt; Fallback</span></div>
+          <p class="what">As a <code>Alarm</code>: What happens when no tier took the incident.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::from from tiers of names  tried in order ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::from</span><span class="rest">(Array[Array[String]]) -&gt; Self</span></div>
+          <p class="what">Tiers of names, tried in order.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::new new the default alarm  standard error alone  one hour between reminders ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">The default alarm: standard error alone, one hour between reminders.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::remind remind as a  alarm   how long a sink may stay down before it is reported again  in nanoseconds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::remind</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">As a <code>Alarm</code>: How long a sink may stay down before it is reported again, in nanoseconds.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::route route as a  alarm   the tiers of sink names to try for this incident  in order ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::route</span><span class="rest">(Self, Incident) -&gt; Array[Array[String]]</span></div>
+          <p class="what">As a <code>Alarm</code>: The tiers of sink names to try for this incident, in order.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::tiers tiers the tiers themselves ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::tiers</span><span class="rest">(Self) -&gt; Array[Array[String]]</span></div>
+          <p class="what">The tiers themselves.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::with_fallback with_fallback the same tiers  with  fallback  deciding what happens when no tier took the incident ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::with_fallback</span><span class="rest">(Self, Fallback) -&gt; Self</span></div>
+          <p class="what">The same tiers, with <code>fallback</code> deciding what happens when no tier took the incident.</p>
+        </div>
+        <div class="entry" data-api-entry="Tiers::with_remind with_remind how long a sink may stay down before it is reported again ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Tiers::with_remind</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">How long a sink may stay down before it is reported again.</p>
+        </div>
+        <div class="entry" data-api-entry="remind_default remind_default one hour  how long an alarm stays quiet about a sink that is still down   the interval the alarm cases are written with  so a tier built with the defaults reports a long outage at the same moments they describe ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">remind_default</span><span class="rest">Int64</span></div>
+          <p class="what">One hour: how long an alarm stays quiet about a sink that is still down.  The interval the alarm cases are written with, so a tier built with the defaults reports a long outage at the same moments they describe.</p>
+        </div>
+        <div class="entry" data-api-entry="sound sound delivers  incident  through  alarm  s tiers  adding every failed delivery to it   the failing sink is never asked      stands for every sink on the log route  a sink already tried is not tried again  and a resting one is left out  one success ends the walk  when no tier takes it  nothing more happens here ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">sound</span><span class="rest">(&amp;Alarm, Incident, &amp;Desk) -&gt; Outcome</span></div>
+          <p class="what">Delivers <code>incident</code> through <code>alarm</code>'s tiers, adding every failed delivery to it.  The failing sink is never asked. <code>*</code> stands for every sink on the log route. A sink already tried is not tried again, and a resting one is left out. One success ends the walk; when no tier takes it, nothing more happens here.</p>
+        </div>
+
+        <h2 id="hub" data-api-group>Hub and logger</h2>
+
+        <div class="entry" data-api-entry="Hub Hub the whole of a running logger  a global filter  a chain of steps every record goes through  a table of slots  and the identity and clock that the application handed in   there is no process wide hub  an application builds one and passes the  logger  values that write to it to the libraries it uses  a library that was handed none writes nothing  implements  desk  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Hub</span><span class="rest">identity : Identity, profile : Profile, mut filter : Filter, chain : Array[&amp;Processor], slots : Array[Slot], layout : &amp;Layout, clock : () -&gt; Int64, mut seq : Int64, mut inside : Bool, mut writing : Int32, mut suppressed : Int64</span></div>
+          <p class="what">The whole of a running logger: a global filter, a chain of steps every record goes through, a table of slots, and the identity and clock that the application handed in.  There is no process-wide hub. An application builds one and passes the <code>Logger</code> values that write to it to the libraries it uses; a library that was handed none writes nothing. Implements <code>Desk</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::add add registers a slot and answers the name it took   a second slot with the same name is refused  and so is the name      which would make an alarm tier ambiguous ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::add</span><span class="rest">(Self, Slot) -&gt; String raise Refused</span></div>
+          <p class="what">Registers a slot and answers the name it took.  A second slot with the same name is refused, and so is the name <code>*</code>, which would make an alarm tier ambiguous.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::deliver deliver as a  desk   writes  record  to the named sink at once  bypassing its queue   err  is what the sink said  or that no sink has that name ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::deliver</span><span class="rest">(Self, String, Record) -&gt; Result[Unit, String]</span></div>
+          <p class="what">As a <code>Desk</code>: Writes <code>record</code> to the named sink at once, bypassing its queue. <code>Err</code> is what the sink said, or that no sink has that name.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::dispatch dispatch sends  record  everywhere it belongs  through the global chain  then to each slot s own filter and steps  then to its sink   a record made while a sink is already running is dropped and counted  a sink that logs into the hub it belongs to would otherwise never finish ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::dispatch</span><span class="rest">(Self, Record) -&gt; Unit</span></div>
+          <p class="what">Sends <code>record</code> everywhere it belongs: through the global chain, then to each slot's own filter and steps, then to its sink.  A record made while a sink is already running is dropped and counted: a sink that logs into the hub it belongs to would otherwise never finish.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::enabled enabled whether a record at  level  could pass  before its target or message is known  worth asking before building a message that costs something ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::enabled</span><span class="rest">(Self, Level) -&gt; Bool</span></div>
+          <p class="what">Whether a record at <code>level</code> could pass, before its target or message is known. Worth asking before building a message that costs something.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::filter filter the filter now in force ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::filter</span><span class="rest">(Self) -&gt; Filter</span></div>
+          <p class="what">The filter now in force.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::flush flush writes what every queue holds  up to  now  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::flush</span><span class="rest">(Self) -&gt; Unit</span></div>
+          <p class="what">Writes what every queue holds, up to <code>now</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::identity identity the identity records are stamped with ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::identity</span><span class="rest">(Self) -&gt; Identity</span></div>
+          <p class="what">The identity records are stamped with.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::logger logger a logger writing to this hub under  target   which is usually a module path ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::logger</span><span class="rest">(Self, String) -&gt; Logger</span></div>
+          <p class="what">A logger writing to this hub under <code>target</code>, which is usually a module path.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::logs logs as a  desk   the sinks on the log route  which     stands for ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::logs</span><span class="rest">(Self) -&gt; Array[String]</span></div>
+          <p class="what">As a <code>Desk</code>: The sinks on the log route, which <code>*</code> stands for.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::new new a hub at  profile   writing what the filter lets through    clock  answers nanoseconds since the epoch  without one every record carries 0  which is honest   this library never reads a clock   and every test says what instant it means ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::new</span><span class="rest">(identity? : Identity, profile? : Profile, clock? : () -&gt; Int64, filter? : Filter) -&gt; Self</span></div>
+          <p class="what">A hub at <code>profile</code>, writing what the filter lets through.  <code>clock</code> answers nanoseconds since the epoch. Without one every record carries 0, which is honest — this library never reads a clock — and every test says what instant it means.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::now now the instant the hub is working at  from the clock it was given ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::now</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">The instant the hub is working at, from the clock it was given.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::process process adds a step to the global chain  which runs before any slot sees the record ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::process</span><span class="rest">(Self, &amp;Processor) -&gt; Unit</span></div>
+          <p class="what">Adds a step to the global chain, which runs before any slot sees the record.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::profile profile the profile in force ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::profile</span><span class="rest">(Self) -&gt; Profile</span></div>
+          <p class="what">The profile in force.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::remove remove takes a slot out by name  after writing what its queue holds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::remove</span><span class="rest">(Self, String) -&gt; Bool</span></div>
+          <p class="what">Takes a slot out by name, after writing what its queue holds.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::resting resting as a  desk   whether a sink is down and not yet due for a probe ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::resting</span><span class="rest">(Self, String) -&gt; Bool</span></div>
+          <p class="what">As a <code>Desk</code>: Whether a sink is down and not yet due for a probe.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::scene scene the scene a line is written in  this hub s vocabulary  this hub s identity ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::scene</span><span class="rest">(Self) -&gt; Scene</span></div>
+          <p class="what">The scene a line is written in: this hub's vocabulary, this hub's identity.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::set_filter set_filter replaces the global filter  takes effect at once ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::set_filter</span><span class="rest">(Self, Filter) -&gt; Unit</span></div>
+          <p class="what">Replaces the global filter; takes effect at once.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::set_level set_level lets through  min  and above for every target ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::set_level</span><span class="rest">(Self, Level) -&gt; Unit</span></div>
+          <p class="what">Lets through <code>min</code> and above for every target.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::slots slots every registered slot  in the order they were added ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::slots</span><span class="rest">(Self) -&gt; Array[Slot]</span></div>
+          <p class="what">Every registered slot, in the order they were added.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::status status how every slot stands ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::status</span><span class="rest">(Self) -&gt; Array[Status]</span></div>
+          <p class="what">How every slot stands.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::suppressed suppressed records made while a sink was running  dropped so a sink that logs cannot feed itself ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::suppressed</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">Records made while a sink was running, dropped so a sink that logs cannot feed itself.</p>
+        </div>
+        <div class="entry" data-api-entry="Hub::write write writes a record at  level  from  target  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::write</span><span class="rest">(Self, Level, String, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes a record at <code>level</code> from <code>target</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger Logger a target and the fields bound to it  what a module or a request holds and writes through   a logger is a value  it is passed in  it can be copied  and a library that was handed none writes nothing   there is no default one to inherit ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Logger</span><span class="rest">hub : Hub, target : String, fields : Array[(String, Value)]</span></div>
+          <p class="what">A target and the fields bound to it: what a module or a request holds and writes through.  A logger is a value. It is passed in, it can be copied, and a library that was handed none writes nothing — there is no default one to inherit.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::bound bound the same logger with  key  bound  so every line it writes carries it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::bound</span><span class="rest">(Self, String, Value) -&gt; Self</span></div>
+          <p class="what">The same logger with <code>key</code> bound, so every line it writes carries it.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::debug debug writes at  debug  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::debug</span><span class="rest">(Self, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes at <code>debug</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::enabled enabled whether a message at  level  would be written   worth asking before assembling a message that costs something  a logger cannot skip work its caller has already done ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::enabled</span><span class="rest">(Self, Level) -&gt; Bool</span></div>
+          <p class="what">Whether a message at <code>level</code> would be written.  Worth asking before assembling a message that costs something: a logger cannot skip work its caller has already done.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::error error writes at  error  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::error</span><span class="rest">(Self, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes at <code>error</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::fatal fatal writes at  fatal   it does not abort  what to do after the last line is the caller s to decide  and a library that ends the process takes that decision away ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::fatal</span><span class="rest">(Self, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes at <code>fatal</code>. It does not abort: what to do after the last line is the caller's to decide, and a library that ends the process takes that decision away.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::info info writes at  info  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::info</span><span class="rest">(Self, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes at <code>info</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::log log writes a message  with fields if there are any ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::log</span><span class="rest">(Self, Level, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes a message, with fields if there are any.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::new new a logger writing to  hub  under  target  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::new</span><span class="rest">(Hub, String) -&gt; Self</span></div>
+          <p class="what">A logger writing to <code>hub</code> under <code>target</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::target target the target it writes under ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::target</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The target it writes under.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::trace trace writes at  trace  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::trace</span><span class="rest">(Self, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes at <code>trace</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::under under the same logger under another target  which is what a submodule is ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::under</span><span class="rest">(Self, String) -&gt; Self</span></div>
+          <p class="what">The same logger under another target, which is what a submodule is.</p>
+        </div>
+        <div class="entry" data-api-entry="Logger::warn warn writes at  warn  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Logger::warn</span><span class="rest">(Self, String, fields? : Array[(String, Value)]) -&gt; Unit</span></div>
+          <p class="what">Writes at <code>warn</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Scene Scene how a record is shown  whose vocabulary the level is written in  whether a terminal takes colour  and who is writing ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Scene</span><span class="rest">profile : Profile, colour : Bool, identity : Identity</span></div>
+          <p class="what">How a record is shown: whose vocabulary the level is written in, whether a terminal takes colour, and who is writing.</p>
+        </div>
+        <div class="entry" data-api-entry="Scene::at at the same scene at another profile ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Scene::at</span><span class="rest">(Self, Profile) -&gt; Self</span></div>
+          <p class="what">The same scene at another profile.</p>
+        </div>
+        <div class="entry" data-api-entry="Scene::coloured coloured the same scene with colour turned on or off ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Scene::coloured</span><span class="rest">(Self, Bool) -&gt; Self</span></div>
+          <p class="what">The same scene with colour turned on or off.</p>
+        </div>
+        <div class="entry" data-api-entry="Scene::new new a plain scene  no colour  the default vocabulary  an identity that names nobody ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Scene::new</span><span class="rest">(identity? : Identity, profile? : Profile, colour? : Bool) -&gt; Self</span></div>
+          <p class="what">A plain scene: no colour, the default vocabulary, an identity that names nobody.</p>
+        </div>
+
+        <h2 id="profiles" data-api-group>Profiles</h2>
+
+        <div class="entry" data-api-entry="Profile Profile another logger whose defaults an application can take on   a profile changes four things at once   the default line  the stream a console writes to  the level it starts at  and the variables a filter is read from   because those four are what a deployment already expects when it moves from one logger to another ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Profile</span><span class="rest">Serlog · Tracing · EnvLogger · Python · Logback · Slog · Pino</span></div>
+          <p class="what">Another logger whose defaults an application can take on.  A profile changes four things at once — the default line, the stream a console writes to, the level it starts at, and the variables a filter is read from — because those four are what a deployment already expects when it moves from one logger to another.</p>
+        </div>
+        <div class="entry" data-api-entry="Profile::env env the variables this profile reads a filter from  first one set wins ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Profile::env</span><span class="rest">(Self) -&gt; Array[String]</span></div>
+          <p class="what">The variables this profile reads a filter from, first one set wins.</p>
+        </div>
+        <div class="entry" data-api-entry="Profile::level level the level this profile starts at ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Profile::level</span><span class="rest">(Self) -&gt; Level</span></div>
+          <p class="what">The level this profile starts at.</p>
+        </div>
+        <div class="entry" data-api-entry="Profile::name name the name used in configuration files ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Profile::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name used in configuration files.</p>
+        </div>
+        <div class="entry" data-api-entry="Profile::parse parse a profile by its lower case name   serlog    tracing    env_logger    python    logback   or  log4j     slog  or  pino  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Profile::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">A profile by its lower-case name: <code>serlog</code>, <code>tracing</code>, <code>env_logger</code>, <code>python</code>, <code>logback</code> (or <code>log4j</code>), <code>slog</code> or <code>pino</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Profile::pattern pattern the pattern this profile s logger writes by default ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Profile::pattern</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The pattern this profile's logger writes by default.</p>
+        </div>
+        <div class="entry" data-api-entry="Profile::stream stream where this profile s console writes ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Profile::stream</span><span class="rest">(Self) -&gt; Stream</span></div>
+          <p class="what">Where this profile's console writes.</p>
+        </div>
+        <div class="entry" data-api-entry="Stream Stream where a console writes ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Stream</span><span class="rest">Stdout · Stderr · Auto</span></div>
+          <p class="what">Where a console writes.</p>
+        </div>
+        <div class="entry" data-api-entry="Stream::name name the name used in configuration files ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Stream::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name used in configuration files.</p>
+        </div>
+        <div class="entry" data-api-entry="Stream::parse parse  stdout    stderr  or  auto  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Stream::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what"><code>stdout</code>, <code>stderr</code> or <code>auto</code>.</p>
+        </div>
+
+        <div class="next" style="margin-top: 34px">
+          <a href="docs.html">
+            <span class="dir">back</span>
+            <strong>The guide</strong>
+            <em>the same surface, in order, with runnable examples</em>
+          </a>
+          <a href="inside.html">
+            <span class="dir">next</span>
+            <strong>Inside</strong>
+            <em>the dispatch order, the time model and the vectors</em>
+          </a>
+        </div>
+      </main>
+    </div>
+
+    <footer>
+      <div class="wrap">
+        <span>moonlog 0.1.1 · Apache-2.0</span>
+        <span class="sep"></span>
+        <a href="https://github.com/moonbitstack/moonlog">github.com/moonbitstack/moonlog</a>
+        <a href="https://github.com/moonbitstack/moonlog/issues">issues</a>
+        <a href="https://mooncakes.io">mooncakes</a>
+      </div>
+    </footer>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>

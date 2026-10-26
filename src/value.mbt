@@ -23,41 +23,49 @@ pub(all) enum Value {
 pub extend Value with Debug::{to_repr}
 
 ///|
+/// `Null`.
 pub fn Value::of_null() -> Value {
   Null
 }
 
 ///|
+/// A `Bool`.
 pub fn Value::of_bool(b : Bool) -> Value {
   Bool(b)
 }
 
 ///|
+/// An `Int`, widened to 64 bits.
 pub fn Value::of_int(n : Int32) -> Value {
   Int(n.to_int64())
 }
 
 ///|
+/// An `Int` from a 64-bit integer.
 pub fn Value::of_long(n : Int64) -> Value {
   Int(n)
 }
 
 ///|
+/// A `Float`.
 pub fn Value::of_float(x : Double) -> Value {
   Float(x)
 }
 
 ///|
+/// A `Str`.
 pub fn Value::of_str(s : StringView) -> Value {
   Str(s.to_owned())
 }
 
 ///|
+/// A `List` of values.
 pub fn Value::of_list(items : Array[Value]) -> Value {
   List(items)
 }
 
 ///|
+/// A `Map`, its pairs kept in the order given.
 pub fn Value::of_map(pairs : Array[(String, Value)]) -> Value {
   Map(pairs)
 }
@@ -150,8 +158,7 @@ pub fn Value::write_json(self : Value, out : StringBuilder) -> Unit {
       // JSON has no infinity and no NaN; the text form is what a pipeline can
       // still read, and it stays a string rather than a number that lies.
       let text = x.to_string()
-      if text.contains(("inf" : StringView)) ||
-        text.contains(("nan" : StringView)) {
+      if x.is_inf() || x.is_nan() {
         write_json_string(out, text)
       } else {
         out.write_string(text)

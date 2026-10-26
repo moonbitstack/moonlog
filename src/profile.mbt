@@ -26,6 +26,7 @@ pub fn Stream::name(self : Stream) -> StringView {
 }
 
 ///|
+/// `stdout`, `stderr` or `auto`.
 pub fn Stream::parse(name : StringView) -> Stream raise Refused {
   match name {
     "stdout" => Stdout
@@ -73,6 +74,8 @@ pub fn Profile::name(self : Profile) -> StringView {
 }
 
 ///|
+/// A profile by its lower-case name: `serlog`, `tracing`, `env_logger`,
+/// `python`, `logback` (or `log4j`), `slog` or `pino`.
 pub fn Profile::parse(name : StringView) -> Profile raise Refused {
   match name {
     "serlog" => Serlog

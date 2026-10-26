@@ -40,6 +40,8 @@ pub fn Schema::name(self : Schema) -> StringView {
 }
 
 ///|
+/// A schema by name: `serlog`, `pino`, `bunyan`, `zap`, `slog`, `structlog`,
+/// `logstash`, `ecs`, `gelf` or `otel`.
 pub fn Schema::parse(name : StringView) -> Schema raise Refused {
   match name {
     "serlog" => Serlog
@@ -70,6 +72,7 @@ pub extend Levels with Eq::{equal, not_equal}
 pub extend Levels with Debug::{to_repr}
 
 ///|
+/// `name` or `number`: how a JSON line writes the level.
 pub fn Levels::parse(name : StringView) -> Levels raise Refused {
   match name {
     "name" => Name
@@ -88,6 +91,7 @@ pub struct JsonLine {
 }
 
 ///|
+/// Lines in `schema`, with its own key names and level spelling.
 pub fn JsonLine::new(schema : Schema) -> JsonLine {
   { schema, keys: [], levels: None, nest: None, }
 }

@@ -9,6 +9,7 @@ pub(all) struct Env {
 }
 
 ///|
+/// The environment at `now`, in nanoseconds since the epoch.
 pub fn Env::at(now : Int64) -> Env {
   { now, }
 }
@@ -20,6 +21,7 @@ pub fn Env::at(now : Int64) -> Env {
 /// other slots still see what was written. The first step that changes
 /// anything returns a copy.
 pub(open) trait Processor {
+  /// The record, changed or as it was, or `None` to drop it.
   fn process(Self, Record, Env) -> Record?
 }
 
@@ -206,20 +208,22 @@ fn replace_all(
 ) -> String {
   let out = StringBuilder()
   let mut rest = text[:]
-  while true {
-    match pattern.execute(rest) {
-      Some(found) => {
-        out.write_string(found.before().to_owned())
-        out.write_string(replacement)
-        let after = found.after()
-        if after.length() >= rest.length() {
-          rest = ""
-          break
-        }
-        rest = after
-      }
-      None => break
+  while pattern.execute(rest) is Some(found) {
+    let before = found.before()
+    let after = found.after()
+    out.write_string(before.to_owned())
+    out.write_string(replacement)
+    if before.length() + after.length() < rest.length() {
+      rest = after
+      continue
     }
+    // An empty match: step over one character so the search moves on.
+    guard after.iter().head() is Some(c) else {
+      rest = ""
+      break
+    }
+    out.write_char(c)
+    rest = after.view(start_offset=c.utf16_len())
   }
   out.write_string(rest.to_owned())
   out.to_string()
@@ -231,6 +235,7 @@ fn replace_all(
 pub struct Sanitise {}
 
 ///|
+/// The step; it has nothing to configure.
 pub fn Sanitise::new() -> Sanitise {
   Sanitise::{ }
 }
@@ -282,7 +287,7 @@ fn clean(text : String) -> String {
       _ =>
         if c.to_int() < 32 || c.to_int() == 127 {
           out.write_string("\\u{")
-          write_digits(out, c.to_int(), 4)
+          out.write_string(c.to_int().to_string(radix=16).pad_start(4, '0'))
           out.write_char('}')
         } else {
           out.write_char(c)
@@ -299,11 +304,14 @@ pub struct Fields {
 }
 
 ///|
+/// No fields yet; add them with `set`.
 pub fn Fields::new() -> Fields {
   { pairs: [], }
 }
 
 ///|
+/// Adds `key` with `value` to every record, replacing a field of that name
+/// where it stands.
 pub fn Fields::set(self : Fields, key : String, value : Value) -> Fields {
   self.pairs.push((key, value))
   self
@@ -330,6 +338,7 @@ pub struct Keep {
 }
 
 ///|
+/// No conditions yet, so every record passes until one is added.
 pub fn Keep::new() -> Keep {
   { tags: [], equals: [], level: None, }
 }
@@ -395,23 +404,28 @@ pub struct Exclude {
 }
 
 ///|
+/// No conditions yet; a step with none drops every record, so add the ones
+/// that pick what to drop.
 pub fn Exclude::new() -> Exclude {
   { keep: Keep::new(), }
 }
 
 ///|
+/// Requires the record to carry `tag`.
 pub fn Exclude::tag(self : Exclude, tag : String) -> Exclude {
   ignore(self.keep.tag(tag))
   self
 }
 
 ///|
+/// Requires a field whose text is `value`.
 pub fn Exclude::field(self : Exclude, key : String, value : String) -> Exclude {
   ignore(self.keep.field(key, value))
   self
 }
 
 ///|
+/// Requires the level to be at least `min`.
 pub fn Exclude::level(self : Exclude, min : Level) -> Exclude {
   ignore(self.keep.level(min))
   self
@@ -481,6 +495,8 @@ pub struct Limit {
 }
 
 ///|
+/// `rate` records a second on average, and up to `burst` at once; a burst below
+/// one is raised to one.
 pub fn Limit::new(rate~ : Double, burst~ : Double) -> Limit {
   let burst = if burst < 1.0 { 1.0 } else { burst }
   { rate, burst, level: burst, at: 0L, started: false, }
@@ -518,6 +534,7 @@ pub struct Dedupe {
 }
 
 ///|
+/// Drops repeats kept within `within` nanoseconds of each other.
 pub fn Dedupe::new(within~ : Int64) -> Dedupe {
   { within, seen: Map([]), }
 }

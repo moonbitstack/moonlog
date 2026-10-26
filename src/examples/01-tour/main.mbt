@@ -11,7 +11,7 @@ fn main raise {
   let hub = @moonlog.Hub::new(
     identity=@moonlog.Identity::of(app="mirror", env="prod", instance="n1"),
     clock=fn() { 1_700_000_000_000_000_000L },
-    filter=Some(@moonlog.Filter::parse("info,mirror::sync=debug")),
+    filter=@moonlog.Filter::parse("info,mirror::sync=debug"),
   )
   let pattern = @moonlog.Pattern::parse(
     "{time:%H:%M:%S%.3f} {level:<5} {target}: {msg}{fields}",

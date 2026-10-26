@@ -57,16 +57,20 @@ pub fn Queue::new(size~ : Int32) -> Queue {
 }
 
 ///|
+/// The same queue, written `batch` records at a time.
 pub fn Queue::batch(self : Queue, batch : Int32) -> Queue {
   { size: self.size, batch, wait: self.wait, full: self.full, }
 }
 
 ///|
+/// The same queue, flushed at most `wait` nanoseconds after its first record.
 pub fn Queue::wait(self : Queue, wait : Int64) -> Queue {
   { size: self.size, batch: self.batch, wait, full: self.full, }
 }
 
 ///|
+/// The same queue, with `full` deciding what an arriving record meets when it
+/// is full.
 pub fn Queue::full(self : Queue, full : Full) -> Queue {
   { size: self.size, batch: self.batch, wait: self.wait, full, }
 }

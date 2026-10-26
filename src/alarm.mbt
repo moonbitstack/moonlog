@@ -67,6 +67,8 @@ pub(all) struct Incident {
 }
 
 ///|
+/// A fresh incident: `sink`, a sink of `kind`, failed with `error` at `now`, in
+/// `phase`.
 pub fn Incident::new(
   sink : String,
   kind : String,
@@ -137,8 +139,11 @@ pub fn Incident::describe(
 /// and stops at the first tier where one sink took the record — so an
 /// implementation only has to say which sinks to try.
 pub(open) trait Alarm {
+  /// The tiers of sink names to try for this incident, in order.
   fn route(Self, Incident) -> Array[Array[String]]
+  /// What happens when no tier took the incident.
   fn fallback(Self) -> Fallback
+  /// How long a sink may stay down before it is reported again, in nanoseconds.
   fn remind(Self) -> Int64
 }
 
@@ -182,6 +187,8 @@ pub fn Tiers::from(tiers : Array[Array[String]]) -> Tiers {
 }
 
 ///|
+/// The same tiers, with `fallback` deciding what happens when no tier took the
+/// incident.
 pub fn Tiers::with_fallback(self : Tiers, fallback : Fallback) -> Tiers {
   { tiers: self.tiers, fallback, remind: self.remind, }
 }

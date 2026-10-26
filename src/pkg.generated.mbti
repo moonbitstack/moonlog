@@ -24,8 +24,6 @@ pub let longest_probe : Int64
 
 pub let probe_default : Int64
 
-pub fn refuse(Int32, String, String) -> Refused
-
 pub let remind_default : Int64
 
 pub let reset : String
@@ -231,7 +229,7 @@ pub fn Hub::flush(Self) -> Unit
 pub fn Hub::identity(Self) -> Identity
 pub fn Hub::logger(Self, String) -> Logger
 pub fn Hub::logs(Self) -> Array[String]
-pub fn Hub::new(identity? : Identity, profile? : Profile, clock? : () -> Int64, filter? : Filter?) -> Self
+pub fn Hub::new(identity? : Identity, profile? : Profile, clock? : () -> Int64, filter? : Filter) -> Self
 pub fn Hub::now(Self) -> Int64
 pub fn Hub::process(Self, &Processor) -> Unit
 pub fn Hub::profile(Self) -> Profile

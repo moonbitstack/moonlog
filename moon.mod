@@ -1,6 +1,6 @@
 name = "moonbitstack/moonlog"
 
-version = "0.2.0"
+version = "0.1.1"
 
 source = "src"
 
@@ -10,6 +10,6 @@ repository = "https://github.com/moonbitstack/moonlog"
 
 license = "Apache-2.0"
 
-keywords = [ "log", "logging", "structured", "observability", "moonbit" ]
+keywords = [ "log", "logging", "moonbit" ]
 
-description = "moonlog — structured logging for MoonBit: six levels, typed fields, filters, processors, layouts in ten JSON schemas, sinks behind a health machine, and alarms that walk their tiers. No clock, no global logger."
+description = "Structured logging for MoonBit."

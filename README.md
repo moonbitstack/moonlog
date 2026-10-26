@@ -3,7 +3,7 @@
 # moonlog
 
 **Structured logging for MoonBit.**<br/>
-Six levels, typed fields, filters that read like `RUST_LOG`, chains of steps,
+Six levels, typed fields, filters by target and level, chains of steps,
 four layouts including ten JSON schemas, sinks behind a health machine, and
 alarms that walk their tiers.
 
@@ -115,7 +115,7 @@ so a step that changes a record cannot be seen by the slot next door.
 
 ### Filters
 
-Comma-separated directives, the way `RUST_LOG` made familiar:
+Comma-separated directives:
 
 | Directive | Meaning |
 |:--|:--|
