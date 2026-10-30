@@ -1,14 +1,14 @@
-name: Pages
+name: Docs
 
-# The site is hand-written HTML with no build step: what is in `site/` is what
+# The site is hand-written HTML with no build step: what is in `docs/` is what
 # gets served, so nothing here can drift from it.
 on:
   push:
     branches:
       - master
     paths:
-      - "site/**"
-      - ".github/workflows/pages.yml"
+      - "docs/**"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:
@@ -33,7 +33,7 @@ jobs:
 
       - uses: actions/configure-pages@v6
 
-      - uses: actions/upload-pages-artifact@v4
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: docs
 

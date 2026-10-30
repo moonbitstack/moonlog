@@ -155,10 +155,15 @@
 /* A scrollbar that belongs to the paper: a thin ink stroke, not the system's
    grey trough. Both dialects, because Firefox and Chromium disagree. */
 html {
-  scrollbar-width: thin;
-  scrollbar-color: var(--rule-strong) transparent;
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-strong) transparent;
+  }
 }
 
 ::-webkit-scrollbar {
@@ -260,6 +265,7 @@ pre,
 samp {
   font-family: var(--code);
   font-size: 0.84em;
+  font-variant-ligatures: none;
 }
 
 :not(pre) > code {
@@ -838,8 +844,13 @@ section.band .wrap {
   line-height: 1.78;
   font-size: 12.8px;
   tab-size: 2;
-  scrollbar-width: thin;
-  scrollbar-color: #5a5145 var(--code-bg);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .code pre {
+    scrollbar-width: thin;
+    scrollbar-color: #5a5145 var(--code-bg);
+  }
 }
 
 .code pre .c {
@@ -909,7 +920,12 @@ section.band .wrap {
   gap: 0;
   border-bottom: 1px solid var(--rule);
   overflow-x: auto;
-  scrollbar-width: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .tabs {
+    scrollbar-width: none;
+  }
 }
 
 .tabs::-webkit-scrollbar {
@@ -970,8 +986,13 @@ section.band .wrap {
   border: 1px solid var(--rule-strong);
   background: var(--panel);
   box-shadow: var(--print-sm);
-  scrollbar-width: thin;
-  scrollbar-color: var(--rule-strong) var(--panel-2);
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .table-wrap {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule-strong) var(--panel-2);
+  }
 }
 
 .table-wrap::-webkit-scrollbar {
@@ -1628,4 +1649,13 @@ footer a {
   .doc::after {
     display: none;
   }
+}
+
+/* The page scroll bar shows while the page moves or under the pointer and
+   hides a moment after; it keeps its place, so nothing shifts. */
+@supports selector(::-webkit-scrollbar) {
+  html:not(.scrolling)::-webkit-scrollbar-thumb { background: transparent; border-color: transparent; box-shadow: none; }
+}
+@supports not selector(::-webkit-scrollbar) {
+  html:not(.scrolling) { scrollbar-color: transparent transparent; }
 }
