@@ -15,8 +15,3 @@ fn sys_read(path : Bytes) -> Result[Bytes, String] {
 fn sys_write(path : Bytes, _text : Bytes) -> Result[Unit, String] {
   Err(no_file_system + ": cannot write " + @utf8.decode_lossy(path))
 }
-
-///|
-fn sys_mtime(_path : Bytes) -> Int64 {
-  -1L
-}

@@ -15,9 +15,3 @@ fn read_text(path : String) -> Result[String, String] {
 fn write_text(path : String, text : String) -> Result[Unit, String] {
   sys_write(@utf8.encode(path), @utf8.encode(text))
 }
-
-///|
-/// When a file last changed, in nanoseconds; -1 when it cannot be read.
-fn modified_at(path : String) -> Int64 {
-  sys_mtime(@utf8.encode(path))
-}

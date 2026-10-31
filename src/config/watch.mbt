@@ -25,13 +25,17 @@ pub fn Config::save(self : Config, path~ : String) -> Unit raise Refused {
 ///|
 /// A configuration file watched for changes.
 ///
-/// There is no background task here: `poll` asks whether the file on disk is
-/// newer than the document that was read, and answers the new one. A program
-/// that has a loop calls `poll` from it, which keeps the reload on the same
-/// thread as everything else and makes it something a test can step through.
+/// There is no background task here: `poll` reads the file and answers it when
+/// the bytes differ from the last document it saw, which keeps the reload on
+/// the same thread as everything else and makes it something a test can step
+/// through. Comparing content — rather than the modification time — means a
+/// rewrite is never missed because two edits landed inside one timestamp tick,
+/// which is the usual way a fast test (or a coarse filesystem clock) fools an
+/// mtime check. A configuration document is small, so reading it on each poll
+/// is cheap; parsing happens only when the content actually moved.
 pub struct Watcher {
   path : String
-  mut stamp : Int64
+  mut seen : String
   format : Format
   lookup : (String) -> String?
 }
@@ -47,11 +51,11 @@ pub fn Config::watch(
     Some(format) => format
     None => Format::of(path)
   }
-  let stamp = modified_at(path)
-  if stamp < 0L {
-    raise refuse(path, "nothing", "a file that exists")
+  let text = match read_text(path) {
+    Ok(text) => text
+    Err(why) => raise refuse(path, why, "a file that can be read")
   }
-  { path, stamp, format, lookup, }
+  { path, seen : text, format, lookup, }
 }
 
 ///|
@@ -63,20 +67,20 @@ pub fn Watcher::path(self : Watcher) -> String {
 ///|
 /// The newest configuration, when the file has changed since the last answer.
 ///
-/// `Ok(None)` means nothing moved. An `Err` means the file changed and the new
-/// one will not do — the caller keeps what it has and decides whether to say so.
+/// `Ok(None)` means the bytes are unchanged. An `Err` means the file changed
+/// and the new one will not do — the caller keeps what it has and decides
+/// whether to say so.
 pub fn Watcher::poll(self : Watcher) -> Result[Config?, String] {
-  let stamp = modified_at(self.path)
-  if stamp < 0L || stamp == self.stamp {
-    return Ok(None)
-  }
   let text = match read_text(self.path) {
     Ok(text) => text
     Err(why) => return Err(why)
   }
+  if text == self.seen {
+    return Ok(None)
+  }
   try {
     let config = Config::parse(text, format=self.format, lookup=self.lookup)
-    self.stamp = stamp
+    self.seen = text
     Ok(Some(config))
   } catch {
     error => Err(error.to_text())

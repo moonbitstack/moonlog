@@ -33,9 +33,3 @@ fn sys_write(path : Bytes, text : Bytes) -> Result[Unit, String] {
     Err("cannot write " + @utf8.decode_lossy(path))
   }
 }
-
-///|
-/// When the file last changed, in nanoseconds; -1 when it cannot be read.
-fn sys_mtime(path : Bytes) -> Int64 {
-  mtime_ffi(path)
-}
