@@ -87,12 +87,9 @@ jobs:
           - 3100:3100
         # The image runs as an unprivileged user over a /loki volume Docker
         # creates as root, so it cannot make its chunk directory without this.
-        options: >-
-          --user 0
-          --health-cmd "wget -q --spider http://localhost:3100/ready || exit 1"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 30
+        # It carries no shell or wget for a health check, so the job waits on
+        # /ready from the runner instead.
+        options: --user 0
       mailpit:
         image: axllent/mailpit:v1.27
         ports:
@@ -112,6 +109,15 @@ jobs:
         run: |
           moon version --all
           moon update
+
+      - name: Loki is ready
+        run: |
+          for i in $(seq 90); do
+            curl -fs http://127.0.0.1:3100/ready > /dev/null && exit 0
+            sleep 2
+          done
+          echo "::error::Loki never became ready"
+          exit 1
 
       - name: the sinks push and send
         env:
