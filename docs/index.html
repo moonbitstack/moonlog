@@ -403,6 +403,49 @@ log.<span class="fn">info</span>(<span class="s">"starting"</span>, fields=[(<sp
         </div>
       </section>
 
+      <section class="band" id="world">
+        <div class="wrap">
+          <div class="band-head">
+            <span class="idx">06</span>
+            <h2>Out to the world</h2>
+            <span class="note">six subpackages for the parts that touch a console, a disk or a socket</span>
+          </div>
+
+          <div class="cols">
+            <div class="cell">
+              <h3><span class="num">01</span>stdio</h3>
+              <p>One console on stdout, one on stderr, or one that picks per record. Colour is decided once, from <code>FORCE_COLOR</code>, <code>NO_COLOR</code> and the terminal.</p>
+              <span class="sig">Console::new · ::slot · ::target</span>
+            </div>
+            <div class="cell">
+              <h3><span class="num">02</span>file</h3>
+              <p>A file that opens on its first line, cuts itself by size or by age, packs a segment as it goes, and keeps what a policy allows.</p>
+              <span class="sig">File::new · Rotation · Limits</span>
+            </div>
+            <div class="cell">
+              <h3><span class="num">03</span>loki</h3>
+              <p>Entries queue in the log call and ship from the async loop you already run: one stream per level, fields as structured metadata.</p>
+              <span class="sig">Loki::new · ::push · ::body</span>
+            </div>
+            <div class="cell">
+              <h3><span class="num">04</span>mail</h3>
+              <p>A burst becomes one letter: a level floor, a window, a ceiling on records, a text part and a table in HTML.</p>
+              <span class="sig">Mail::new · ::send · ::draft</span>
+            </div>
+            <div class="cell">
+              <h3><span class="num">05</span>config</h3>
+              <p>YAML, JSON and TOML into one tree, every key checked against what its sink reads, a typo refused with its path.</p>
+              <span class="sig">Config::parse · ::load · ::dump</span>
+            </div>
+            <div class="cell">
+              <h3><span class="num">06</span>global</h3>
+              <p>The one process-wide hub, for applications only: <code>SERLOG_FILTER</code>, a zero-config console, and a flush before the process goes.</p>
+              <span class="sig">start · logger · flush · drain</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="band">
         <div class="wrap">
           <div class="next">

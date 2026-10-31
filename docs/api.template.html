@@ -56,30 +56,21 @@
     <div class="shell">
       <aside class="rail" aria-label="Sections">
         <div class="group">Groups</div>
-        <a href="#levels">Levels</a>
-        <a href="#values">Values and records</a>
-        <a href="#errors">Errors</a>
-        <a href="#filters">Filters</a>
-        <a href="#steps">Steps</a>
-        <a href="#layouts">Layouts</a>
-        <a href="#sinks">Sinks</a>
-        <a href="#slots">Slots and health</a>
-        <a href="#alarms">Alarms</a>
-        <a href="#hub">Hub and logger</a>
-        <a href="#profiles">Profiles</a>
+<!-- rail -->
       </aside>
 
       <main class="doc">
         <h1>API reference</h1>
         <p class="sub">
-          Everything the package exports, grouped by what it does rather than
-          alphabetically: a reader looking for a name usually knows which part
-          of the pipeline it belongs to. Times are nanoseconds since the epoch
+          Everything the library exports. The root package is grouped by what a
+          name does rather than alphabetically: a reader looking for a name
+          usually knows which part of the pipeline it belongs to. The six
+          subpackages follow, each one a section of its own. Times are nanoseconds since the epoch
           and durations the same; a text that is not a <code>String</code> is a
           <code>StringView</code>. Every value type derives <code>Eq</code> and
           <code>Debug</code>, so <code>equal</code>, <code>not_equal</code> and
           <code>to_repr</code> exist wherever a value does; they are not listed
-          one by one. This page is generated from the package's interface.
+          one by one. This page is generated from the interfaces.
         </p>
 
         <div class="filterbar">

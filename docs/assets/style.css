@@ -1297,6 +1297,13 @@ footer a {
   color: var(--ink);
 }
 
+/* The line under a section heading that says what the section is. */
+.doc p.note {
+  margin: -6px 0 18px;
+  font-size: 15px;
+  color: var(--ink-faint);
+}
+
 /* -------------------------------------------------------------- api page */
 
 .entry {

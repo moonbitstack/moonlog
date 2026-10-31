@@ -1,0 +1,36 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog/stdio"
+
+import {
+  "moonbitstack/moonlog",
+}
+
+// Values
+pub fn decide(Bool, Bool, Bool?) -> Bool
+
+pub fn force_color() -> Bool?
+
+pub fn no_color() -> Bool
+
+pub fn terminal(@moonlog.Stream) -> Bool
+
+// Errors
+
+// Types and methods
+pub struct Console {
+  stream : @moonlog.Stream
+  colour : Bool
+  from : @moonlog.Level
+}
+pub fn Console::coloured(Self) -> Bool
+pub fn Console::from(Self) -> @moonlog.Level
+pub fn Console::new(stream? : @moonlog.Stream, colour? : Bool, from? : @moonlog.Level) -> Self
+pub fn Console::slot(Self, name? : String) -> @moonlog.Slot
+pub fn Console::stream(Self) -> @moonlog.Stream
+pub fn Console::target(Self, @moonlog.Level) -> @moonlog.Stream
+pub fn Console::write(Self, @moonlog.Entry) -> Result[Unit, String]
+pub impl @moonlog.Sink for Console
+
+// Type aliases
+
+// Traits

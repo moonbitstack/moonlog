@@ -1,0 +1,10 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/env",
+}
+
+options(
+  "native-stub": [ "stub.c" ],
+  targets: { "put.other.mbt": [ "js", "wasm", "wasm-gc" ] },
+)

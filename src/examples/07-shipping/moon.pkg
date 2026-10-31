@@ -1,0 +1,22 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonlog/loki",
+  "moonbitstack/moonlog/mail",
+  "moonbitlang/core/encoding/utf8",
+}
+
+// The imports belong to the one file, which only the socket backends compile,
+// so they go unused where the example is empty.
+
+warnings = "-29"
+
+pkgtype(kind: "executable")
+
+// The sinks it shows need a socket to exist at all, so the example does too.
+
+options(
+  targets: {
+    "main.mbt": [ "native", "wasm" ],
+    "main.other.mbt": [ "js", "wasm-gc" ],
+  },
+)

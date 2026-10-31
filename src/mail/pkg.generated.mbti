@@ -1,0 +1,71 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog/mail"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitstack/moonlog",
+  "moonbitstack/moonmail",
+  "moonbitstack/moontls/tls",
+}
+
+// Values
+pub let at_most_default : Int32
+
+pub let window_default : Int64
+
+// Errors
+
+// Types and methods
+type Held
+
+pub struct Mail {
+  host : String
+  port : Int32
+  security : Security
+  tls : @tls.Client?
+  auth : (String, String)?
+  from : String
+  to : Array[String]
+  subject : String
+  level : @moonlog.Level
+  window : Int64
+  at_most : Int32
+  capacity : Int32
+  clock : () -> Int64
+  held : Array[Held]
+  mut sent : Int64
+  mut dropped : Int64
+  mut failures : Int64
+}
+pub fn Mail::at_most(Self) -> Int32
+pub fn Mail::draft(Self) -> @moonmail.Message raise @moonmail.Refused
+pub fn Mail::dropped(Self) -> Int64
+pub fn Mail::due(Self, Int64) -> Bool
+pub fn Mail::failures(Self) -> Int64
+pub fn Mail::html_for(Self, Array[Held]) -> String
+pub fn Mail::letter(Self, Array[Held]) -> @moonmail.Message raise @moonmail.Refused
+pub fn Mail::level(Self) -> @moonlog.Level
+pub fn Mail::new(host~ : String, from~ : String, to~ : Array[String], port? : Int32, security? : Security, tls? : @tls.Client, auth? : (String, String), subject? : String, level? : @moonlog.Level, window? : Int64, at_most? : Int32, capacity? : Int32, clock? : () -> Int64) -> Self
+pub fn Mail::pending(Self) -> Int32
+pub async fn Mail::send(Self) -> Result[Int32, String]
+pub fn Mail::sent(Self) -> Int64
+pub fn Mail::slot(Self, name? : String) -> @moonlog.Slot
+pub fn Mail::subject_for(Self, Array[Held]) -> String
+pub fn Mail::text_for(Self, Array[Held]) -> String
+pub fn Mail::window(Self) -> Int64
+pub fn Mail::write(Self, @moonlog.Entry) -> Result[Unit, String]
+pub impl @moonlog.Sink for Mail
+
+pub(all) enum Security {
+  Clear
+  StartTls
+  Tls
+} derive(Eq, @debug.Debug)
+pub fn Security::equal(Self, Self) -> Bool
+pub fn Security::not_equal(Self, Self) -> Bool
+pub fn Security::port(Self) -> Int32
+pub fn Security::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

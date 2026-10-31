@@ -5,9 +5,10 @@
 **Structured logging for MoonBit.**<br/>
 Six levels, typed fields, filters by target and level, chains of steps,
 four layouts including ten JSON schemas, sinks behind a health machine, and
-alarms that walk their tiers.
+alarms that walk their tiers — with subpackages for the console, the file, Loki,
+mail, a deployment document and the process-wide hub.
 
-<sub><a href="#quick-start">Quick start</a> · <a href="#the-surface">The surface</a> · <a href="#layouts">Layouts</a> · <a href="#sinks-slots-and-what-happens-when-one-fails">Slots</a> · <a href="https://moonbitstack.github.io/moonlog/">Documentation</a></sub>
+<sub><a href="#quick-start">Quick start</a> · <a href="#the-surface">The surface</a> · <a href="#layouts">Layouts</a> · <a href="#sinks-slots-and-what-happens-when-one-fails">Slots</a> · <a href="#out-to-the-world">Subpackages</a> · <a href="https://moonbitstack.github.io/moonlog/">Documentation</a></sub>
 
 </div>
 
@@ -45,7 +46,9 @@ for the minute.
 **It does not keep a global logger.** A hub is a value and a logger is a value.
 A library takes a `Logger` as a parameter and writes through it; a library that
 was handed none writes nothing. Nothing in this package can be configured
-behind your back.
+behind your back. An application that wants one place to configure has
+`moonlog/global`, which is a subpackage precisely so that this one can stay a
+value.
 
 **It does not format messages.** A message is a `String`, built at the call
 site with interpolation. A format language needs an escape for itself, a rule
@@ -283,6 +286,90 @@ already expects:
 | `slog` | stdout | info | — |
 | `pino` | stdout | info | — |
 
+## Out to the world
+
+The root package formats records and hands them to a sink; nothing in it
+touches a console, a disk or a socket. Those parts are subpackages, each one
+usable on its own:
+
+| Package | What it adds | Targets |
+|:--|:--|:--|
+| `moonlog/stdio` | a console on stdout, stderr, or both — `Console` | native, wasm, wasm-gc, js |
+| `moonlog/file` | a file that rotates itself — `File`, `Rotation`, `Limits` | native for the writing, all to compile |
+| `moonlog/loki` | entries pushed to Loki — `Loki` | native, wasm |
+| `moonlog/mail` | records mailed as one letter — `Mail` | native, wasm |
+| `moonlog/config` | a deployment document read, checked and written back — `Config` | native for the file, all to parse |
+| `moonlog/global` | the process-wide hub, for applications — `start`, `logger` | native |
+
+```moonbit
+let console = @stdio.Console::new()
+let _ = hub.add(console.slot())
+
+let file = @file.File::new(
+  path="/var/log/gateway/app.log",
+  mkdir=true,
+  rotation=@file.Rotation::new(size=64_000_000L),
+  limits=@file.Limits::new(keep=7),
+  compress=true,
+)
+let _ = hub.add(file.slot())
+```
+
+A console decides once whether its lines carry escapes: `FORCE_COLOR`, then
+`NO_COLOR`, then whether the stream is a terminal, and `Console::slot` hands
+that answer to the slot. A file opens on its first line, so a path it cannot
+open is a failing slot the health machine handles rather than a failure at
+startup; segments are named after the instant they were cut, in UTC, and are
+pruned by count, age or total size.
+
+The two network sinks queue instead of writing: a log call never waits for a
+socket. `Loki::push` and `Mail::send` do the talking, from an async loop the
+application already runs, and a batch that has to be tried again goes back at
+the front of the queue in order.
+
+```moonbit
+let loki = @loki.Loki::new(url="http://loki:3100", labels=[("job", "gateway")])
+let _ = hub.add(loki.slot())
+// in a loop you already have:
+match loki.push() {
+  report if report.pushed() => ()
+  _ => ()  // the report says why, and what is still queued
+}
+```
+
+A deployment file is where all of that is usually configured. `Config` reads
+YAML, JSON or TOML into one tree, checks every key against what its kind of
+sink reads, refuses a typo with the path it sits at, and can write itself back
+out in another format.
+
+```yaml
+profile: serlog
+filter: info, gateway=debug
+slots:
+  console:
+    kind: stdio
+    stream: auto
+  app:
+    kind: file
+    path: /var/log/gateway/app.log
+    max_size: 64mb
+    every: 24h
+    keep: 7
+```
+
+```moonbit
+@global.start(config=@config.Config::load(path="/etc/gateway.yaml"))
+@global.logger("gateway").info("serving", fields=[("port", @moonlog.Value::of_int(8080))])
+@global.flush()
+```
+
+`moonlog/global` is the one place a process-wide hub lives, and only an
+application imports it: a library still takes a `Logger` and writes through it.
+With no document it sets up a console at the profile's own stream and level,
+reading `SERLOG_COMPAT`, `SERLOG_FILTER` and `SERLOG_FORMAT` — so a program
+that configures nothing still logs, and a program that configures everything
+says so in one file.
+
 ## Examples
 
 | Example | What it shows |
@@ -290,6 +377,11 @@ already expects:
 | `01-tour` | a hub, two slots, a filter, a logger with a bound field, and one record in six shapes |
 | `02-formats` | every preset, every schema, renamed keys, a coloured line |
 | `03-service` | a service: redaction, sampling, a queue, a sink that is down, an alarm that falls back |
+| `04-console` | three consoles, the colour decision, and a coloured line |
+| `05-file` | a file cutting itself into compressed segments, and the segments it kept |
+| `06-config` | a document read, checked, dumped as another format, and read back |
+| `07-shipping` | the push body and the letter the two network sinks would send |
+| `08-world` | a process hub started from a document, a logger, one flush |
 
 ```bash
 moon run src/examples/01-tour

@@ -1,0 +1,24 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonfetch",
+  "moonbitstack/moonbase/base64",
+  "moonbitlang/core/env",
+  "moonbitlang/core/encoding/utf8",
+}
+
+// The imports below belong to the files that need a socket, so they go unused
+// on the backends where the package is empty.
+
+warnings = "-29"
+
+// A push needs a socket, and moonfetch has them on the native and wasm
+// backends only, so the package is empty elsewhere.
+
+options(
+  targets: {
+    "limits.mbt": [ "native", "wasm" ],
+    "report.mbt": [ "native", "wasm" ],
+    "loki.mbt": [ "native", "wasm" ],
+    "loki_wbtest.mbt": [ "native", "wasm" ],
+  },
+)

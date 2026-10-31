@@ -1,0 +1,61 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog/file"
+
+import {
+  "moonbitlang/core/buffer",
+  "moonbitstack/moonlog",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct File {
+  path : String
+  append : Bool
+  perms : Int32
+  mkdir : Bool
+  rotation : Rotation
+  limits : Limits
+  compress : Bool
+  buffer : Int32
+  clock : () -> Int64
+  mut handle : Int32?
+  mut written : Int64
+  mut opened : Int64
+  held : @buffer.Buffer
+}
+pub fn File::close(Self) -> Unit
+pub fn File::flush(Self) -> Result[Unit, String]
+pub fn File::new(path~ : String, append? : Bool, perms? : Int32, mkdir? : Bool, rotation? : Rotation, limits? : Limits, compress? : Bool, buffer? : Int32, clock? : () -> Int64) -> Self
+pub fn File::path(Self) -> String
+pub fn File::reopen(Self) -> Result[Unit, String]
+pub fn File::rotate(Self) -> Result[Unit, String]
+pub fn File::segments(Self) -> Array[String]
+pub fn File::slot(Self, name? : String) -> @moonlog.Slot
+pub fn File::write(Self, @moonlog.Entry) -> Result[Unit, String]
+pub fn File::written(Self) -> Int64
+pub impl @moonlog.Sink for File
+
+pub(all) struct Limits {
+  keep : Int32
+  max_age : Int64
+  max_total : Int64
+}
+pub fn Limits::keep(Self, Int32) -> Self
+pub fn Limits::max_age(Self, Int64) -> Self
+pub fn Limits::max_total(Self, Int64) -> Self
+pub fn Limits::new(keep? : Int32, max_age? : Int64, max_total? : Int64) -> Self
+
+pub(all) struct Rotation {
+  size : Int64
+  every : Int64
+}
+pub fn Rotation::every(Self, Int64) -> Self
+pub fn Rotation::new(size? : Int64, every? : Int64) -> Self
+pub fn Rotation::size(Self, Int64) -> Self
+
+// Type aliases
+
+// Traits

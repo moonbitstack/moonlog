@@ -45,13 +45,20 @@ jobs:
       - name: moon test (all backends)
         run: moon test --target all
 
-      # PowerShell has no /dev/null, and these three lines are worth reading
-      # when one of them breaks: leave the output in the log.
+      # An example that only formats records runs on every backend; one that
+      # writes a file or starts a process hub needs the native backend, which
+      # is the one a deployment uses. Output stays in the log: it is the only
+      # thing worth reading when one of them breaks.
       - name: the examples run
         run: |
           moon run src/examples/01-tour
           moon run src/examples/02-formats
           moon run src/examples/03-service
+          moon run --target native src/examples/04-console
+          moon run --target native src/examples/05-file
+          moon run --target native src/examples/06-config
+          moon run --target native src/examples/07-shipping
+          moon run --target native src/examples/08-world
 
       - name: lint (fmt is clean)
         run: |
@@ -65,3 +72,89 @@ jobs:
         run: |
           python3 scripts/gen_api.py || python scripts/gen_api.py
           git -c core.autocrlf=false diff --ignore-cr-at-eol --exit-code docs/api.html
+
+  # The two network sinks are tested against real servers, not against a stub:
+  # Loki for the push, Mailpit for the letter. The tests read their address from
+  # the environment, so a run without the services skips them.
+  network-sinks:
+    permissions:
+      contents: read
+    runs-on: ubuntu-26.04
+    services:
+      loki:
+        image: grafana/loki:3.6.0
+        ports:
+          - 3100:3100
+        options: >-
+          --health-cmd "wget -q --spider http://localhost:3100/ready || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 30
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports:
+          - 1025:1025
+          - 8025:8025
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: install
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: post install
+        run: |
+          moon version --all
+          moon update
+
+      - name: the sinks push and send
+        env:
+          MOONLOG_LOKI_URL: http://127.0.0.1:3100
+          MOONLOG_SMTP_HOST: 127.0.0.1
+        run: |
+          moon test --target native -p moonbitstack/moonlog/loki
+          moon test --target native -p moonbitstack/moonlog/mail
+
+      # What the tests pushed and sent has to be there when read back from the
+      # server's own API, which is the only proof the bytes went out as they
+      # should: the line in Loki, the subject, the count and both bodies in the
+      # letter.
+      - name: the server has what was sent
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.parse, urllib.request
+
+          def get(url):
+              return urllib.request.urlopen(url, timeout=10).read().decode()
+
+          query = urllib.parse.quote('{job="moonlog-test"}')
+          lines = []
+          for _ in range(30):
+              answer = json.loads(get(
+                  "http://127.0.0.1:3100/loki/api/v1/query_range"
+                  f"?query={query}&limit=50"
+              ))
+              lines = [
+                  value[1]
+                  for stream in answer["data"]["result"]
+                  for value in stream["values"]
+              ]
+              if lines:
+                  break
+              time.sleep(1)
+          assert any("moonlog pushes this line" in line for line in lines), lines
+
+          listing = json.loads(get("http://127.0.0.1:8025/api/v1/messages"))
+          assert listing["messages_count"] >= 1, listing
+          first = listing["messages"][0]
+          assert "2 records from gateway" in first["Subject"], first
+          detail = json.loads(
+              get(f"http://127.0.0.1:8025/api/v1/message/{first['ID']}")
+          )
+          body = (detail.get("Text") or "") + (detail.get("HTML") or "")
+          assert "the disk is full" in body and "still full" in body, body
+          print("loki and mailpit both have what the sinks sent")
+          PY

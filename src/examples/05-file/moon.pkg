@@ -1,0 +1,7 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonlog/file",
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")

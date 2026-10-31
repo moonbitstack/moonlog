@@ -1,0 +1,73 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog/loki"
+
+import {
+  "moonbitlang/core/debug",
+  "moonbitstack/moonlog",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub(all) struct Limits {
+  capacity : Int32
+  batch : Int32
+  timeout : Int32
+}
+pub fn Limits::batch(Self, Int32) -> Self
+pub fn Limits::capacity(Self, Int32) -> Self
+pub fn Limits::new(capacity? : Int32, batch? : Int32, timeout? : Int32) -> Self
+pub fn Limits::timeout(Self, Int32) -> Self
+
+pub struct Loki {
+  url : String
+  labels : Array[(String, String)]
+  tenant : String?
+  auth : (String, String)?
+  limits : Limits
+  clock : () -> Int64
+  held : Array[Pending]
+  mut sent : Int64
+  mut rejected : Int64
+  mut dropped : Int64
+  mut failures : Int64
+}
+pub fn Loki::body(Self) -> String
+pub fn Loki::dropped(Self) -> Int64
+pub fn Loki::encode(Self, Array[Pending]) -> String
+pub fn Loki::failures(Self) -> Int64
+pub fn Loki::new(url~ : String, labels? : Array[(String, String)], tenant? : String, auth? : (String, String), limits? : Limits, clock? : () -> Int64) -> Self
+pub fn Loki::pending(Self) -> Int32
+pub async fn Loki::push(Self) -> Report
+pub fn Loki::rejected(Self) -> Int64
+pub fn Loki::sent(Self) -> Int64
+pub fn Loki::slot(Self, name? : String) -> @moonlog.Slot
+pub fn Loki::url(Self) -> String
+pub fn Loki::write(Self, @moonlog.Entry) -> Result[Unit, String]
+pub impl @moonlog.Sink for Loki
+
+type Pending
+
+pub(all) struct Report {
+  sent : Int32
+  rejected : Int32
+  retry : String?
+}
+pub fn Report::idle() -> Self
+pub fn Report::pushed(Self) -> Bool
+
+pub(all) enum Verdict {
+  Accepted
+  Refused
+  Retry
+} derive(Eq, @debug.Debug)
+pub fn Verdict::equal(Self, Self) -> Bool
+pub fn Verdict::not_equal(Self, Self) -> Bool
+pub fn Verdict::of(Int32) -> Self
+pub fn Verdict::to_repr(Self) -> @debug.Repr
+
+// Type aliases
+
+// Traits

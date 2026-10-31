@@ -1,0 +1,100 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonlog/config"
+
+import {
+  "moonbitstack/moonlog",
+}
+
+// Values
+pub fn nanos_as_span(Int64) -> String
+
+pub fn parse_size(String, StringView) -> Int64 raise Refused
+
+pub fn parse_span(String, StringView) -> Int64 raise Refused
+
+pub let remind_default : Int64
+
+// Errors
+pub(all) suberror Refused {
+  Refused(at~ : String, got~ : String, want~ : String)
+}
+pub fn Refused::to_text(Self) -> String
+
+// Types and methods
+pub(all) struct Alarm {
+  tiers : Array[Array[String]]
+  remind : Int64
+  fallback : @moonlog.Fallback
+}
+pub fn Alarm::tiers(Self) -> @moonlog.Tiers
+
+pub(all) struct Config {
+  mut profile : @moonlog.Profile
+  mut filter : String
+  mut slots : Array[Slot]
+  mut alarm : Alarm?
+}
+pub fn Config::alarm(Self) -> Alarm?
+pub fn Config::dump(Self, format? : Format) -> String
+pub fn Config::filter(Self) -> String
+pub fn Config::load(path~ : String) -> Self raise Refused
+pub fn Config::new() -> Self
+pub fn Config::parse(StringView, format? : Format, lookup? : (String) -> String?) -> Self raise Refused
+pub fn Config::profile(Self) -> @moonlog.Profile
+pub fn Config::save(Self, path~ : String) -> Unit raise Refused
+pub fn Config::schema() -> Json
+pub fn Config::slot(Self, String) -> Slot?
+pub fn Config::slots(Self) -> Array[Slot]
+pub fn Config::to_json(Self) -> Json
+pub fn Config::watch(path~ : String, format? : Format, lookup? : (String) -> String?) -> Watcher raise Refused
+
+pub(all) enum Format {
+  Yaml
+  Json
+  Toml
+}
+pub fn Format::name(Self) -> StringView
+pub fn Format::of(StringView) -> Self raise Refused
+pub fn Format::parse(StringView) -> Self raise Refused
+pub fn Format::read(Self, StringView, String) -> Json raise Refused
+pub fn Format::write(Self, Json) -> String
+
+pub(all) struct Queue {
+  size : Int32
+  batch : Int32
+  wait : Int64
+  full : @moonlog.Full
+}
+
+pub(all) struct Slot {
+  name : String
+  kind : String
+  filter : String?
+  layout : String?
+  colour : Bool?
+  retries : Int32?
+  probe : Int64?
+  queue : Queue?
+  settings : Map[String, Json]
+}
+pub fn Slot::count(Self, String) -> Int32?
+pub fn Slot::flag(Self, String) -> Bool?
+pub fn Slot::keys(Self) -> Array[String]
+pub fn Slot::pairs(Self, String) -> Array[(String, String)]?
+pub fn Slot::size(Self, String) -> Int64?
+pub fn Slot::span(Self, String) -> Int64?
+pub fn Slot::text(Self, String) -> String?
+pub fn Slot::texts(Self, String) -> Array[String]?
+
+pub struct Watcher {
+  path : String
+  mut stamp : Int64
+  format : Format
+  lookup : (String) -> String?
+}
+pub fn Watcher::path(Self) -> String
+pub fn Watcher::poll(Self) -> Result[Config?, String]
+
+// Type aliases
+
+// Traits

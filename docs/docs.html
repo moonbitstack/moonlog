@@ -68,6 +68,13 @@
         <a href="#slots">Slots</a>
         <a href="#failure">When a sink fails</a>
         <a href="#profiles">Profiles</a>
+        <div class="group">The world</div>
+        <a href="#stdio">stdio</a>
+        <a href="#file">file</a>
+        <a href="#loki">loki</a>
+        <a href="#mail">mail</a>
+        <a href="#config">config</a>
+        <a href="#global">global</a>
         <div class="group">Elsewhere</div>
         <a href="api.html">API reference</a>
         <a href="inside.html">Inside</a>
@@ -77,9 +84,11 @@
         <h1>The guide</h1>
         <p class="sub">
           From one line of output to a hub that keeps writing while one of its
-          sinks is down, in nine short sections. Every snippet on this page was
-          compiled; the examples in the repository are the same code with more
-          words around it.
+          sinks is down, and then out to the world: a console, a file that
+          rotates, a push to Loki, a letter, a deployment file and the one
+          process-wide hub. Every snippet on this page was compiled; the
+          examples in the repository are the same code with more words around
+          it.
         </p>
 
         <h2 id="line">One line</h2>
@@ -367,6 +376,191 @@ hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn
             </tbody>
           </table>
         </div>
+
+        <h2 id="stdio">stdio</h2>
+        <p>
+          The six subpackages are where a logger meets the world. The first is
+          the console: three streams, and an <code>auto</code> that sends a
+          record to standard error when its level reaches <code>error</code>
+          and to standard output otherwise, so a pipeline that redirects the
+          log still sees failures on the terminal.
+        </p>
+        <div class="code">
+          <header><span class="tag">console.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> console = <span class="fn">@stdio.Console::new</span>(stream=<span class="fn">@moonlog.Stream::Auto</span>)
+console.<span class="fn">target</span>(<span class="fn">@moonlog.info</span>)   <span class="c">// Stdout</span>
+console.<span class="fn">target</span>(<span class="fn">@moonlog.error</span>)  <span class="c">// Stderr</span>
+console.<span class="fn">coloured</span>()              <span class="c">// false: a pipe is not a terminal</span>
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(console.<span class="fn">slot</span>()) <span class="c">// a slot, already coloured to match</span></pre>
+        </div>
+        <p>
+          Whether a line carries escapes is settled once, when the console is
+          built, from <code>FORCE_COLOR</code>, then <code>NO_COLOR</code>, then
+          whether the stream is a terminal. <code>Console::slot</code> hands
+          the answer to the slot, which is the only thing that decides how a
+          line is written. On a backend with no file descriptor the same calls
+          print through the host.
+        </p>
+
+        <h2 id="file">file</h2>
+        <p>
+          A file sink is written for the day it fills a disk. It opens on the
+          first write, so a path it cannot open is a failing slot the health
+          machine handles, not a panic at startup; it cuts itself into segments
+          by size or by age; and it keeps the segments a policy allows.
+        </p>
+        <div class="code">
+          <header><span class="tag">app.log</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> file = <span class="fn">@file.File::new</span>(
+  path=<span class="s">"/var/log/gateway/app.log"</span>,
+  mkdir=<span class="kw">true</span>,
+  rotation=<span class="fn">@file.Rotation::new</span>(size=<span class="n">64_000_000L</span>, every=<span class="n">86_400_000_000_000L</span>),
+  limits=<span class="fn">@file.Limits::new</span>(keep=<span class="n">7</span>, max_age=<span class="n">2_592_000_000_000_000L</span>),
+  compress=<span class="kw">true</span>,
+)
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(file.<span class="fn">slot</span>())
+<span class="c">// app.log.20231114T221320.gz</span>
+file.<span class="fn">segments</span>()</pre>
+        </div>
+        <p>
+          A segment is named after the instant it was cut, in UTC, so a
+          directory listing reads as a history: <code>keep</code> drops the
+          oldest beyond a count, <code>max_age</code> the ones older than a
+          span, <code>max_total</code> the oldest until the rest fit. The
+          sequence continues past the highest number in the directory, so a
+          pruned name is never handed out twice. <code>compress</code> packs a
+          segment as it is cut.
+        </p>
+        <p>
+          <code>reopen</code> is for the case where something outside the
+          program moved the file: the old descriptor would keep writing to a
+          file nobody reads. <code>flush</code> and <code>close</code> are for
+          a sink given a <code>buffer</code>, and <code>shutdown</code> in
+          <code>global</code> calls them for you.
+        </p>
+
+        <h2 id="loki">loki</h2>
+        <p>
+          A network sink cannot write inside a log call without making every
+          caller wait for a socket. So <code>write</code> only queues, and
+          <code>push</code> does the sending — from the async loop the
+          application already runs.
+        </p>
+        <div class="code">
+          <header><span class="tag">push.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> loki = <span class="fn">@loki.Loki::new</span>(
+  url=<span class="s">"http://loki:3100"</span>, labels=[(<span class="s">"job"</span>, <span class="s">"gateway"</span>)],
+)
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(loki.<span class="fn">slot</span>())
+<span class="c">// once per turn of a loop you already have</span>
+<span class="kw">match</span> loki.<span class="fn">push</span>() {
+  report <span class="kw">if</span> report.<span class="fn">pushed</span>() => ()          <span class="c">// landed</span>
+  report => <span class="c">// wait `report.retry` said what, then come back</span>
+}</pre>
+        </div>
+        <p>
+          Each level becomes a stream of its own, so a query selects on
+          <code>level</code> without parsing a line, and the record's fields
+          travel as structured metadata. A status is read three ways:
+          <code>2xx</code> landed, <code>400</code> and the like will never
+          land and those entries are dropped and counted, and <code>408</code>,
+          <code>429</code> and <code>5xx</code> are worth another try — the
+          batch goes back at the front of the queue, in order.
+        </p>
+
+        <h2 id="mail">mail</h2>
+        <p>
+          The mail sink is the one a pager is on the other end of. It mails
+          what a level floor lets through, gathers a burst into one letter, and
+          caps how many records a letter carries.
+        </p>
+        <div class="code">
+          <header><span class="tag">oncall.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> mail = <span class="fn">@mail.Mail::new</span>(
+  host=<span class="s">"smtp.example.com"</span>,
+  from=<span class="s">"gateway@example.com"</span>,
+  to=[<span class="s">"oncall@example.com"</span>],
+  level=<span class="fn">@moonlog.error</span>,
+  window=<span class="n">60_000_000_000L</span>, at_most=<span class="n">100</span>,
+)
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(mail.<span class="fn">slot</span>())
+<span class="kw">if</span> mail.<span class="fn">due</span>(now) {
+  <span class="kw">match</span> mail.<span class="fn">send</span>() { ok => (), error => <span class="c">// stays queued</span> () }
+}</pre>
+        </div>
+        <p>
+          The subject is a template — <code>{level}</code>,
+          <code>{records}</code>, <code>{count}</code>, <code>{target}</code> —
+          and the body is a text part and a table in HTML, with the fields that
+          came with each record. <code>draft</code> builds the letter without
+          sending it, which is what a check before a deployment prints.
+          STARTTLS and TLS need a <code>tls</code> client: which roots to trust
+          is the application's decision, not this sink's.
+        </p>
+
+        <h2 id="config">config</h2>
+        <p>
+          A deployment file is read, checked, and turned into sinks. Reading
+          builds nothing: <code>Config</code> says what was asked for, and
+          <code>global</code> — or your own code — acts on it.
+        </p>
+        <div class="code">
+          <header><span class="tag">gateway.yaml</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="c"># filter: info, gateway=debug</span>
+<span class="c"># slots:</span>
+<span class="c">#   console: {kind: stdio, stream: auto}</span>
+<span class="c">#   app: {kind: file, path: /var/log/gateway/app.log, max_size: 64mb}</span>
+
+<span class="kw">let</span> config = <span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>)
+config.<span class="fn">slots</span>().<span class="fn">length</span>()                     <span class="c">// 2</span>
+config.<span class="fn">dump</span>(format=<span class="fn">@config.Format::Toml</span>)     <span class="c">// the same, in TOML</span></pre>
+        </div>
+        <p>
+          YAML, JSON and TOML read into the same tree, so the same document
+          means the same configuration in all three. Every key is checked
+          against what its kind of sink reads: a typo is refused with the path
+          it sits at — <code>slots.app.max_sise</code> — before the process
+          starts serving. <code>10mb</code>, <code>1GiB</code>,
+          <code>200ms</code>, <code>1m30s</code> and <code>24h</code> are
+          understood where a file expects a size or a span.
+        </p>
+        <p>
+          <code>Config::watch</code> hands back a watcher whose
+          <code>poll</code> answers the new document once the file on disk is
+          newer than the one that was read: <code>Ok(None)</code> for nothing
+          moved, and an error when the new file will not do, so a program keeps
+          the configuration it has rather than the one that does not parse.
+        </p>
+
+        <h2 id="global">global</h2>
+        <p>
+          The root package has no process-wide hub, on purpose: a library takes
+          a <code>Logger</code> and writes through it. An application, though,
+          has exactly one place to configure, and that place is
+          <code>moonlog/global</code>.
+        </p>
+        <div class="code">
+          <header><span class="tag">main.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="fn">@global.start</span>(config=<span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>))
+<span class="fn">@global.logger</span>(<span class="s">"gateway"</span>).<span class="fn">info</span>(<span class="s">"serving"</span>)
+<span class="kw">for</span> status <span class="kw">in</span> <span class="fn">@global.status</span>() {
+  <span class="c">// name, kind, health, skipped, dropped, error</span>
+}
+<span class="fn">@global.flush</span>()     <span class="c">// before the process goes away</span>
+<span class="fn">@global.shutdown</span>()</pre>
+        </div>
+        <p>
+          With no document, <code>start</code> sets up a console at the
+          profile's own stream and level — and so does the first call to
+          <code>logger</code>, which is why a program that says nothing still
+          logs. <code>SERLOG_COMPAT</code> picks the profile,
+          <code>SERLOG_FILTER</code> the filter and <code>SERLOG_FORMAT</code>
+          the layout: <code>logfmt</code>, <code>pretty</code>,
+          <code>json</code>, <code>json:pino</code>,
+          <code>pattern:…</code>, or a pattern written out.
+          <code>drain</code> is the loop for the network sinks: it pushes every
+          Loki sink and sends every mail that is due.
+        </p>
 
         <h2>Where to go next</h2>
         <p>

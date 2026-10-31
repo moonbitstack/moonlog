@@ -67,19 +67,27 @@
         <a href="#alarms">Alarms</a>
         <a href="#hub">Hub and logger</a>
         <a href="#profiles">Profiles</a>
+        <div class="group">Subpackages</div>
+        <a href="#stdio">moonlog/stdio</a>
+        <a href="#file">moonlog/file</a>
+        <a href="#loki">moonlog/loki</a>
+        <a href="#mail">moonlog/mail</a>
+        <a href="#config">moonlog/config</a>
+        <a href="#global">moonlog/global</a>
       </aside>
 
       <main class="doc">
         <h1>API reference</h1>
         <p class="sub">
-          Everything the package exports, grouped by what it does rather than
-          alphabetically: a reader looking for a name usually knows which part
-          of the pipeline it belongs to. Times are nanoseconds since the epoch
+          Everything the library exports. The root package is grouped by what a
+          name does rather than alphabetically: a reader looking for a name
+          usually knows which part of the pipeline it belongs to. The six
+          subpackages follow, each one a section of its own. Times are nanoseconds since the epoch
           and durations the same; a text that is not a <code>String</code> is a
           <code>StringView</code>. Every value type derives <code>Eq</code> and
           <code>Debug</code>, so <code>equal</code>, <code>not_equal</code> and
           <code>to_repr</code> exist wherever a value does; they are not listed
-          one by one. This page is generated from the package's interface.
+          one by one. This page is generated from the interfaces.
         </p>
 
         <div class="filterbar">
@@ -1183,6 +1191,490 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Stream::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
           <p class="what"><code>stdout</code>, <code>stderr</code> or <code>auto</code>.</p>
         </div>
+
+        <h2 id="stdio" data-api-group>moonlog/stdio</h2>
+        <p class="note">A console on standard output, standard error, or both.</p>
+
+        <div class="entry" data-api-entry="Console Console a sink that writes each entry as one line on the console    auto  sends a record to standard error when its level reaches  from  and to standard output otherwise  which is what a pipeline wants  the log stream can be redirected while failures still reach the terminal   whether the line carries colour is settled once  when the console is built  and the slot has to be told the same answer   console  slot  does both  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Console</span><span class="rest">stream : @moonlog.Stream, colour : Bool, from : @moonlog.Level</span></div>
+          <p class="what">A sink that writes each entry as one line on the console.  <code>Auto</code> sends a record to standard error when its level reaches <code>from</code> and to standard output otherwise, which is what a pipeline wants: the log stream can be redirected while failures still reach the terminal.  Whether the line carries colour is settled once, when the console is built, and the slot has to be told the same answer: <code>Console::slot</code> does both. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::coloured coloured whether this console s lines carry escapes ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::coloured</span><span class="rest">(Self) -&gt; Bool</span></div>
+          <p class="what">Whether this console's lines carry escapes.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::from from the level at which  auto  turns to standard error ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::from</span><span class="rest">(Self) -&gt; @moonlog.Level</span></div>
+          <p class="what">The level at which <code>Auto</code> turns to standard error.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::new new a console on  stream     colour  decides whether the slot writes escapes  leave it out and the console asks the environment and the terminal  see  decide     from  is the level at which  auto  starts using standard error  every level from  error  up unless it is given ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::new</span><span class="rest">(stream? : @moonlog.Stream, colour? : Bool, from? : @moonlog.Level) -&gt; Self</span></div>
+          <p class="what">A console on <code>stream</code>.  <code>colour</code> decides whether the slot writes escapes: leave it out and the console asks the environment and the terminal (see <code>decide</code>). <code>from</code> is the level at which <code>Auto</code> starts using standard error; every level from <code>error</code> up unless it is given.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::slot slot a slot around this console  already coloured the way the console decided ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::slot</span><span class="rest">(Self, name? : String) -&gt; @moonlog.Slot</span></div>
+          <p class="what">A slot around this console, already coloured the way the console decided.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::stream stream the stream this console was built for ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::stream</span><span class="rest">(Self) -&gt; @moonlog.Stream</span></div>
+          <p class="what">The stream this console was built for.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::target target the stream a record at  level  is written to ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::target</span><span class="rest">(Self, @moonlog.Level) -&gt; @moonlog.Stream</span></div>
+          <p class="what">The stream a record at <code>level</code> is written to.</p>
+        </div>
+        <div class="entry" data-api-entry="Console::write write ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Console::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+        </div>
+        <div class="entry" data-api-entry="decide decide whether colour is wanted  given what the terminal said and what the environment said    force_color  is the last word   someone who set it meant it   then  no_color   then the terminal ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">decide</span><span class="rest">(Bool, Bool, Bool?) -&gt; Bool</span></div>
+          <p class="what">Whether colour is wanted, given what the terminal said and what the environment said.  <code>FORCE_COLOR</code> is the last word — someone who set it meant it — then <code>NO_COLOR</code>, then the terminal.</p>
+        </div>
+        <div class="entry" data-api-entry="force_color force_color  force_color   when it says something   0  and  false  turn colour off  any other value turns it on  and an unset variable says nothing ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">force_color</span><span class="rest">() -&gt; Bool?</span></div>
+          <p class="what"><code>FORCE_COLOR</code>, when it says something: <code>0</code> and <code>false</code> turn colour off, any other value turns it on, and an unset variable says nothing.</p>
+        </div>
+        <div class="entry" data-api-entry="no_color no_color whether  no_color  is set to anything but the empty string  which is what the convention at no color org asks for ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">no_color</span><span class="rest">() -&gt; Bool</span></div>
+          <p class="what">Whether <code>NO_COLOR</code> is set to anything but the empty string, which is what the convention at no-color.org asks for.</p>
+        </div>
+        <div class="entry" data-api-entry="terminal terminal whether a slot writing to  stream  should carry escapes    auto  asks for both streams  so a run whose log is piped into a file gets plain lines even though its failures still reach the terminal ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">terminal</span><span class="rest">(@moonlog.Stream) -&gt; Bool</span></div>
+          <p class="what">Whether a slot writing to <code>stream</code> should carry escapes.  <code>Auto</code> asks for both streams, so a run whose log is piped into a file gets plain lines even though its failures still reach the terminal.</p>
+        </div>
+
+        <h2 id="file" data-api-group>moonlog/file</h2>
+        <p class="note">A file that rotates itself.</p>
+
+        <div class="entry" data-api-entry="File File a sink that appends each entry to a file  rotating it when it grows too large or too old   the file is opened on the first write  so a sink that cannot open its file is a failing slot rather than a failure at startup  the health machine puts the sink down  the alarm says why  and a probe retries   reopen  picks up a file that an outside tool moved away   segments are named   file   20261101t090000    or   gz  too when  compress  is on  and are pruned by  limits  after every cut  names are utc  so a directory listing reads as a history  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">File</span><span class="rest">path : String, append : Bool, perms : Int32, mkdir : Bool, rotation : Rotation, limits : Limits, compress : Bool, buffer : Int32, clock : () -&gt; Int64, mut handle : Int32?, mut written : Int64, mut opened : Int64, held : @buffer.Buffer</span></div>
+          <p class="what">A sink that appends each entry to a file, rotating it when it grows too large or too old.  The file is opened on the first write, so a sink that cannot open its file is a failing slot rather than a failure at startup: the health machine puts the sink down, the alarm says why, and a probe retries. <code>reopen</code> picks up a file that an outside tool moved away.  Segments are named <code>&lt;file&gt;.&lt;20261101T090000&gt;</code>, or <code>.gz</code> too when <code>compress</code> is on, and are pruned by <code>Limits</code> after every cut. Names are UTC, so a directory listing reads as a history. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="File::close close writes what the buffer holds  then gives the file back to the system  a sink that is buffered should be closed  or its last lines are lost ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::close</span><span class="rest">(Self) -&gt; Unit</span></div>
+          <p class="what">Writes what the buffer holds, then gives the file back to the system. A sink that is buffered should be closed, or its last lines are lost.</p>
+        </div>
+        <div class="entry" data-api-entry="File::flush flush writes what the buffer holds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::flush</span><span class="rest">(Self) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Writes what the buffer holds.</p>
+        </div>
+        <div class="entry" data-api-entry="File::new new a file sink on  path     append  keeps what is there  the default  and  false  starts the file empty   perms  is the mode a new file gets  in the usual octal form   mkdir  creates the parent directories   buffer  gathers that many bytes before writing  which trades a lost tail on a crash for fewer calls  0 writes every line as it arrives    clock  answers nanoseconds since the epoch  a file sink needs one for segment names and time based rotation  so it reads the system clock unless it is given another ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::new</span><span class="rest">(path~ : String, append? : Bool, perms? : Int32, mkdir? : Bool, rotation? : Rotation, limits? : Limits, compress? : Bool, buffer? : Int32, clock? : () -&gt; Int64) -&gt; Self</span></div>
+          <p class="what">A file sink on <code>path</code>.  <code>append</code> keeps what is there (the default) and <code>false</code> starts the file empty. <code>perms</code> is the mode a new file gets, in the usual octal form. <code>mkdir</code> creates the parent directories. <code>buffer</code> gathers that many bytes before writing, which trades a lost tail on a crash for fewer calls; 0 writes every line as it arrives.  <code>clock</code> answers nanoseconds since the epoch. A file sink needs one for segment names and time-based rotation, so it reads the system clock unless it is given another.</p>
+        </div>
+        <div class="entry" data-api-entry="File::path path the file this sink writes ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::path</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The file this sink writes.</p>
+        </div>
+        <div class="entry" data-api-entry="File::reopen reopen closes the file and opens it again  which is what an outside rotate wants  the old descriptor keeps writing to a file that was moved  this one writes to the path again ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::reopen</span><span class="rest">(Self) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Closes the file and opens it again, which is what an outside rotate wants: the old descriptor keeps writing to a file that was moved, this one writes to the path again.</p>
+        </div>
+        <div class="entry" data-api-entry="File::rotate rotate cuts the file now  whether or not a limit was reached  the current file becomes a segment and a fresh one is started ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::rotate</span><span class="rest">(Self) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Cuts the file now, whether or not a limit was reached: the current file becomes a segment and a fresh one is started.</p>
+        </div>
+        <div class="entry" data-api-entry="File::segments segments the segments of this file  oldest first   a segment is a file this sink cut and left behind  what a status page lists  and what  keep    max_age  and  max_total  count ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::segments</span><span class="rest">(Self) -&gt; Array[String]</span></div>
+          <p class="what">The segments of this file, oldest first.  A segment is a file this sink cut and left behind: what a status page lists, and what <code>keep</code>, <code>max_age</code> and <code>max_total</code> count.</p>
+        </div>
+        <div class="entry" data-api-entry="File::slot slot a slot around this sink ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::slot</span><span class="rest">(Self, name? : String) -&gt; @moonlog.Slot</span></div>
+          <p class="what">A slot around this sink.</p>
+        </div>
+        <div class="entry" data-api-entry="File::write write ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+        </div>
+        <div class="entry" data-api-entry="File::written written how many bytes the current file holds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">File::written</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many bytes the current file holds.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits Limits what becomes of the files rotation leaves behind   all three are ceilings  zero keeps everything   max_age  and  max_total  are only applied to segments  never to the file being written ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Limits</span><span class="rest">keep : Int32, max_age : Int64, max_total : Int64</span></div>
+          <p class="what">What becomes of the files rotation leaves behind.  All three are ceilings: zero keeps everything. <code>max_age</code> and <code>max_total</code> are only applied to segments, never to the file being written.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::keep keep the same limits  keeping at most  keep  segments ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::keep</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
+          <p class="what">The same limits, keeping at most <code>keep</code> segments.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::max_age max_age the same limits  dropping segments older than  max_age  nanoseconds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::max_age</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same limits, dropping segments older than <code>max_age</code> nanoseconds.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::max_total max_total the same limits  dropping the oldest segments until the rest fit in  max_total  bytes ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::max_total</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same limits, dropping the oldest segments until the rest fit in <code>max_total</code> bytes.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::new new keep every segment  for ever ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::new</span><span class="rest">(keep? : Int32, max_age? : Int64, max_total? : Int64) -&gt; Self</span></div>
+          <p class="what">Keep every segment, for ever.</p>
+        </div>
+        <div class="entry" data-api-entry="Rotation Rotation when a file is rotated    size  is a limit in bytes and  every  a span in nanoseconds  zero turns either one off  a file that has been written to rotates before the line that would cross the limit  so a line never straddles two files ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Rotation</span><span class="rest">size : Int64, every : Int64</span></div>
+          <p class="what">When a file is rotated.  <code>size</code> is a limit in bytes and <code>every</code> a span in nanoseconds; zero turns either one off. A file that has been written to rotates before the line that would cross the limit, so a line never straddles two files.</p>
+        </div>
+        <div class="entry" data-api-entry="Rotation::every every the same rotation  with a time limit ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Rotation::every</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same rotation, with a time limit.</p>
+        </div>
+        <div class="entry" data-api-entry="Rotation::new new no rotation  the file grows until something else deals with it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Rotation::new</span><span class="rest">(size? : Int64, every? : Int64) -&gt; Self</span></div>
+          <p class="what">No rotation: the file grows until something else deals with it.</p>
+        </div>
+        <div class="entry" data-api-entry="Rotation::size size the same rotation  with a size limit ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Rotation::size</span><span class="rest">(Self, Int64) -&gt; Self</span></div>
+          <p class="what">The same rotation, with a size limit.</p>
+        </div>
+
+        <h2 id="loki" data-api-group>moonlog/loki</h2>
+        <p class="note">Entries pushed to Loki.</p>
+
+        <div class="entry" data-api-entry="Limits Limits how much a loki sink holds while it waits for its next push  and how much goes in one request    capacity  is a ceiling on entries waiting to be sent  when the queue is full the oldest goes  because a shipper that stops the program it logs for is worse than one that loses the start of an outage   timeout  is in seconds and applies to one request ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Limits</span><span class="rest">capacity : Int32, batch : Int32, timeout : Int32</span></div>
+          <p class="what">How much a Loki sink holds while it waits for its next push, and how much goes in one request.  <code>capacity</code> is a ceiling on entries waiting to be sent; when the queue is full the oldest goes, because a shipper that stops the program it logs for is worse than one that loses the start of an outage. <code>timeout</code> is in seconds and applies to one request.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::batch batch the same limits  pushng a different number of entries at a time ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::batch</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
+          <p class="what">The same limits, pushng a different number of entries at a time.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::capacity capacity the same limits  holding a different number of entries ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::capacity</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
+          <p class="what">The same limits, holding a different number of entries.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::new new eight thousand entries  which is a few seconds of a busy service  and one request s worth of them ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::new</span><span class="rest">(capacity? : Int32, batch? : Int32, timeout? : Int32) -&gt; Self</span></div>
+          <p class="what">Eight thousand entries, which is a few seconds of a busy service, and one request's worth of them.</p>
+        </div>
+        <div class="entry" data-api-entry="Limits::timeout timeout the same limits  waiting a different number of seconds for an answer ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::timeout</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
+          <p class="what">The same limits, waiting a different number of seconds for an answer.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki Loki a sink that ships entries to loki    write  only queues  a log call must not wait for a network   push  does the sending  from an async context the application already runs  so the retry that a busy loki asks for lives in the caller s loop   and the slot s own queue  retries and health machine still govern how the sink is treated when a push keeps failing   each level gets a stream of its own  so a query can select on it without parsing a line  and the entry s fields travel as structured metadata  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Loki</span><span class="rest">url : String, labels : Array[(String, String)], tenant : String?, auth : (String, String)?, limits : Limits, clock : () -&gt; Int64, held : Array[Pending], mut sent : Int64, mut rejected : Int64, mut dropped : Int64, mut failures : Int64</span></div>
+          <p class="what">A sink that ships entries to Loki.  <code>write</code> only queues: a log call must not wait for a network. <code>push</code> does the sending, from an async context the application already runs, so the retry that a busy Loki asks for lives in the caller's loop — and the slot's own queue, retries and health machine still govern how the sink is treated when a push keeps failing.  Each level gets a stream of its own, so a query can select on it without parsing a line, and the entry's fields travel as structured metadata. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::body body the push body the pending entries would make  without taking them   what a check before a deployment prints  and what a test reads instead of standing up a server ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::body</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The push body the pending entries would make, without taking them.  What a check before a deployment prints, and what a test reads instead of standing up a server.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::dropped dropped how many were dropped because the queue was full ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::dropped</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many were dropped because the queue was full.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::encode encode the push body  one stream per level  each with its own labels ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::encode</span><span class="rest">(Self, Array[Pending]) -&gt; String</span></div>
+          <p class="what">The push body: one stream per level, each with its own labels.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::failures failures how many pushes came back with something to retry ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::failures</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many pushes came back with something to retry.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::new new a sink pushing to  url   which is the loki base address    loki api v1 push  is appended unless the address already ends with it    labels  are the stream s own  such as the job and the host  the level is added per stream   auth  is a user and password for basic authentication  and  tenant  is sent as  x scope orgid  for a multi tenant loki ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::new</span><span class="rest">(url~ : String, labels? : Array[(String, String)], tenant? : String, auth? : (String, String), limits? : Limits, clock? : () -&gt; Int64) -&gt; Self</span></div>
+          <p class="what">A sink pushing to <code>url</code>, which is the Loki base address: <code>/loki/api/v1/push</code> is appended unless the address already ends with it.  <code>labels</code> are the stream's own, such as the job and the host; the level is added per stream. <code>auth</code> is a user and password for basic authentication, and <code>tenant</code> is sent as <code>X-Scope-OrgID</code> for a multi-tenant Loki.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::pending pending how many entries are waiting ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::pending</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">How many entries are waiting.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::rejected rejected how many loki refused for good ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::rejected</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many Loki refused for good.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::sent sent how many entries loki has taken ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::sent</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many entries Loki has taken.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::slot slot a slot around this sink ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::slot</span><span class="rest">(Self, name? : String) -&gt; @moonlog.Slot</span></div>
+          <p class="what">A slot around this sink.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::url url the address entries are pushed to ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::url</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The address entries are pushed to.</p>
+        </div>
+        <div class="entry" data-api-entry="Loki::write write ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+        </div>
+        <div class="entry" data-api-entry="Report Report what one push did   a batch either lands  is refused for good  or is worth trying again  loki answers 400 for an entry it will never take   a timestamp outside the tenant s window is the usual one   and 429 or 5xx when it is merely busy  sending the first kind again would spin for ever  so those entries are dropped and counted  and only the second kind comes back to the queue ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Report</span><span class="rest">sent : Int32, rejected : Int32, retry : String?</span></div>
+          <p class="what">What one push did.  A batch either lands, is refused for good, or is worth trying again: Loki answers 400 for an entry it will never take — a timestamp outside the tenant's window is the usual one — and 429 or 5xx when it is merely busy. Sending the first kind again would spin for ever, so those entries are dropped and counted, and only the second kind comes back to the queue.</p>
+        </div>
+        <div class="entry" data-api-entry="Report::idle idle nothing was pending  so nothing was tried ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Report::idle</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">Nothing was pending, so nothing was tried.</p>
+        </div>
+        <div class="entry" data-api-entry="Report::pushed pushed whether the push asked to be repeated ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Report::pushed</span><span class="rest">(Self) -&gt; Bool</span></div>
+          <p class="what">Whether the push asked to be repeated.</p>
+        </div>
+        <div class="entry" data-api-entry="Verdict Verdict what to do with a batch that came back as  status  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Verdict</span><span class="rest">Accepted · Refused · Retry</span></div>
+          <p class="what">What to do with a batch that came back as <code>status</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Verdict::of of how a status is read  2xx landed  400 and 404 will never land  everything else   408  429  5xx   is worth another try ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Verdict::of</span><span class="rest">(Int32) -&gt; Self</span></div>
+          <p class="what">How a status is read: 2xx landed, 400 and 404 will never land, everything else — 408, 429, 5xx — is worth another try.</p>
+        </div>
+
+        <h2 id="mail" data-api-group>moonlog/mail</h2>
+        <p class="note">Records mailed as one letter.</p>
+
+        <div class="entry" data-api-entry="Mail Mail a sink that mails the records a deployment cannot afford to lose   it is the mail handler a service already knows  a level of its own  a window in which a burst becomes one mail  and a ceiling on how many records one mail carries   write  only queues   a log call never waits for smtp   and  send  does the talking  from the application s own async loop  when the server is down the mail stays queued  and the slot s retries  health machine and alarm take over from there  implements  sink  ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Mail</span><span class="rest">host : String, port : Int32, security : Security, tls : @tls.Client?, auth : (String, String)?, from : String, to : Array[String], subject : String, level : @moonlog.Level, window : Int64, at_most : Int32, capacity : Int32, clock : () -&gt; Int64, held : Array[Held], mut sent : Int64, mut dropped : Int64, mut failures : Int64</span></div>
+          <p class="what">A sink that mails the records a deployment cannot afford to lose.  It is the mail handler a service already knows: a level of its own, a window in which a burst becomes one mail, and a ceiling on how many records one mail carries. <code>write</code> only queues — a log call never waits for SMTP — and <code>send</code> does the talking, from the application's own async loop. When the server is down the mail stays queued, and the slot's retries, health machine and alarm take over from there. Implements <code>Sink</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::at_most at_most how many records one mail carries ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::at_most</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">How many records one mail carries.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::draft draft the mail the pending records would become  without sending it   what a check before a deployment prints  and what a test reads instead of standing up a server ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::draft</span><span class="rest">(Self) -&gt; @moonmail.Message raise @moonmail.Refused</span></div>
+          <p class="what">The mail the pending records would become, without sending it.  What a check before a deployment prints, and what a test reads instead of standing up a server.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::dropped dropped how many records were dropped because the queue was full ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::dropped</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many records were dropped because the queue was full.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::due due whether a batch is ready at  now   the oldest record has waited out the window  or there are enough of them to fill a mail ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::due</span><span class="rest">(Self, Int64) -&gt; Bool</span></div>
+          <p class="what">Whether a batch is ready at <code>now</code>: the oldest record has waited out the window, or there are enough of them to fill a mail.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::failures failures how many sends failed and left their records queued ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::failures</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many sends failed and left their records queued.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::html_for html_for the html body  the same lines in a table  with the fields that came with them  so an inbox shows the same thing a console does ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::html_for</span><span class="rest">(Self, Array[Held]) -&gt; String</span></div>
+          <p class="what">The HTML body: the same lines in a table, with the fields that came with them, so an inbox shows the same thing a console does.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::letter letter the mail a batch becomes  ready to encode ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::letter</span><span class="rest">(Self, Array[Held]) -&gt; @moonmail.Message raise @moonmail.Refused</span></div>
+          <p class="what">The mail a batch becomes, ready to encode.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::level level the floor this sink mails at ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::level</span><span class="rest">(Self) -&gt; @moonlog.Level</span></div>
+          <p class="what">The floor this sink mails at.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::new new a sink mailing through  host     from  is the envelope sender and  to  the recipients  both as addresses   subject  is a template    count    a number     records    the number and the noun that goes with it     level   and   target   are filled in from the batch   level  is the floor this sink is interested in   it mails what a slot would already have let through  but a sink built beside a console slot gets the whole stream  and this is what keeps a queued warning out of the on call inbox    security  decides how the connection is protected   starttls  and  tls  need  tls   a client with its own trust store  because which roots to trust is the application s decision and not this sink s ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::new</span><span class="rest">(host~ : String, from~ : String, to~ : Array[String], port? : Int32, security? : Security, tls? : @tls.Client, auth? : (String, String), subject? : String, level? : @moonlog.Level, window? : Int64, at_most? : Int32, capacity? : Int32, clock? : () -&gt; Int64) -&gt; Self</span></div>
+          <p class="what">A sink mailing through <code>host</code>.  <code>from</code> is the envelope sender and <code>to</code> the recipients, both as addresses. <code>subject</code> is a template: <code>{count}</code> (a number), <code>{records}</code> (the number and the noun that goes with it), <code>{level}</code> and <code>{target}</code> are filled in from the batch. <code>level</code> is the floor this sink is interested in — it mails what a slot would already have let through, but a sink built beside a console slot gets the whole stream, and this is what keeps a queued warning out of the on-call inbox.  <code>security</code> decides how the connection is protected; <code>StartTls</code> and <code>Tls</code> need <code>tls</code>, a client with its own trust store, because which roots to trust is the application's decision and not this sink's.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::pending pending how many records are waiting ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::pending</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">How many records are waiting.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::sent sent how many records have been mailed ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::sent</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How many records have been mailed.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::slot slot a slot around this sink ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::slot</span><span class="rest">(Self, name? : String) -&gt; @moonlog.Slot</span></div>
+          <p class="what">A slot around this sink.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::subject_for subject_for the subject a batch is mailed under ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::subject_for</span><span class="rest">(Self, Array[Held]) -&gt; String</span></div>
+          <p class="what">The subject a batch is mailed under.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::text_for text_for the plain text body  one line per record  as the slots wrote them ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::text_for</span><span class="rest">(Self, Array[Held]) -&gt; String</span></div>
+          <p class="what">The plain text body: one line per record, as the slots wrote them.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::window window how long a batch is gathered ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::window</span><span class="rest">(Self) -&gt; Int64</span></div>
+          <p class="what">How long a batch is gathered.</p>
+        </div>
+        <div class="entry" data-api-entry="Mail::write write ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+        </div>
+        <div class="entry" data-api-entry="Security Security how the connection to the mail server is protected ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Security</span><span class="rest">Clear · StartTls · Tls</span></div>
+          <p class="what">How the connection to the mail server is protected.</p>
+        </div>
+        <div class="entry" data-api-entry="Security::port port the port a security setting usually means  25 for the clear  587 for submission with starttls  465 for implicit tls  the submission ports are what a relay in front of a service listens on when it is not the local one ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Security::port</span><span class="rest">(Self) -&gt; Int32</span></div>
+          <p class="what">The port a security setting usually means: 25 for the clear, 587 for submission with STARTTLS, 465 for implicit TLS. The submission ports are what a relay in front of a service listens on when it is not the local one.</p>
+        </div>
+        <div class="entry" data-api-entry="at_most_default at_most_default how many records one mail carries  a burst larger than this is sent in several mails rather than one too big to read ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">at_most_default</span><span class="rest">Int32</span></div>
+          <p class="what">How many records one mail carries; a burst larger than this is sent in several mails rather than one too big to read.</p>
+        </div>
+        <div class="entry" data-api-entry="window_default window_default how long a batch of records is gathered before it is mailed ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">window_default</span><span class="rest">Int64</span></div>
+          <p class="what">How long a batch of records is gathered before it is mailed.</p>
+        </div>
+
+        <h2 id="config" data-api-group>moonlog/config</h2>
+        <p class="note">A document read, checked and written back.</p>
+
+        <div class="entry" data-api-entry="Alarm Alarm an alarm as a document writes it  which sinks to try  in which tiers  how often to remind  and what to do when every tier is spent ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Alarm</span><span class="rest">tiers : Array[Array[String]], remind : Int64, fallback : @moonlog.Fallback</span></div>
+          <p class="what">An alarm as a document writes it: which sinks to try, in which tiers, how often to remind, and what to do when every tier is spent.</p>
+        </div>
+        <div class="entry" data-api-entry="Alarm::tiers tiers the alarm as the hub wants it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Alarm::tiers</span><span class="rest">(Self) -&gt; @moonlog.Tiers</span></div>
+          <p class="what">The alarm as the hub wants it.</p>
+        </div>
+        <div class="entry" data-api-entry="Config Config a logging configuration  read from a document and checked against the settings the shipped sinks read   reading a document does not build anything  it says what the deployment asked for  and the application   or  moonlog global    turns that into sinks  that split is what lets the same document be checked  dumped and reloaded without a file system in the way ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Config</span><span class="rest">mut profile : @moonlog.Profile, mut filter : String, mut slots : Array[Slot], mut alarm : Alarm?</span></div>
+          <p class="what">A logging configuration, read from a document and checked against the settings the shipped sinks read.  Reading a document does not build anything: it says what the deployment asked for, and the application — or <code>moonlog/global</code> — turns that into sinks. That split is what lets the same document be checked, dumped and reloaded without a file system in the way.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::alarm alarm the alarm the document describes  if any ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::alarm</span><span class="rest">(Self) -&gt; Alarm?</span></div>
+          <p class="what">The alarm the document describes, if any.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::dump dump writes the configuration as a document  which is what  dump  is for  a deployment can be read back and checked without the file that produced it ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::dump</span><span class="rest">(Self, format? : Format) -&gt; String</span></div>
+          <p class="what">Writes the configuration as a document, which is what <code>dump</code> is for: a deployment can be read back and checked without the file that produced it.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::filter filter the filter the document asks for  as written ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::filter</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The filter the document asks for, as written.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::load load reads a configuration file  taking the format from its extension ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::load</span><span class="rest">(path~ : String) -&gt; Self raise Refused</span></div>
+          <p class="what">Reads a configuration file, taking the format from its extension.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::new new what a configuration with no document says  the default profile  the default filter  and nothing to write to ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::new</span><span class="rest">() -&gt; Self</span></div>
+          <p class="what">What a configuration with no document says: the default profile, the default filter, and nothing to write to.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::parse parse reads a document      name   in any string is replaced by the environment variable of that name  a name the environment does not have is refused  because a configuration that silently logs to an empty url is worse than one that will not start ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::parse</span><span class="rest">(StringView, format? : Format, lookup? : (String) -&gt; String?) -&gt; Self raise Refused</span></div>
+          <p class="what">Reads a document.  <code>${NAME}</code> in any string is replaced by the environment variable of that name; a name the environment does not have is refused, because a configuration that silently logs to an empty URL is worse than one that will not start.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::profile profile the profile the document asks for ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::profile</span><span class="rest">(Self) -&gt; @moonlog.Profile</span></div>
+          <p class="what">The profile the document asks for.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::save save writes the configuration to  path  in the format its extension asks for ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::save</span><span class="rest">(Self, path~ : String) -&gt; Unit raise Refused</span></div>
+          <p class="what">Writes the configuration to <code>path</code> in the format its extension asks for.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::schema schema the json schema a document of this shape answers to   it is built from the same tables the parser checks against  so the schema an editor or a pipeline validates with cannot drift from the parser  a key the schema allows is a key the parser reads  and a value of the wrong shape is refused in both places  publish it next to a deployment for the editor to pick up   moonlog config  never needs it to read a file ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::schema</span><span class="rest">() -&gt; Json</span></div>
+          <p class="what">The JSON Schema a document of this shape answers to.  It is built from the same tables the parser checks against, so the schema an editor or a pipeline validates with cannot drift from the parser: a key the schema allows is a key the parser reads, and a value of the wrong shape is refused in both places. Publish it next to a deployment for the editor to pick up; <code>moonlog/config</code> never needs it to read a file.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::slot slot the slot called  name   if there is one ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::slot</span><span class="rest">(Self, String) -&gt; Slot?</span></div>
+          <p class="what">The slot called <code>name</code>, if there is one.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::slots slots the slots the document describes  in document order ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::slots</span><span class="rest">(Self) -&gt; Array[Slot]</span></div>
+          <p class="what">The slots the document describes, in document order.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::to_json to_json the document this configuration is written as ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::to_json</span><span class="rest">(Self) -&gt; Json</span></div>
+          <p class="what">The document this configuration is written as.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::watch watch starts watching  path  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::watch</span><span class="rest">(path~ : String, format? : Format, lookup? : (String) -&gt; String?) -&gt; Watcher raise Refused</span></div>
+          <p class="what">Starts watching <code>path</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="Format Format the three shapes a configuration file is written in  all three read into the same tree  so the same document means the same configuration whichever one it is written in ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Format</span><span class="rest">Yaml · Json · Toml</span></div>
+          <p class="what">The three shapes a configuration file is written in. All three read into the same tree, so the same document means the same configuration whichever one it is written in.</p>
+        </div>
+        <div class="entry" data-api-entry="Format::name name the name this format is written as ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::name</span><span class="rest">(Self) -&gt; StringView</span></div>
+          <p class="what">The name this format is written as.</p>
+        </div>
+        <div class="entry" data-api-entry="Format::of of the format a file name asks for  by its extension ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::of</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">The format a file name asks for, by its extension.</p>
+        </div>
+        <div class="entry" data-api-entry="Format::parse parse a format by name ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::parse</span><span class="rest">(StringView) -&gt; Self raise Refused</span></div>
+          <p class="what">A format by name.</p>
+        </div>
+        <div class="entry" data-api-entry="Format::read read reads a document into the tree every reader in this family produces ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::read</span><span class="rest">(Self, StringView, String) -&gt; Json raise Refused</span></div>
+          <p class="what">Reads a document into the tree every reader in this family produces.</p>
+        </div>
+        <div class="entry" data-api-entry="Format::write write writes the tree back out in this format ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::write</span><span class="rest">(Self, Json) -&gt; String</span></div>
+          <p class="what">Writes the tree back out in this format.</p>
+        </div>
+        <div class="entry" data-api-entry="Queue Queue a queue as a document writes it ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Queue</span><span class="rest">size : Int32, batch : Int32, wait : Int64, full : @moonlog.Full</span></div>
+          <p class="what">A queue as a document writes it.</p>
+        </div>
+        <div class="entry" data-api-entry="Refused Refused what went wrong in a configuration file  said in the terms a reader can act on  where in the document  what was there  and what belongs there    at  is a key path such as  slots file max_size   or empty for the document as a whole ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Refused</span><span class="rest">Refused(at~ : String, got~ : String, want~ : String)</span></div>
+          <p class="what">What went wrong in a configuration file, said in the terms a reader can act on: where in the document, what was there, and what belongs there.  <code>at</code> is a key path such as <code>slots.file.max_size</code>, or empty for the document as a whole.</p>
+        </div>
+        <div class="entry" data-api-entry="Refused::to_text to_text a refusal with the key path it happened at ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Refused::to_text</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">A refusal with the key path it happened at.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot Slot one sink as the document describes it    settings  holds the keys that belong to the kind   text    flag    size  and the rest read them back with the shape the parser already checked ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span><span class="rest">name : String, kind : String, filter : String?, layout : String?, colour : Bool?, retries : Int32?, probe : Int64?, queue : Queue?, settings : Map[String, Json]</span></div>
+          <p class="what">One sink as the document describes it.  <code>settings</code> holds the keys that belong to the kind; <code>text</code>, <code>flag</code>, <code>size</code> and the rest read them back with the shape the parser already checked.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::count count a setting as a whole number ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::count</span><span class="rest">(Self, String) -&gt; Int32?</span></div>
+          <p class="what">A setting as a whole number.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::flag flag a setting as a yes or no ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::flag</span><span class="rest">(Self, String) -&gt; Bool?</span></div>
+          <p class="what">A setting as a yes or no.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::keys keys the keys this slot s kind reads  which is what a deployment file is checked against ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::keys</span><span class="rest">(Self) -&gt; Array[String]</span></div>
+          <p class="what">The keys this slot's kind reads, which is what a deployment file is checked against.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::pairs pairs a setting as a table of strings  in document order where the format keeps one ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::pairs</span><span class="rest">(Self, String) -&gt; Array[(String, String)]?</span></div>
+          <p class="what">A setting as a table of strings, in document order where the format keeps one.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::size size a setting as a byte count   10mb  and a bare number alike ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::size</span><span class="rest">(Self, String) -&gt; Int64?</span></div>
+          <p class="what">A setting as a byte count, <code>10mb</code> and a bare number alike.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::span span a setting as a number of nanoseconds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::span</span><span class="rest">(Self, String) -&gt; Int64?</span></div>
+          <p class="what">A setting as a number of nanoseconds.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::text text a setting as a string  the parser has already checked that anything that is there has the shape the key asks for  so a  none  here only means the document left the key out ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::text</span><span class="rest">(Self, String) -&gt; String?</span></div>
+          <p class="what">A setting as a string. The parser has already checked that anything that is there has the shape the key asks for, so a <code>None</code> here only means the document left the key out.</p>
+        </div>
+        <div class="entry" data-api-entry="Slot::texts texts a setting as a list of strings ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::texts</span><span class="rest">(Self, String) -&gt; Array[String]?</span></div>
+          <p class="what">A setting as a list of strings.</p>
+        </div>
+        <div class="entry" data-api-entry="Watcher Watcher a configuration file watched for changes   there is no background task here   poll  asks whether the file on disk is newer than the document that was read  and answers the new one  a program that has a loop calls  poll  from it  which keeps the reload on the same thread as everything else and makes it something a test can step through ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Watcher</span><span class="rest">path : String, mut stamp : Int64, format : Format, lookup : (String) -&gt; String?</span></div>
+          <p class="what">A configuration file watched for changes.  There is no background task here: <code>poll</code> asks whether the file on disk is newer than the document that was read, and answers the new one. A program that has a loop calls <code>poll</code> from it, which keeps the reload on the same thread as everything else and makes it something a test can step through.</p>
+        </div>
+        <div class="entry" data-api-entry="Watcher::path path the file being watched ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Watcher::path</span><span class="rest">(Self) -&gt; String</span></div>
+          <p class="what">The file being watched.</p>
+        </div>
+        <div class="entry" data-api-entry="Watcher::poll poll the newest configuration  when the file has changed since the last answer    ok none   means nothing moved  an  err  means the file changed and the new one will not do   the caller keeps what it has and decides whether to say so ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Watcher::poll</span><span class="rest">(Self) -&gt; Result[Config?, String]</span></div>
+          <p class="what">The newest configuration, when the file has changed since the last answer.  <code>Ok(None)</code> means nothing moved. An <code>Err</code> means the file changed and the new one will not do — the caller keeps what it has and decides whether to say so.</p>
+        </div>
+        <div class="entry" data-api-entry="nanos_as_span nanos_as_span a span in the shortest form that reads back as the same number of nanoseconds ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">nanos_as_span</span><span class="rest">(Int64) -&gt; String</span></div>
+          <p class="what">A span in the shortest form that reads back as the same number of nanoseconds.</p>
+        </div>
+        <div class="entry" data-api-entry="parse_size parse_size how many bytes a size names   512    4kb    10mib    1 5gb    a bare number is bytes   k    m    g  and  t  are powers of a thousand   ki    mi    gi  and  ti  powers of 1024  with or without a  b  ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">parse_size</span><span class="rest">(String, StringView) -&gt; Int64 raise Refused</span></div>
+          <p class="what">How many bytes a size names: <code>512</code>, <code>4kb</code>, <code>10MiB</code>, <code>1.5gb</code>.  A bare number is bytes. <code>k</code>, <code>m</code>, <code>g</code> and <code>t</code> are powers of a thousand, <code>ki</code>, <code>mi</code>, <code>gi</code> and <code>ti</code> powers of 1024, with or without a <code>b</code>.</p>
+        </div>
+        <div class="entry" data-api-entry="parse_span parse_span how many nanoseconds a span names   200ms    5s    1m30s    2h    a span always says its unit   a bare number is refused  because a configuration that means seconds in one program and nanoseconds in another is a configuration that is wrong silently ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">parse_span</span><span class="rest">(String, StringView) -&gt; Int64 raise Refused</span></div>
+          <p class="what">How many nanoseconds a span names: <code>200ms</code>, <code>5s</code>, <code>1m30s</code>, <code>2h</code>.  A span always says its unit — a bare number is refused, because a configuration that means seconds in one program and nanoseconds in another is a configuration that is wrong silently.</p>
+        </div>
+        <div class="entry" data-api-entry="remind_default remind_default one second  the reminder an alarm gets when the document does not say ">
+          <div class="sig"><span class="kind fn">let</span><span class="name">remind_default</span><span class="rest">Int64</span></div>
+          <p class="what">One second, the reminder an alarm gets when the document does not say.</p>
+        </div>
+
+        <h2 id="global" data-api-group>moonlog/global</h2>
+        <p class="note">The process-wide hub.</p>
+
 
         <div class="next" style="margin-top: 34px">
           <a href="docs.html">

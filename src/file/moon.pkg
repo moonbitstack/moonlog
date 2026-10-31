@@ -1,0 +1,15 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitlang/core/buffer",
+  "moonbitlang/core/encoding/utf8",
+  "moonbitlang/core/env",
+  "moonbitstack/moonzip/gzip",
+}
+
+options(
+  "native-stub": [ "stub.c" ],
+  targets: {
+    "sys.other.mbt": [ "js", "wasm", "wasm-gc" ],
+    "sandbox_wbtest.mbt": [ "native" ],
+  },
+)

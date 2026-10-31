@@ -1,0 +1,27 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonlog/stdio",
+  "moonbitstack/moonlog/file",
+  "moonbitstack/moonlog/loki",
+  "moonbitstack/moonlog/mail",
+  "moonbitstack/moonlog/config",
+  "moonbitlang/core/env",
+  "moonbitlang/core/ref",
+}
+
+// The imports below belong to the files that need a socket or a file, so they
+// go unused on the backends where the package is empty.
+
+warnings = "-29"
+
+// A process-wide hub is for an application, and an application runs natively:
+// the package is empty elsewhere.
+
+options(
+  targets: {
+    "global.mbt": [ "native" ],
+    "build.mbt": [ "native" ],
+    "layout.mbt": [ "native" ],
+    "global_wbtest.mbt": [ "native" ],
+  },
+)

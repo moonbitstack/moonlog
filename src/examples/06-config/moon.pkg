@@ -1,0 +1,5 @@
+import {
+  "moonbitstack/moonlog/config",
+}
+
+pkgtype(kind: "executable")

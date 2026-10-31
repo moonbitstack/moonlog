@@ -1,0 +1,6 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonlog/stdio",
+}
+
+pkgtype(kind: "executable")

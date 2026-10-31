@@ -1,0 +1,27 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonmail",
+  "moonbitstack/moonmail/net",
+  "moonbitstack/moonmail/sasl",
+  "moonbitstack/moontls/tls",
+  "moonbitstack/moondate",
+  "moonbitlang/core/env",
+  "moonbitlang/core/debug",
+  "moonbitlang/core/encoding/utf8",
+}
+
+// The imports below belong to the files that need a socket, so they go unused
+// on the backends where the package is empty.
+
+warnings = "-29"
+
+// A mail leaves over SMTP, which needs a socket: the package is empty on the
+// backends that have none.
+
+options(
+  targets: {
+    "mail.mbt": [ "native", "wasm" ],
+    "letter.mbt": [ "native", "wasm" ],
+    "mail_wbtest.mbt": [ "native", "wasm" ],
+  },
+)

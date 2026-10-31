@@ -1,0 +1,19 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonlog/global",
+  "moonbitstack/moonlog/config",
+}
+
+// The imports belong to the one file, which only a native build compiles, so
+// they go unused where the example is a message.
+
+warnings = "-29"
+
+pkgtype(kind: "executable")
+
+options(
+  targets: {
+    "main.mbt": [ "native" ],
+    "main.other.mbt": [ "js", "wasm", "wasm-gc" ],
+  },
+)

@@ -1,0 +1,17 @@
+import {
+  "moonbitstack/moonlog",
+  "moonbitstack/moonjson",
+  "moonbitstack/moonyaml",
+  "moonbitstack/moontoml",
+  "moonbitlang/core/env",
+  "moonbitlang/core/encoding/utf8",
+}
+
+import {
+  "moonbitstack/moonschema",
+} for "wbtest"
+
+options(
+  "native-stub": [ "stub.c" ],
+  targets: { "sys.other.mbt": [ "js", "wasm", "wasm-gc" ] },
+)
