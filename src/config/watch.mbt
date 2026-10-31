@@ -55,7 +55,7 @@ pub fn Config::watch(
     Ok(text) => text
     Err(why) => raise refuse(path, why, "a file that can be read")
   }
-  { path, seen : text, format, lookup, }
+  { path, seen: text, format, lookup, }
 }
 
 ///|

@@ -15,6 +15,7 @@ keywords = [ "log", "logging", "moonbit" ]
 description = "Structured logging for MoonBit."
 
 import {
+  "moonbitlang/async@0.22.5",
   "moonbitstack/moonzip@0.3.2",
   "moonbitstack/moonmail@0.1.0",
   "moonbitstack/moonfetch@0.1.0",

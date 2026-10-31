@@ -376,17 +376,14 @@ test "a queue without a size is refused, because a queue that cannot fill is not
 /// A file of this run's own, under the temporary directory the system reports.
 #cfg(target="native")
 fn place(name : String) -> String {
-  let base = match @env.get_env_var("TMPDIR") {
-    Some(dir) =>
-      if dir != "" {
-        dir
-      } else {
-        match @env.get_env_var("TEMP") {
-          Some(dir) => dir
-          None => "."
-        }
-      }
-    None => "."
+  // The system's temporary directory, never the working tree: TMPDIR on Unix,
+  // TEMP or TMP on Windows.
+  let mut base = "/tmp"
+  for key in ["TMPDIR", "TEMP", "TMP"] {
+    if @env.get_env_var(key) is Some(dir) && dir != "" {
+      base = dir
+      break
+    }
   }
   let joiner = if base.contains("\\") { "\\" } else { "/" }
   base + joiner + "moonlog-config-" + name + "-" + @env.now().to_string()

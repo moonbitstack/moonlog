@@ -22,3 +22,10 @@ options(
     "loki_wbtest.mbt": [ "native", "wasm" ],
   },
 )
+
+// An `async test` runs on the async runtime its package imports; without this
+// one the test driver brings core's, and the two thread pools clash at link
+// time on Linux.
+import {
+  "moonbitlang/async",
+} for "wbtest"
