@@ -126,6 +126,19 @@ fn setting_schema(setting : Setting) -> Json {
   match setting {
     Text => object([("type", text("string"))])
     Flag => object([("type", text("boolean"))])
+    Colour =>
+      object([
+        (
+          "enum",
+          array([
+            text("auto"),
+            text("always"),
+            text("never"),
+            Json::boolean(true),
+            Json::boolean(false),
+          ]),
+        ),
+      ])
     Count => object([("type", text("number"))])
     Size => object([("type", array([text("string"), text("number")]))])
     Span => object([("type", text("string"))])

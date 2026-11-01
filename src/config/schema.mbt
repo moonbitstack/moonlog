@@ -54,6 +54,7 @@ fn as_table(value : Json) -> Map[String, Json]? {
 priv enum Setting {
   Text
   Flag
+  Colour
   Count
   Size
   Span
@@ -124,7 +125,11 @@ let common : Array[(String, Setting)] = [
   ("filter", Text),
   ("level", Text),
   ("layout", Text),
-  ("colour", Flag),
+  ("colour", Colour),
+  ("queue", Count),
+  ("batch", Count),
+  ("wait", Span),
+  ("full", Text),
   ("retries", Count),
   ("probe", Span),
   ("on_fail", Text),
@@ -137,6 +142,7 @@ fn wanted(setting : Setting) -> String {
   match setting {
     Text => "a string"
     Flag => "true or false"
+    Colour => "auto, always, never, true or false"
     Count => "a number"
     Size => "a size such as 10mb"
     Span => "a span such as 5s"
@@ -156,6 +162,15 @@ fn shaped(setting : Setting, value : Json, at : String) -> Unit raise Refused {
     Flag =>
       if as_flag(value) is None {
         raise refuse(at, shown(value), wanted(setting))
+      }
+    Colour =>
+      match as_flag(value) {
+        Some(_) => ()
+        None =>
+          match as_text(value) {
+            Some("auto" | "always" | "never") => ()
+            _ => raise refuse(at, shown(value), wanted(setting))
+          }
       }
     Count =>
       if as_count(value) is None {

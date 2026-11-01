@@ -187,7 +187,7 @@ def main():
                 "  assert_eq(config.watch, Some(30_000_000_000L))",
                 "  assert_eq(config.slots().length(), 4)",
             ]
-            + slot_assertions("console-1", "stdio", [])
+            + slot_assertions("console-1", "console", [])
             + slot_assertions(
                 "app",
                 "file",
@@ -234,7 +234,7 @@ def main():
                 "  assert_true(config.watch is None)",
                 "  assert_eq(config.slots().length(), 3)",
             ]
-            + slot_assertions("console-1", "stdio", [])
+            + slot_assertions("console-1", "console", [])
             + slot_assertions(
                 "app",
                 "file",
@@ -304,7 +304,7 @@ def main():
                 '  assert_eq(config.alarms[0].1.tiers, [["stderr"]])',
                 "  assert_eq(config.slots().length(), 3)",
             ]
-            + slot_assertions("console-1", "stdio", [])
+            + slot_assertions("console-1", "console", [])
             + slot_assertions(
                 "app",
                 "file",

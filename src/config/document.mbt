@@ -42,7 +42,11 @@ fn spec_of(
       "instance" => config.instance = word(key, value)
       "compat" => config.profile = profile_of(key, value)
       "level" => config.filter = level_named(key, value, config.levels)
-      "filter" => config.filter = substitute(key, value, lookup)
+      "filter" =>
+        config.filter = levels_named(
+          substitute(key, value, lookup),
+          config.levels,
+        )
       "filter_env" => config.filter_env = Some(word(key, value))
       "levels" => ()
       "process" => steps = Some(value)
@@ -182,7 +186,7 @@ fn build_chain(
   }
   match redacted {
     Some(value) => {
-      config.chain.push(redact_step("redact", value))
+      config.chain.push(redact_step("redact", value, shorthand=true))
       let step : Map[String, Json] = Map([])
       step["redact"] = value
       config.process.push(Json::object(step))
@@ -384,7 +388,9 @@ fn step_of(
 fn redact_step(
   at : String,
   options : Json,
+  shorthand? : Bool,
 ) -> &@moonlog.Processor raise Refused {
+  let shorthand = shorthand.unwrap_or(false)
   let mut step = @moonlog.Redact::new()
   match options {
     String(key) => step = step.key(key)
@@ -392,7 +398,10 @@ fn redact_step(
       for item in items {
         step = step.key(word(at, item))
       }
-    Object(_) => {
+    // The shorthand at the top of a document is a list of keys; the options
+    // belong to a `redact` step, so a table is refused there rather than read
+    // as keys.
+    Object(_) if shorthand => {
       let table = match as_table(options) {
         Some(table) => table
         None => raise refuse(at, shown(options), "a table of options")
@@ -572,9 +581,11 @@ fn sample_step(
       }
     None => Map([])
   }
-  let mut first = 1
-  let mut every = 1
-  let mut per = 60_000_000_000L
+  // A hundred of a burst, then one in a hundred, a second at a time: the
+  // defaults every implementation of the specification uses.
+  let mut first = 100
+  let mut every = 100
+  let mut per = 1_000_000_000L
   for key, value in table {
     match key {
       "first" =>
@@ -610,7 +621,7 @@ fn limit_step(
     None => raise refuse(at, "nothing", "a rate")
   }
   let mut rate = -1.0
-  let mut burst = 1.0
+  let mut burst = -1.0
   for key, value in table {
     match key {
       "rate" =>
@@ -628,6 +639,10 @@ fn limit_step(
   }
   if rate < 0.0 {
     raise missing(at + ".rate", "how many records a second go through")
+  }
+  // A bucket holds a second's worth unless the document says otherwise.
+  if burst < 0.0 {
+    burst = rate
   }
   let step : &@moonlog.Processor = @moonlog.Limit::new(rate~, burst~)
   step
@@ -647,7 +662,7 @@ fn dedupe_step(
       }
     None => Map([])
   }
-  let mut within = 60_000_000_000L
+  let mut within = 1_000_000_000L
   for key, value in table {
     match key {
       "within" =>
@@ -780,12 +795,22 @@ fn spec_sinks(
     let name = match fields.get("name") {
       Some(value) => word(at + ".name", value)
       None => {
-        let counted = match counts.get(kind) {
-          Some(count) => count + 1
-          None => 1
+        // `kind-n`, counting per kind and skipping names the document already
+        // took, so a sink called `file-1` only pushes the next one to `file-2`.
+        let mut number = match counts.get(kind) {
+          Some(count) => count
+          None => 0
         }
-        counts[kind] = counted
-        kind + "-" + counted.to_string()
+        let mut chosen = ""
+        while chosen == "" {
+          number = number + 1
+          let candidate = kind + "-" + number.to_string()
+          if !seen.contains(candidate) {
+            chosen = candidate
+          }
+        }
+        counts[kind] = number
+        chosen
       }
     }
     if name == "*" {
@@ -796,7 +821,7 @@ fn spec_sinks(
     }
     seen.push(name)
     let translated = spec_sink_table(at, kind, fields)
-    let slot = slot_of(name, translated, lookup, at~)
+    let slot = slot_of(name, translated, lookup, at~, levels~)
     // A slot's own level or filter may name a level the document defined.
     match slot.filter {
       Some(spec) =>
@@ -865,19 +890,62 @@ fn spec_sink_table(
       "pattern" => pattern = Some(word(at + ".pattern", value))
       "schema" => schema = Some(word(at + ".schema", value))
       "colours" =>
-        raise refuse(at + ".colours", "a table", "one colour for every level")
-      "process" =>
         raise refuse(
-          at + ".process",
-          "a list",
-          "the document's own chain, which a slot does not carry yet",
+          at + ".colours",
+          "a table",
+          "one colour for every level; this package colours a whole slot",
         )
+      "keys" | "nest" =>
+        raise refuse(
+          at + "." + key,
+          "a key",
+          "a layout this package cannot name: `format`, `pattern` or `schema`",
+        )
+      "connect" =>
+        raise refuse(
+          at + ".connect",
+          "a start-up check",
+          "a check this package does not run: a sink starts on its first write",
+        )
+      "roll_name" | "reopen" | "flush_every" =>
+        raise refuse(
+          at + "." + key,
+          "a key",
+          "a file setting this package does not read yet",
+        )
+      "perms" =>
+        match as_text(value) {
+          Some(text) => {
+            let digits = if text.has_prefix("0o") {
+              text[2:].to_owned()
+            } else if text.has_prefix("0") {
+              text[1:].to_owned()
+            } else {
+              text
+            }
+            let mut mode = 0
+            for digit in digits.to_array() {
+              if digit < '0' || digit > '7' {
+                raise refuse(
+                  at + ".perms",
+                  "`" + text + "`",
+                  "a file mode written in octal, such as 0640",
+                )
+              }
+              mode = mode * 8 + (digit.to_int() - '0'.to_int())
+            }
+            out["perms"] = Json::number(mode.to_double())
+          }
+          None => out[key] = value
+        }
       _ => out[key] = value
     }
   }
-  // The console this package ships is `stdio`; a document written for the
-  // specification says `console`.
-  out["kind"] = Json::string(if kind == "console" { "stdio" } else { kind })
+  // The kind stays the word the document used: it is what a status page and
+  // an alarm name a sink by, so renaming it here would report a sink the
+  // operator never asked for. `console` is the console this package also
+  // calls `stdio`.
+  out["kind"] = Json::string(kind)
   // `format` names the shape, `pattern` and `schema` fill it in; a `pattern`
   // or a `schema` on its own says which shape it must be.
   let layout = match format {

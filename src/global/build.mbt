@@ -66,7 +66,7 @@ fn refused(at : String, got : String, want : String) -> @config.Refused {
 fn built_of(slot : @config.Slot) -> Built raise @config.Refused {
   let at = "slots." + slot.name
   match slot.kind {
-    "stdio" => {
+    "console" | "stdio" => {
       let stream = match slot.text("stream") {
         Some(name) =>
           @moonlog.Stream::parse(name) catch {
@@ -215,7 +215,24 @@ fn mail_of(
   }
   let auth = match (slot.text("username"), slot.text("password")) {
     (Some(user), Some(password)) => Some((user, password))
+    (Some(_), None) =>
+      raise refused(at + ".username", "a user", "a `password` too")
+    (None, Some(_)) =>
+      raise refused(at + ".password", "a password", "a `username` too")
     _ => None
+  }
+  // A document says `security` as `tls`, `starttls` or `none`. This package
+  // decides how a connection is protected in code, where the trust store is:
+  // which roots to trust is the application's call, not a file's.
+  let security = match slot.text("security") {
+    None => @mail.Security::Clear
+    Some("none") => @mail.Security::Clear
+    Some(other) =>
+      raise refused(
+        at + ".security",
+        "`" + other + "`",
+        "`none`, or a `tls` client passed to `Mail::new` in code",
+      )
   }
   match (slot.count("port"), auth) {
     (Some(port), Some((user, password))) =>
@@ -225,24 +242,35 @@ fn mail_of(
         to~,
         port~,
         auth=(user, password),
+        security~,
         level~,
         window~,
         at_most~,
       )
     (Some(port), None) =>
-      @mail.Mail::new(host~, from~, to~, port~, level~, window~, at_most~)
+      @mail.Mail::new(
+        host~,
+        from~,
+        to~,
+        port~,
+        security~,
+        level~,
+        window~,
+        at_most~,
+      )
     (None, Some((user, password))) =>
       @mail.Mail::new(
         host~,
         from~,
         to~,
         auth=(user, password),
+        security~,
         level~,
         window~,
         at_most~,
       )
     (None, None) =>
-      @mail.Mail::new(host~, from~, to~, level~, window~, at_most~)
+      @mail.Mail::new(host~, from~, to~, security~, level~, window~, at_most~)
   }
 }
 
@@ -295,6 +323,9 @@ fn slot_of(
   match described.probe {
     Some(probe) => slot = slot.probe(probe)
     None => ()
+  }
+  for step in described.chain {
+    slot = slot.process(step)
   }
   slot
 }

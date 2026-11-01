@@ -564,7 +564,13 @@ config.<span class="fn">chain</span>().<span class="fn">length</span>()         
           <code>stdio</code>, <code>gzip</code> for <code>compress</code>,
           <code>rotate</code> for <code>every</code>, and <code>user</code>
           and <code>pass</code> for <code>username</code> and
-          <code>password</code>.
+          <code>password</code>. A queue is written either way as well — a
+          table, or <code>queue: 8192</code> with <code>batch</code>,
+          <code>wait</code> and <code>full</code> beside it, where
+          <code>0</code> writes directly — a <code>colour</code> may be
+          <code>auto</code>, <code>always</code> or <code>never</code> as well
+          as a flag, and a sink may carry steps of its own in
+          <code>process</code>.
         </p>
         <p>
           <code>Config::watch</code> hands back a watcher whose

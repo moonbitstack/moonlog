@@ -93,6 +93,8 @@ pub(all) struct Slot {
   retries : Int32?
   probe : Int64?
   queue : Queue?
+  mut chain : Array[&@moonlog.Processor]
+  mut process : Array[Json]
   mut on_fail : String?
   mut alarm_only : Bool
   settings : Map[String, Json]

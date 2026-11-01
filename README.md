@@ -393,6 +393,10 @@ sink keeps are the same under both spellings, with the names a deployment file
 usually uses accepted for the ones this package spells its own way: `console`
 for `stdio`, `gzip` for `compress`, `rotate` for `every`, `user` and `pass` for
 `username` and `password`, and `format` with `pattern` or `schema` for `layout`.
+A queue is written either way, too: the table above, or `queue: 8192` with
+`batch`, `wait` and `full` beside it, where `0` means the sink writes directly.
+A `colour` may be the words `auto`, `always` or `never` as well as a flag, and a
+sink may carry steps of its own in `process`, which run before its layout.
 
 ```moonbit
 @global.start(config=@config.Config::load(path="/etc/gateway.yaml"))

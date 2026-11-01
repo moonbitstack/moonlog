@@ -49,6 +49,10 @@ pub(all) struct Slot {
   retries : Int32?
   probe : Int64?
   queue : Queue?
+  /// The steps this slot runs before its layout, in the order it runs them.
+  mut chain : Array[&@moonlog.Processor]
+  /// Those steps as the document wrote them, which is what `dump` writes back.
+  mut process : Array[Json]
   /// The alarm an incident on this sink goes to, by name; nothing means the
   /// document's default alarm.
   mut on_fail : String?
@@ -176,7 +180,11 @@ pub fn Config::parse(
   for key, value in root {
     match key {
       "profile" => config.profile = profile_of(key, value)
-      "filter" => config.filter = substitute(key, value, lookup)
+      "filter" =>
+        config.filter = levels_named(
+          substitute(key, value, lookup),
+          config.levels,
+        )
       "slots" => config.slots = slots_of(value, lookup)
       "alarm" => config.alarm = Some(alarm_of(value, lookup))
       "app" => config.app = word(key, value)
@@ -242,8 +250,10 @@ fn slot_of(
   body : Json,
   lookup : (String) -> String?,
   at? : String,
+  levels? : Array[@moonlog.Level],
 ) -> Slot raise Refused {
   let at = at.unwrap_or("slots." + name)
+  let levels = levels.unwrap_or([])
   let table = match as_table(body) {
     Some(table) => table
     None => raise refuse(at, shown(body), "a table")
@@ -262,7 +272,7 @@ fn slot_of(
       raise refuse(
         at + ".kind",
         "`" + kind + "`",
-        "stdio, file, loki, mail, memory or discard",
+        "console, file, loki, mail, memory or discard",
       )
   }
   let settings = Map([])
@@ -271,8 +281,9 @@ fn slot_of(
       Some(setting) => Some(setting)
       None => setting_of(common, key)
     }
-    if key == "queue" {
-      // A queue is a table of its own, read below, so it is not checked here.
+    if key == "queue" || key == "process" {
+      // A queue and a chain are read below: one may be a table or a number,
+      // the other is a list of steps.
       continue
     }
     match setting {
@@ -292,16 +303,31 @@ fn slot_of(
       key != "retries" &&
       key != "probe" &&
       key != "queue" &&
+      key != "batch" &&
+      key != "wait" &&
+      key != "full" &&
+      key != "process" &&
       key != "on_fail" &&
       key != "alarm_only" {
       settings[key] = substituted(at + "." + key, value, lookup)
     }
   }
+  // `level` and `filter` say the same thing in different words, so a document
+  // may have one or the other and not both.
+  if table.get("filter") is Some(_) && table.get("level") is Some(_) {
+    raise refuse(
+      at + ".filter",
+      "a key beside `level`",
+      "`level` or `filter`, not both",
+    )
+  }
   let filter = match table.get("filter") {
-    Some(value) => Some(substitute(at + ".filter", value, lookup))
+    Some(value) =>
+      Some(levels_named(substitute(at + ".filter", value, lookup), levels))
     None =>
       match table.get("level") {
-        Some(value) => Some(substitute(at + ".level", value, lookup))
+        Some(value) =>
+          Some(levels_named(substitute(at + ".level", value, lookup), levels))
         None => None
       }
   }
@@ -309,13 +335,47 @@ fn slot_of(
     Some(value) => Some(substitute(at + ".layout", value, lookup))
     None => None
   }
+  let (chain, process) = match table.get("process") {
+    Some(value) => {
+      let items = match as_list(value) {
+        Some(items) => items
+        None => raise refuse(at + ".process", shown(value), "a list of steps")
+      }
+      let chain = chain_of(at + ".process", value, levels)
+      let written : Array[Json] = []
+      for item in items {
+        written.push(item)
+      }
+      (chain, written)
+    }
+    None => {
+      let none : Array[&@moonlog.Processor] = []
+      let empty : Array[Json] = []
+      (none, empty)
+    }
+  }
   {
     name,
     kind,
     filter,
     layout,
     colour: match table.get("colour") {
-      Some(value) => as_flag(value)
+      Some(value) =>
+        match as_flag(value) {
+          Some(flag) => Some(flag)
+          None =>
+            match as_text(value) {
+              Some("always") => Some(true)
+              Some("never") => Some(false)
+              Some("auto") => None
+              _ =>
+                raise refuse(
+                  at + ".colour",
+                  shown(value),
+                  "auto, always or never",
+                )
+            }
+        }
       None => None
     },
     retries: match table.get("retries") {
@@ -337,10 +397,9 @@ fn slot_of(
         }
       None => None
     },
-    queue: match table.get("queue") {
-      Some(value) => queue_of(at + ".queue", value)
-      None => None
-    },
+    queue: queue_at(at, table),
+    chain,
+    process,
     on_fail: match table.get("on_fail") {
       Some(value) => Some(substitute(at + ".on_fail", value, lookup))
       None => None
@@ -358,10 +417,165 @@ fn slot_of(
 }
 
 ///|
+/// The queue a sink entry asks for.
+///
+/// Two spellings: a table of `size`, `batch`, `wait` and `full`, and the flat
+/// one a deployment file usually arrives in — `queue: 8192` with `batch`,
+/// `wait` and `full` beside it, where `0` means the sink writes directly.
+fn queue_at(at : String, table : Map[String, Json]) -> Queue? raise Refused {
+  let flat = table.get("batch") is Some(_) ||
+    table.get("wait") is Some(_) ||
+    table.get("full") is Some(_)
+  match table.get("queue") {
+    Some(value) =>
+      match as_count(value) {
+        Some(number) => {
+          if number < 0.0 {
+            raise refuse(
+              at + ".queue",
+              shown(value),
+              "a number of records, or 0",
+            )
+          }
+          let size = number.to_int()
+          if size == 0 {
+            if flat {
+              raise refuse(
+                at + ".batch",
+                "a key beside `queue: 0`",
+                "a queue, or none: `queue: 0` writes directly",
+              )
+            }
+            None
+          } else {
+            Some(queue_with(at, table, size))
+          }
+        }
+        None => queue_of(at + ".queue", value)
+      }
+    None =>
+      if flat {
+        // The sink's own queue, with the parts the document named in it.
+        Some(queue_with(at, table, @moonlog.batch_default * 16))
+      } else {
+        None
+      }
+  }
+}
+
+///|
+/// A queue of `size`, with the parts the document named beside it.
+fn queue_with(
+  at : String,
+  table : Map[String, Json],
+  size : Int32,
+) -> Queue raise Refused {
+  {
+    size,
+    batch: count_at("batch", at, table, @moonlog.batch_default),
+    wait: span_at("wait", at, table, @moonlog.wait_default),
+    full: full_at("full", at, table),
+  }
+}
+
+///|
+/// A whole number beside the queue, or the default.
+fn count_at(
+  key : String,
+  at : String,
+  table : Map[String, Json],
+  fallback : Int32,
+) -> Int32 raise Refused {
+  match table.get(key) {
+    Some(value) =>
+      match as_count(value) {
+        Some(number) => number.to_int()
+        None => raise refuse(at + "." + key, shown(value), "a number")
+      }
+    None => fallback
+  }
+}
+
+///|
+/// A span beside the queue, or the default.
+fn span_at(
+  key : String,
+  at : String,
+  table : Map[String, Json],
+  fallback : Int64,
+) -> Int64 raise Refused {
+  match table.get(key) {
+    Some(value) =>
+      match as_text(value) {
+        Some(text) => parse_span(at + "." + key, text)
+        None => raise refuse(at + "." + key, shown(value), "a span such as 1s")
+      }
+    None => fallback
+  }
+}
+
+///|
+/// What a full queue does, beside the queue, or the default.
+fn full_at(
+  key : String,
+  at : String,
+  table : Map[String, Json],
+) -> @moonlog.Full raise Refused {
+  match table.get(key) {
+    Some(value) =>
+      match as_text(value) {
+        Some("drop") => @moonlog.Full::Drop
+        Some("block") => @moonlog.Full::Block
+        _ => raise refuse(at + "." + key, shown(value), "drop or block")
+      }
+    None => @moonlog.Full::Drop
+  }
+}
+
+///|
+/// A filter with the levels the document defined put in as their values: a
+/// filter names a level by number, and a level defined in the document has one.
+fn levels_named(spec : String, levels : Array[@moonlog.Level]) -> String {
+  if levels.length() == 0 || spec == "" {
+    return spec
+  }
+  let out = StringBuilder()
+  let mut first = true
+  for directive in spec.split(",") {
+    if !first {
+      out.write_char(',')
+    }
+    first = false
+    let (body, pattern) = match directive.find("/") {
+      Some(at) => (directive[:at].to_owned(), directive[at:].to_owned())
+      None => (directive.to_owned(), "")
+    }
+    let trimmed = body.trim()
+    let (target, level) = match trimmed.find("=") {
+      Some(at) => (trimmed[:at].to_owned() + "=", trimmed[at + 1:].to_owned())
+      None => ("", trimmed.to_owned())
+    }
+    let mut value = level
+    for defined in levels {
+      if defined.name == level {
+        value = defined.value.to_string()
+      }
+    }
+    out.write_string(target)
+    out.write_string(value)
+    out.write_string(pattern)
+  }
+  out.to_string()
+}
+
+///|
 /// The settings a kind reads.
 fn settings_of(kind : String) -> Array[(String, Setting)]? {
+  // The console answers to both names it goes by: the one a document written
+  // for the specification uses, and this package's own.
+  let wanted = if kind == "console" { "stdio" } else { kind }
   for pair in kinds {
-    if pair.0 == kind {
+    if pair.0 == wanted {
       return Some(pair.1)
     }
   }
@@ -652,6 +866,9 @@ pub fn Config::to_json(self : Config) -> Json {
     match slot.probe {
       Some(probe) => body["probe"] = Json::string(nanos_as_span(probe))
       None => ()
+    }
+    if slot.process.length() > 0 {
+      body["process"] = Json::array(slot.process)
     }
     match slot.on_fail {
       Some(name) => body["on_fail"] = Json::string(name)
