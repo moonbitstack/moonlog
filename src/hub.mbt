@@ -287,6 +287,16 @@ fn Hub::send_to_slots(self : Hub, record : Record) -> Unit {
     self.writing = index
     let report = slot.send(kept, scene, now)
     self.writing = -1
+    // A slot whose policy is to panic takes the caller with it, which is what
+    // `panic` means in the failure table of the shared specification: a sink
+    // that was told to fail loudly does not fail quietly.
+    if slot.policy() is Panic {
+      match report.fault {
+        Some(fault) =>
+          abort("sink `" + slot.name() + "` failed: " + fault.error)
+        None => ()
+      }
+    }
     match report.phase {
       Some(phase) => self.alarm(slot, report.fault, phase, now)
       None => ()

@@ -72,3 +72,20 @@ test "a slot told its retries keeps them" {
   assert_eq(sink.taken.length(), 0)
   assert_eq(sink.refusals, 0)
 }
+
+///|
+/// The failure table of the shared specification gives a slot three policies:
+/// an alarm, `ignore`, and `panic` — the last of which is raised in the caller
+/// rather than counted. A slot that was told to fail loudly must not fail
+/// quietly, which is what it did while `panic` was only a value.
+test "panic a slot whose policy is to panic takes the caller with it" {
+  let hub = @moonlog.Hub::new()
+  ignore(
+    hub.add(
+      @moonlog.Slot::new(stubborn(1), name="loud").on_fail(
+        @moonlog.OnFail::Panic,
+      ),
+    ),
+  )
+  hub.logger("app").info("this one is not swallowed")
+}
