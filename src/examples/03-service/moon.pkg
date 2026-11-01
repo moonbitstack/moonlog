@@ -1,5 +1,5 @@
 import {
-  "moonbitstack/moonlog",
+  "moonbitstack/moonlog" @serlog,
 }
 
 pkgtype(kind: "executable")

@@ -1,5 +1,5 @@
 import {
-  "moonbitstack/moonlog",
+  "moonbitstack/moonlog" @log,
 }
 
 pkgtype(kind: "executable")

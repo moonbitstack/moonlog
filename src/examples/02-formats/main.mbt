@@ -6,8 +6,8 @@
 ///
 ///     moon run src/examples/02-formats
 fn main raise {
-  let scene = @moonlog.Scene::new(
-    identity=@moonlog.Identity::of(
+  let scene = @log.Scene::new(
+    identity=@log.Identity::of(
       app="mirror",
       env="prod",
       instance="n1",
@@ -15,12 +15,10 @@ fn main raise {
       pid=4242,
     ),
   )
-  let record = @moonlog.Record::of(
-      @moonlog.warn, "mirror::sync", "disk 91% full",
-    )
+  let record = @log.Record::of(@log.warn, "mirror::sync", "disk 91% full")
     .sets([
-      ("mirror", @moonlog.Value::of_str("debian")),
-      ("id", @moonlog.Value::of_int(7)),
+      ("mirror", @log.Value::of_str("debian")),
+      ("id", @log.Value::of_int(7)),
     ])
     .stamped(1_700_000_000_000_000_000L)
     .located("src/sync.mbt", line=12)
@@ -31,36 +29,34 @@ fn main raise {
     "serlog", "tracing", "env_logger", "python", "logback", "slog", "pino",
   ]
   for name in patterns {
-    println(name + ": " + @moonlog.Pattern::parse(name).render(record, scene))
+    println(name + ": " + @log.Pattern::parse(name).render(record, scene))
   }
   println("")
   println("— the same fields, written three ways —")
-  println("logfmt: " + @moonlog.Logfmt::new().render(record, scene))
-  println("pretty: " + @moonlog.Pretty::new().render(record, scene))
+  println("logfmt: " + @log.Logfmt::new().render(record, scene))
+  println("pretty: " + @log.Pretty::new().render(record, scene))
   println("")
   println("— ten JSON schemas —")
   let schemas = [
-    @moonlog.Schema::Serlog,
-    @moonlog.Schema::Pino,
-    @moonlog.Schema::Bunyan,
-    @moonlog.Schema::Zap,
-    @moonlog.Schema::Slog,
-    @moonlog.Schema::Structlog,
-    @moonlog.Schema::Logstash,
-    @moonlog.Schema::Ecs,
-    @moonlog.Schema::Gelf,
-    @moonlog.Schema::Otel,
+    @log.Schema::Serlog,
+    @log.Schema::Pino,
+    @log.Schema::Bunyan,
+    @log.Schema::Zap,
+    @log.Schema::Slog,
+    @log.Schema::Structlog,
+    @log.Schema::Logstash,
+    @log.Schema::Ecs,
+    @log.Schema::Gelf,
+    @log.Schema::Otel,
   ]
   for schema in schemas {
     println(
-      schema.name() +
-      ": " +
-      @moonlog.JsonLine::new(schema).render(record, scene),
+      schema.name() + ": " + @log.JsonLine::new(schema).render(record, scene),
     )
   }
   println("")
   println("— renamed keys and nested fields —")
-  let custom = @moonlog.JsonLine::new(@moonlog.Schema::Serlog)
+  let custom = @log.JsonLine::new(@log.Schema::Serlog)
     .rename("msg", "message")
     .rename("level", "severity")
     .nest("data")
@@ -68,22 +64,22 @@ fn main raise {
   println("")
   println("— a coloured line, for a terminal —")
   println(
-    @moonlog.Pattern::parse("{level:<5} {target}: {msg}").render(
+    @log.Pattern::parse("{level:<5} {target}: {msg}").render(
       record,
       scene.coloured(true),
     ),
   )
   println("")
   println("— filters —")
-  let filter = @moonlog.Filter::parse(
+  let filter = @log.Filter::parse(
     "info, mirror::sync=debug, mirror::net=off, noisy",
   )
   for
     (level, target) in [
-      (@moonlog.debug, "mirror::sync"),
-      (@moonlog.debug, "mirror::net"),
-      (@moonlog.info, "other"),
-      (@moonlog.trace, "noisy::x"),
+      (@log.debug, "mirror::sync"),
+      (@log.debug, "mirror::net"),
+      (@log.info, "other"),
+      (@log.trace, "noisy::x"),
     ] {
     let verdict = if filter.allows(level, target) {
       "passes"

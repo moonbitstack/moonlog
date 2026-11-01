@@ -17,16 +17,23 @@ mail, a deployment document and the process-wide hub.
 ## Quick start
 
 ```moonbit
-let sink = @moonlog.Lines::new(fn(line) { println(line) })
-let hub = @moonlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
+// moon.pkg
+import {
+  "moonbitstack/moonlog" @serlog,
+}
+```
+
+```moonbit
+let sink = @serlog.Lines::new(fn(line) { println(line) })
+let hub = @serlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
 let _ = hub.add(
-  @moonlog.Slot::new(sink, name="console")
-  .layout(@moonlog.Pattern::parse("{time:%H:%M:%S%.3f} {level:<5} {target}: {msg}{fields}")),
+  @serlog.Slot::new(sink, name="console")
+  .layout(@serlog.Pattern::parse("{time:%H:%M:%S%.3f} {level:<5} {target}: {msg}{fields}")),
 )
 
 let log = hub.logger("mirror::sync")
-log.info("starting", fields=[("workers", @moonlog.Value::of_int(4))])
-log.warn("slow", fields=[("took_ms", @moonlog.Value::of_int(1200))])
+log.info("starting", fields=[("workers", @serlog.Value::of_int(4))])
+log.warn("slow", fields=[("took_ms", @serlog.Value::of_int(1200))])
 // 22:13:20.000 INFO  mirror::sync: starting workers=4
 // 22:13:20.000 WARN  mirror::sync: slow took_ms=1200
 ```
@@ -35,33 +42,15 @@ log.warn("slow", fields=[("took_ms", @moonlog.Value::of_int(1200))])
 moon add moonbitstack/moonlog
 ```
 
-### The name
+### Three names
 
-The specification this package implements, and its five implementations, are
-called **serlog**. This one is `moonbitstack/moonlog`: the same model, the same
-deployment documents, the same incident records. The word `serlog` is already
-here in the places that are read rather than imported — it is the default
-profile, the filter variable `SERLOG_FILTER`, and the target an incident is
-reported under. Only the package name a MoonBit project writes in `moon.pkg`
-differs, and MoonBit lets that name be the other one:
+The package is `moonbitstack/moonlog`, and the specification it implements is called serlog. Import it under whichever name reads best; all three are the same items, resolved by the compiler, with nothing to keep in step:
 
-```moonbit
-// moon.pkg
-import {
-  "moonbitstack/moonlog" @serlog,
-}
-```
-
-```moonbit
-// main.mbt — the same API, under the name the other implementations use
-let hub = @serlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
-hub.logger("mirror::sync").info("starting")
-```
-
-There is no second package to keep in step: `@serlog.Hub` is `@moonlog.Hub`,
-resolved by the compiler, and the alias costs nothing at run time.
-`src/examples/09-alias` is that file, built on every target along with the
-rest.
+| `moon.pkg` | Written as | Example |
+|:--:|:--:|:--:|
+| `"moonbitstack/moonlog"` | `@moonlog.Hub` | `src/examples/01-tour` |
+| `"moonbitstack/moonlog" @log` | `@log.Hub` | `src/examples/02-formats` |
+| `"moonbitstack/moonlog" @serlog` | `@serlog.Hub` | `src/examples/03-service`, `src/examples/09-alias` |
 
 ## What it does not do
 

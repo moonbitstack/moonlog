@@ -13,7 +13,7 @@ struct Remote {
 }
 
 ///|
-pub impl @moonlog.Sink for Remote with fn write(self, entry) {
+pub impl @serlog.Sink for Remote with fn write(self, entry) {
   if self.failing[0] {
     Err("connection refused")
   } else {
@@ -25,60 +25,60 @@ pub impl @moonlog.Sink for Remote with fn write(self, entry) {
 ///|
 fn main raise {
   let now = [1_700_000_000_000_000_000L]
-  let console = @moonlog.Memory::new()
-  let status = @moonlog.Memory::new()
-  let sampled = @moonlog.Memory::new()
+  let console = @serlog.Memory::new()
+  let status = @serlog.Memory::new()
+  let sampled = @serlog.Memory::new()
   let remote : Remote = { lines: [], failing: [true], }
 
-  let hub = @moonlog.Hub::new(
-    identity=@moonlog.Identity::of(app="gateway", env="prod", instance="g-3"),
+  let hub = @serlog.Hub::new(
+    identity=@serlog.Identity::of(app="gateway", env="prod", instance="g-3"),
     clock=fn() { now[0] },
   )
 
   let _ = hub.add(
-    @moonlog.Slot::new(console, name="console")
+    @serlog.Slot::new(console, name="console")
     .kind("memory")
     .layout(
-      @moonlog.Pattern::parse(
+      @serlog.Pattern::parse(
         "{time:%H:%M:%S%.3f} {level:<5} {target}: {msg}{fields}",
       ),
     ),
   )
   let _ = hub.add(
-    @moonlog.Slot::new(status, name="status")
+    @serlog.Slot::new(status, name="status")
     .kind("memory")
-    .at(@moonlog.warn)
-    .process(@moonlog.Redact::new().key("authorization")),
+    .at(@serlog.warn)
+    .process(@serlog.Redact::new().key("authorization")),
   )
   let _ = hub.add(
-    @moonlog.Slot::new(sampled, name="sampled")
+    @serlog.Slot::new(sampled, name="sampled")
     .kind("memory")
-    .at(@moonlog.trace)
-    .layout(@moonlog.Logfmt::new())
-    .process(@moonlog.Sample::new(first=2, every=10, per=60_000_000_000L)),
+    .at(@serlog.trace)
+    .layout(@serlog.Logfmt::new())
+    .process(@serlog.Sample::new(first=2, every=10, per=60_000_000_000L)),
   )
 
   // A remote sink that is down: its failures go to the console instead.
-  let oncall = @moonlog.Tiers::from([["console"]])
+  let oncall = @serlog.Tiers::from([["console"]])
   let _ = hub.add(
-    @moonlog.Slot::new(remote, name="remote")
+    @serlog.Slot::new(remote, name="remote")
     .kind("remote")
-    .layout(@moonlog.Logfmt::new())
-    .on_fail(@moonlog.OnFail::Alarm(oncall)),
+    .layout(@serlog.Logfmt::new())
+    .on_fail(@serlog.OnFail::Alarm(oncall)),
   )
 
   // One request, logged the way a handler logs it: a logger with the request's
   // own field bound to it, so every line of the request carries it.
   let request = hub
     .logger("gateway::http")
-    .bound("request", @moonlog.Value::of_str("r-1"))
+    .bound("request", @serlog.Value::of_str("r-1"))
   request.info("GET /mirror", fields=[
-    ("path", @moonlog.Value::of_str("/mirror")),
-    ("authorization", @moonlog.Value::of_str("Bearer t0ken")),
+    ("path", @serlog.Value::of_str("/mirror")),
+    ("authorization", @serlog.Value::of_str("Bearer t0ken")),
   ])
   now[0] = now[0] + 1_000_000_000L
   request.warn("slow upstream", fields=[
-    ("took_ms", @moonlog.Value::of_int(1200)),
+    ("took_ms", @serlog.Value::of_int(1200)),
   ])
 
   // A chatty health probe, the same message every time: two of every ten are
@@ -86,7 +86,7 @@ fn main raise {
   for i in 0..<25 {
     hub
     .logger("gateway::health")
-    .info("probe", fields=[("n", @moonlog.Value::of_int(i))])
+    .info("probe", fields=[("n", @serlog.Value::of_int(i))])
   }
 
   println("— the console —")
