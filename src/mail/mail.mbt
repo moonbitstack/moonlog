@@ -146,6 +146,7 @@ pub fn Mail::due(self : Mail, now : Int64) -> Bool {
 }
 
 ///|
+/// Holds the record until the window closes or the queue is full.
 pub impl @moonlog.Sink for Mail with fn write(self, entry) {
   if !entry.record.level.at_least(self.level) {
     return Ok(())

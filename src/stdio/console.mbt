@@ -98,6 +98,7 @@ fn put(stream : @moonlog.Stream, line : String) -> Result[Unit, String] {
 }
 
 ///|
+/// Writes the line the layout made to the stream this console holds.
 pub impl @moonlog.Sink for Console with fn write(self, entry) {
   put(self.target(entry.record.level), entry.line)
 }

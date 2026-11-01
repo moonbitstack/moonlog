@@ -136,6 +136,7 @@ fn Loki::keep(self : Loki, item : Pending) -> Unit {
 }
 
 ///|
+/// Keeps the entry, with its fields as metadata, for the next push.
 pub impl @moonlog.Sink for Loki with fn write(self, entry) {
   let meta : Array[(String, String)] = []
   for pair in entry.record.fields {

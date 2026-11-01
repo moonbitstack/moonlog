@@ -1024,9 +1024,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::logger</span><span class="rest">(Self, String) -&gt; Logger</span></div>
           <p class="what">A logger writing to this hub under <code>target</code>, which is usually a module path.</p>
         </div>
-        <div class="entry" data-api-entry="Hub::logs logs as a  desk   the sinks on the log route  which     stands for ">
+        <div class="entry" data-api-entry="Hub::logs logs the hubs an alarm walk can see  every slot on the log route  and a way to write to one of them without going through its filter or queue ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::logs</span><span class="rest">(Self) -&gt; Array[String]</span></div>
-          <p class="what">As a <code>Desk</code>: The sinks on the log route, which <code>*</code> stands for.</p>
+          <p class="what">The hubs an alarm walk can see: every slot on the log route, and a way to write to one of them without going through its filter or queue.</p>
         </div>
         <div class="entry" data-api-entry="Hub::new new a hub at  profile   writing what the filter lets through    clock  answers nanoseconds since the epoch  without one every record carries 0  which is honest   this library never reads a clock   and every test says what instant it means ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Hub::new</span><span class="rest">(identity? : Identity, profile? : Profile, clock? : () -&gt; Int64, filter? : Filter) -&gt; Self</span></div>
@@ -1223,8 +1223,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Console::target</span><span class="rest">(Self, @moonlog.Level) -&gt; @moonlog.Stream</span></div>
           <p class="what">The stream a record at <code>level</code> is written to.</p>
         </div>
-        <div class="entry" data-api-entry="Console::write write ">
+        <div class="entry" data-api-entry="Console::write write writes the line the layout made to the stream this console holds ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Console::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Writes the line the layout made to the stream this console holds.</p>
         </div>
         <div class="entry" data-api-entry="decide decide whether colour is wanted  given what the terminal said and what the environment said    force_color  is the last word   someone who set it meant it   then  no_color   then the terminal ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">decide</span><span class="rest">(Bool, Bool, Bool?) -&gt; Bool</span></div>
@@ -1282,8 +1283,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">File::slot</span><span class="rest">(Self, name? : String) -&gt; @moonlog.Slot</span></div>
           <p class="what">A slot around this sink.</p>
         </div>
-        <div class="entry" data-api-entry="File::write write ">
+        <div class="entry" data-api-entry="File::write write appends the line to the file  through rotation  compression and the buffer ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">File::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Appends the line to the file, through rotation, compression and the buffer.</p>
         </div>
         <div class="entry" data-api-entry="File::written written how many bytes the current file holds ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">File::written</span><span class="rest">(Self) -&gt; Int64</span></div>
@@ -1393,8 +1395,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::url</span><span class="rest">(Self) -&gt; String</span></div>
           <p class="what">The address entries are pushed to.</p>
         </div>
-        <div class="entry" data-api-entry="Loki::write write ">
+        <div class="entry" data-api-entry="Loki::write write keeps the entry  with its fields as metadata  for the next push ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Loki::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Keeps the entry, with its fields as metadata, for the next push.</p>
         </div>
         <div class="entry" data-api-entry="Report Report what one push did   a batch either lands  is refused for good  or is worth trying again  loki answers 400 for an entry it will never take   a timestamp outside the tenant s window is the usual one   and 429 or 5xx when it is merely busy  sending the first kind again would spin for ever  so those entries are dropped and counted  and only the second kind comes back to the queue ">
           <div class="sig"><span class="kind ty">type</span><span class="name">Report</span><span class="rest">sent : Int32, rejected : Int32, retry : String?</span></div>
@@ -1484,8 +1487,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::window</span><span class="rest">(Self) -&gt; Int64</span></div>
           <p class="what">How long a batch is gathered.</p>
         </div>
-        <div class="entry" data-api-entry="Mail::write write ">
+        <div class="entry" data-api-entry="Mail::write write holds the record until the window closes or the queue is full ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Mail::write</span><span class="rest">(Self, @moonlog.Entry) -&gt; Result[Unit, String]</span></div>
+          <p class="what">Holds the record until the window closes or the queue is full.</p>
         </div>
         <div class="entry" data-api-entry="Security Security how the connection to the mail server is protected ">
           <div class="sig"><span class="kind ty">type</span><span class="name">Security</span><span class="rest">Clear · StartTls · Tls</span></div>

@@ -39,6 +39,7 @@ DECL = re.compile(
 )
 BOILERPLATE = re.compile(r"::(equal|not_equal|output|to_string|to_repr|hash|compare|op_\w+)\(")
 TRAIT = re.compile(r"^pub(?:\((?:all|open)\))?\s+trait\s+(\w+)")
+IMPL = re.compile(r"^pub impl\b.*\bfor (\w+) with fn (\w+)")
 
 
 def sources(base):
@@ -62,6 +63,13 @@ def sources(base):
                     docs[f"{trait}::{method}"] = " ".join(pending)
                 pending = []
             else:
+                # A trait implemented for a type declares a method the reader
+                # can call, and the doc above it belongs to that method.
+                implemented = IMPL.match(line)
+                if implemented and pending:
+                    docs[f"{implemented.group(1)}::{implemented.group(2)}"] = " ".join(
+                        pending
+                    )
                 opened = TRAIT.match(line)
                 if opened and line.rstrip().endswith("{"):
                     trait = opened.group(1)
@@ -177,6 +185,20 @@ def verify(page, expected):
     )
     if absent:
         raise SystemExit("the reference left out " + ", ".join(absent))
+    # A name on the page with nothing beside it is not a reference either: the
+    # reader is left to guess what the item is for.
+    bare = []
+    for key, body in re.findall(
+        r'<div class="entry" data-api-entry="([^"]*)"[^>]*>(.*?)(?=<div class="entry"|</section>)',
+        page,
+        re.S,
+    ):
+        name = re.search(r'class="name">([^<]+)<', body)
+        what = re.search(r'<p class="what">(.*?)</p>', body, re.S)
+        if not what or not what.group(1).strip():
+            bare.append(name.group(1) if name else key.split(" ")[0])
+    if bare:
+        raise SystemExit("the reference describes nothing for " + ", ".join(bare))
 
 
 def render():

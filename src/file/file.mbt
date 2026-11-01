@@ -389,6 +389,7 @@ fn File::accept(self : File, bytes : Bytes) -> Result[Unit, String] {
 }
 
 ///|
+/// Appends the line to the file, through rotation, compression and the buffer.
 pub impl @moonlog.Sink for File with fn write(self, entry) {
   self.accept(@utf8.encode(entry.line + "\n"))
 }
