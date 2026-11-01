@@ -74,6 +74,11 @@ jobs:
           python3 scripts/gen_api.py || python scripts/gen_api.py
           git -c core.autocrlf=false diff --ignore-cr-at-eol --exit-code docs/api.html
 
+      - name: the pages carry the version moon.mod declares
+        run: |
+          python3 scripts/stamp_version.py || python scripts/stamp_version.py
+          git -c core.autocrlf=false diff --ignore-cr-at-eol --exit-code docs
+
   # The two network sinks are tested against real servers, not against a stub:
   # Loki for the push, Mailpit for the letter. The tests read their address from
   # the environment, so a run without the services skips them.
