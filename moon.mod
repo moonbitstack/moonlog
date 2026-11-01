@@ -1,6 +1,6 @@
 name = "moonbitstack/moonlog"
 
-version = "0.1.3"
+version = "0.1.4"
 
 source = "src"
 
@@ -21,7 +21,7 @@ import {
   "moonbitstack/moonfetch@0.1.2",
   "moonbitstack/moonyaml@0.1.3",
   "moonbitstack/moontoml@0.1.0",
-  "moonbitstack/moonschema@0.2.2",
+  "moonbitstack/moonschema@0.2.3",
   "moonbitstack/moonjson@0.4.2",
   "moonbitstack/moonbase@0.4.2",
   "moonbitstack/moontls@0.9.6",
