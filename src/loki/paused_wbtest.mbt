@@ -18,7 +18,7 @@ async test "a push to a paused Loki waits, lands when it answers, and reads back
     Some(address) => address
     None => return
   }
-  let marker = match @env.get_env_var("MOONLOG_LOKI_PAUSED") {
+  let marker = match @env.get_env_var("MOONLOG_LOKI_WAITING") {
     Some(path) => path
     None => return
   }

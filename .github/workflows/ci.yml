@@ -180,20 +180,20 @@ jobs:
       - name: a push waits out a paused Loki
         env:
           MOONLOG_LOKI_URL: http://127.0.0.1:3100
-          MOONLOG_LOKI_PAUSED: ${{ runner.temp }}/moonlog-loki-waiting
+          MOONLOG_LOKI_WAITING: ${{ runner.temp }}/moonlog-loki-waiting
         run: |
           container=$(docker ps --filter "publish=3100" --format "{{.ID}}" | head -n 1)
           if [ -z "$container" ]; then
             echo "::error::no container publishes 3100"
             exit 1
           fi
-          rm -f "$MOONLOG_LOKI_PAUSED"
+          rm -f "$MOONLOG_LOKI_WAITING"
           docker pause "$container"
           moon test src/loki/paused_wbtest.mbt --target native -i 0 &
           test_pid=$!
           waiting=0
           for _ in $(seq 600); do
-            if [ -f "$MOONLOG_LOKI_PAUSED" ]; then
+            if [ -f "$MOONLOG_LOKI_WAITING" ]; then
               waiting=1
               break
             fi
@@ -215,20 +215,20 @@ jobs:
         env:
           MOONLOG_SMTP_HOST: 127.0.0.1
           MOONLOG_MAILPIT_URL: http://127.0.0.1:8025
-          MOONLOG_SMTP_STOPPED: ${{ runner.temp }}/moonlog-smtp-waiting
+          MOONLOG_SMTP_WAITING: ${{ runner.temp }}/moonlog-smtp-waiting
         run: |
           container=$(docker ps --filter "publish=1025" --format "{{.ID}}" | head -n 1)
           if [ -z "$container" ]; then
             echo "::error::no container publishes 1025"
             exit 1
           fi
-          rm -f "$MOONLOG_SMTP_STOPPED"
+          rm -f "$MOONLOG_SMTP_WAITING"
           docker stop "$container"
           moon test src/mail/stopped_wbtest.mbt --target native -i 0 &
           test_pid=$!
           waiting=0
           for _ in $(seq 600); do
-            if [ -f "$MOONLOG_SMTP_STOPPED" ]; then
+            if [ -f "$MOONLOG_SMTP_WAITING" ]; then
               waiting=1
               break
             fi

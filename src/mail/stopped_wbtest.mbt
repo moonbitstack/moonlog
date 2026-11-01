@@ -18,7 +18,7 @@ async test "a stopped Mailpit is retried, and the letter arrives when it is back
     Some(host) => host
     None => return
   }
-  let marker = match @env.get_env_var("MOONLOG_SMTP_STOPPED") {
+  let marker = match @env.get_env_var("MOONLOG_SMTP_WAITING") {
     Some(path) => path
     None => return
   }
