@@ -90,11 +90,20 @@ pub fn Incident::new(
 }
 
 ///|
+/// `2023-11-14T22:13:20.000000000Z`, which is how an incident says when its
+/// failure began.
+fn stamp(time : Int64) -> String {
+  let out = StringBuilder()
+  write_iso_nanos(out, time)
+  out.to_string()
+}
+
+///|
 /// The record an incident becomes: `error` when something failed, `info` when
 /// something works again, with the failures on one field.
 pub fn Incident::describe(
   self : Incident,
-  target~ : String = "moonlog",
+  target~ : String = "serlog",
 ) -> Record {
   let (level, msg) = match self.phase {
     Opened => (error, "sink `" + self.sink + "` failed: " + self.error)
@@ -128,7 +137,9 @@ pub fn Incident::describe(
     ("failures", Value::of_str(failures.to_string())),
     ("skipped", Value::of_long(self.skipped)),
     ("dropped", Value::of_long(self.dropped)),
-    ("since", Value::of_long(self.since)),
+    // A timestamp, written the way every implementation writes it: RFC 3339 in
+    // UTC with nanoseconds, not a count of them.
+    ("since", Value::of_str(stamp(self.since))),
   ])
 }
 
