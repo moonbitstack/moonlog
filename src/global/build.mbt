@@ -169,7 +169,7 @@ fn loki_of(slot : @config.Slot) -> @loki.Loki raise @config.Refused {
     },
     batch=match slot.count("batch") {
       Some(batch) => batch
-      None => 512
+      None => 1_000
     },
     timeout=match slot.span("timeout") {
       Some(span) => (span / 1_000_000_000L).to_int()

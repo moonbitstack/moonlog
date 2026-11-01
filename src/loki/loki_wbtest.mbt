@@ -190,3 +190,13 @@ async test "a push that cannot reach the server keeps the batch" {
   assert_eq(sink.pending(), 1)
   assert_eq(sink.failures(), 1L)
 }
+
+///|
+/// The numbers the shared specification gives a Loki queue: eight thousand
+/// entries, a thousand a request, ten seconds to answer.
+test "the queue a Loki sink starts with is the one the specification gives" {
+  let limits = Limits::new()
+  assert_eq(limits.capacity, 8_192)
+  assert_eq(limits.batch, 1_000)
+  assert_eq(limits.timeout, 10)
+}

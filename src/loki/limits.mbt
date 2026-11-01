@@ -16,11 +16,12 @@ pub(all) struct Limits {
 }
 
 ///|
-/// Eight thousand entries, which is a few seconds of a busy service, and one
-/// request's worth of them.
+/// Eight thousand entries, which is a few seconds of a busy service, and a
+/// thousand of them — a second at a busy service — in one request. The numbers
+/// the shared specification gives a Loki queue.
 pub fn Limits::new(
   capacity~ : Int32 = 8_192,
-  batch~ : Int32 = 512,
+  batch~ : Int32 = 1_000,
   timeout~ : Int32 = 10,
 ) -> Limits {
   { capacity, batch, timeout, }

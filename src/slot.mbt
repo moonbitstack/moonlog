@@ -132,6 +132,7 @@ pub struct Slot {
   mut on_fail : OnFail
   mut queue : Queue?
   mut retries : Int32
+  priv mut retries_given : Bool
   mut breaker : Breaker
   mut dropped : Int64
   mut suppressed : Int64
@@ -157,6 +158,7 @@ pub fn Slot::new(sink : &Sink, name~ : String) -> Slot {
     on_fail: Ignore,
     queue: None,
     retries: 0,
+    retries_given: false,
     breaker: Breaker::new(probe_default, 0L),
     dropped: 0L,
     suppressed: 0L,
@@ -254,6 +256,7 @@ pub fn Slot::queue(self : Slot, queue : Queue) -> Slot {
 /// Tries a failed write this many more times, without pausing.
 pub fn Slot::retries(self : Slot, retries : Int32) -> Slot {
   self.retries = retries
+  self.retries_given = true
   self
 }
 
@@ -404,7 +407,7 @@ fn Slot::flush(self : Slot, scene : Scene, now : Int64) -> Report {
         return { fault: None, phase, }
       }
       Some(error) =>
-        if tried >= self.retries {
+        if tried >= self.retry_limit() {
           let phase = self.breaker.fault(
             now,
             error,
@@ -451,13 +454,29 @@ fn Slot::deliver(
 }
 
 ///|
+/// How many more times a failed write is tried.
+///
+/// Three behind a queue, none when the sink writes directly — a write that has
+/// nowhere to wait should not hold the caller — unless the slot was told
+/// otherwise.
+fn Slot::retry_limit(self : Slot) -> Int32 {
+  if self.retries_given {
+    self.retries
+  } else if self.queue is Some(_) {
+    3
+  } else {
+    0
+  }
+}
+
+///|
 fn Slot::attempt(self : Slot, entry : Entry) -> Result[Unit, String] {
   let mut tries = 0
   while true {
     match self.sink.write(entry) {
       Ok(_) => return Ok(())
       Err(error) =>
-        if tries >= self.retries {
+        if tries >= self.retry_limit() {
           return Err(error)
         } else {
           tries = tries + 1

@@ -571,6 +571,7 @@ pub struct Slot {
   mut suppressed : Int64
   buffered : Array[Record]
   mut buffered_at : Int64
+  // private fields
 }
 pub fn Slot::alarm_only(Self) -> Self
 pub fn Slot::at(Self, Level) -> Self

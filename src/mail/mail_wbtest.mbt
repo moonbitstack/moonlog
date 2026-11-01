@@ -205,3 +205,14 @@ async test "a mail that cannot reach the server keeps the records" {
   assert_eq(sink.failures(), 1L)
   assert_eq(sink.sent(), 0L)
 }
+
+///|
+/// The numbers the shared specification gives a mail queue: a thousand records
+/// a mail, gathered over a minute.
+test "the batch a mail sink starts with is the one the specification gives" {
+  let sink = Mail::new(host="localhost", from="moonlog@example.com", to=[
+    "oncall@example.com",
+  ])
+  assert_eq(sink.window(), 60_000_000_000L)
+  assert_eq(sink.at_most(), 1_000)
+}

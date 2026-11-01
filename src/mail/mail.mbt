@@ -56,7 +56,7 @@ pub fn Mail::new(
   level~ : @moonlog.Level = @moonlog.error,
   window~ : Int64 = window_default,
   at_most~ : Int32 = at_most_default,
-  capacity~ : Int32 = 512,
+  capacity~ : Int32 = 1_024,
   clock~ : () -> Int64 = fn() { @env.now().reinterpret_as_int64() * 1_000_000L },
 ) -> Mail {
   let port = match port {

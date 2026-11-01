@@ -221,7 +221,7 @@ A `Slot` is where everything else lives:
 | `layout` | the profile's pattern | how entries are written |
 | `coloured` | false | whether the line carries escapes |
 | `queue` | direct | `size`, `batch`, `wait`, `full`: `Drop` or `Block` |
-| `retries` | 0 | how many more times a failed write is tried |
+| `retries` | 3 behind a queue, 0 when direct | how many more times a failed write is tried |
 | `probe` | 5 s | first wait before probing a failed sink, doubling to 5 min |
 | `on_fail` | `Ignore` | `Panic`, `Ignore`, or `Alarm(tiers)` |
 | `alarm_only` | false | keep it off the log route |
@@ -268,7 +268,9 @@ let _ = hub.add(
 
 An incident becomes a record: `error` when a sink failed, `info` when it works
 again, with `sink`, `kind`, `phase`, `failures`, `skipped`, `dropped` and `since`
-on it. Alarm records skip slot filters, because they are not a message from your
+on it — `since` a timestamp in UTC to the nanosecond, and the record's target
+`serlog`, because that is the name the shared specification gives the reporter.
+Alarm records skip slot filters, because they are not a message from your
 program.
 
 ### Profiles

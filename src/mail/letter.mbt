@@ -34,7 +34,7 @@ pub let window_default : Int64 = 60_000_000_000L
 ///|
 /// How many records one mail carries; a burst larger than this is sent in
 /// several mails rather than one too big to read.
-pub let at_most_default : Int32 = 100
+pub let at_most_default : Int32 = 1_000
 
 ///|
 /// One record waiting to be mailed.

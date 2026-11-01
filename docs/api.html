@@ -811,7 +811,7 @@
           <p class="what">What a delivery did: the failure it met, if any, and the phase an alarm is owed, if any. A recovery is a phase too, which is why this is not a <code>Result</code>.</p>
         </div>
         <div class="entry" data-api-entry="Slot Slot one sink with the settings around it  name  filter  processors  layout  colour  queue  retries  health and the policy for failure   a slot is a value an application builds and hands to a hub  nothing about it is process wide  so two hubs can hold two slots writing the same file in two formats and neither knows about the other ">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span><span class="rest">name : String, mut kind : String, sink : &amp;Sink, mut filter : Filter?, chain : Array[&amp;Processor], mut layout : &amp;Layout, mut layout_given : Bool, mut colour : Bool, mut alarm_only : Bool, mut on_fail : OnFail, mut queue : Queue?, mut retries : Int32, mut breaker : Breaker, mut dropped : Int64, mut suppressed : Int64, buffered : Array[Record], mut buffered_at : Int64</span></div>
+          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span><span class="rest">name : String, mut kind : String, sink : &amp;Sink, mut filter : Filter?, chain : Array[&amp;Processor], mut layout : &amp;Layout, mut layout_given : Bool, mut colour : Bool, mut alarm_only : Bool, mut on_fail : OnFail, mut queue : Queue?, mut retries : Int32, mut retries_given : Bool, mut breaker : Breaker, mut dropped : Int64, mut suppressed : Int64, buffered : Array[Record], mut buffered_at : Int64</span></div>
           <p class="what">One sink with the settings around it: name, filter, processors, layout, colour, queue, retries, health and the policy for failure.  A slot is a value an application builds and hands to a hub. Nothing about it is process-wide, so two hubs can hold two slots writing the same file in two formats and neither knows about the other.</p>
         </div>
         <div class="entry" data-api-entry="Slot::alarm_only alarm_only keeps it off the log route  for alarms only ">
@@ -1341,9 +1341,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::capacity</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
           <p class="what">The same limits, holding a different number of entries.</p>
         </div>
-        <div class="entry" data-api-entry="Limits::new new eight thousand entries  which is a few seconds of a busy service  and one request s worth of them ">
+        <div class="entry" data-api-entry="Limits::new new eight thousand entries  which is a few seconds of a busy service  and a thousand of them   a second at a busy service   in one request  the numbers the shared specification gives a loki queue ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::new</span><span class="rest">(capacity? : Int32, batch? : Int32, timeout? : Int32) -&gt; Self</span></div>
-          <p class="what">Eight thousand entries, which is a few seconds of a busy service, and one request's worth of them.</p>
+          <p class="what">Eight thousand entries, which is a few seconds of a busy service, and a thousand of them — a second at a busy service — in one request. The numbers the shared specification gives a Loki queue.</p>
         </div>
         <div class="entry" data-api-entry="Limits::timeout timeout the same limits  waiting a different number of seconds for an answer ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Limits::timeout</span><span class="rest">(Self, Int32) -&gt; Self</span></div>
