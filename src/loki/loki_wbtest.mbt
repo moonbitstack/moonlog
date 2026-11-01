@@ -140,3 +140,53 @@ async test "a push reaches a running Loki" {
   assert_eq(sink.sent(), 1L)
   assert_eq(sink.pending(), 0)
 }
+
+///|
+#cfg(target="native")
+async test "a line Loki will never take is refused, not tried again" {
+  let address = match @env.get_env_var("MOONLOG_LOKI_URL") {
+    Some(address) => address
+    None => return
+  }
+  let sink = Loki::new(url=address, labels=[("job", "moonlog-test")])
+  // Loki's retention window will not take a sample this old and answers 400;
+  // sending that batch again would spin for ever, so it is counted as refused
+  // and dropped instead of coming back to the queue.
+  ignore(
+    sink.write(
+      entry_of(
+        @moonlog.info,
+        1_282_982_400_000_000_000L,
+        "moonlog is too old for this Loki",
+        [],
+      ),
+    ),
+  )
+  let report = sink.push()
+  assert_true(report.retry is None)
+  assert_eq(report.sent, 0)
+  assert_eq(report.rejected, 1)
+  assert_eq(sink.rejected(), 1L)
+  assert_eq(sink.pending(), 0)
+}
+
+///|
+/// A server that is not there at all: the batch goes back to the queue instead
+/// of going down with the failed request, and the answer asks for another try.
+#cfg(target="native")
+async test "a push that cannot reach the server keeps the batch" {
+  let sink = Loki::new(
+    url="http://127.0.0.1:1",
+    labels=[("job", "moonlog-test")],
+    limits=Limits::new(timeout=2),
+  )
+  ignore(
+    sink.write(entry_of(@moonlog.info, 0L, "moonlog has nowhere to go", [])),
+  )
+  let report = sink.push()
+  assert_true(report.retry is Some(_))
+  assert_eq(report.sent, 0)
+  assert_eq(report.rejected, 0)
+  assert_eq(sink.pending(), 1)
+  assert_eq(sink.failures(), 1L)
+}

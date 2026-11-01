@@ -1,5 +1,6 @@
 import {
   "moonbitstack/moonlog",
+  "moonbitlang/core/debug",
   "moonbitstack/moonfetch",
   "moonbitstack/moonbase/base64",
   "moonbitlang/core/env",
@@ -20,6 +21,7 @@ options(
     "report.mbt": [ "native", "wasm" ],
     "loki.mbt": [ "native", "wasm" ],
     "loki_wbtest.mbt": [ "native", "wasm" ],
+    "paused_wbtest.mbt": [ "native", "wasm" ],
   },
 )
 
@@ -28,4 +30,5 @@ options(
 // time on Linux.
 import {
   "moonbitlang/async",
+  "moonbitlang/async/fs",
 } for "wbtest"

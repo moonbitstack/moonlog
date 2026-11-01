@@ -167,3 +167,43 @@ jobs:
           assert "the disk is full" in body and "still full" in body, body
           print("loki and mailpit both have what the sinks sent")
           PY
+
+      # The two failures a network sink has to tell apart, each against the
+      # real server rather than a stub.
+      #
+      # A frozen Loki: `docker pause` leaves the port open and the answer
+      # never comes, which is the shape of a busy server. The push that meets
+      # it has to come back as worth another try with its batch still queued,
+      # and the line has to land once the server answers again. The test
+      # writes the file named here when it is waiting, so the pause covers its
+      # first push rather than its compilation.
+      - name: a push waits out a paused Loki
+        env:
+          MOONLOG_LOKI_URL: http://127.0.0.1:3100
+          MOONLOG_LOKI_PAUSED: ${{ runner.temp }}/moonlog-loki-waiting
+        run: |
+          container=$(docker ps --filter "publish=3100" --format "{{.ID}}" | head -n 1)
+          if [ -z "$container" ]; then
+            echo "::error::no container publishes 3100"
+            exit 1
+          fi
+          rm -f "$MOONLOG_LOKI_PAUSED"
+          docker pause "$container"
+          moon test src/loki/paused_wbtest.mbt --target native -i 0 &
+          test_pid=$!
+          waiting=0
+          for _ in $(seq 600); do
+            if [ -f "$MOONLOG_LOKI_PAUSED" ]; then
+              waiting=1
+              break
+            fi
+            sleep 1
+          done
+          docker unpause "$container"
+          if [ "$waiting" != 1 ]; then
+            echo "::error::the push never reached the paused server"
+            wait "$test_pid" || true
+            exit 1
+          fi
+          wait "$test_pid"
+

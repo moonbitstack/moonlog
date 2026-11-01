@@ -259,12 +259,26 @@ pub async fn Loki::push(self : Loki) -> Report {
       headers.push(("authorization", "Basic " + basic(user, password)))
     None => ()
   }
+  // A server that is away, a connection that is refused and a request that
+  // runs out of time are all the same answer as a 429: come back later. The
+  // batch goes back on the queue first, because a push that throws would
+  // otherwise take the history with it.
   let answer = @moonfetch.post(
     self.url,
     body=@moonfetch.Body::Text(body),
     headers~,
     timeout=self.limits.timeout,
-  )
+  ) catch {
+    error => {
+      self.failures = self.failures + 1L
+      self.restore(batch)
+      return {
+        sent: 0,
+        rejected: 0,
+        retry: Some("loki did not answer: " + @debug.to_string(error)),
+      }
+    }
+  }
   match Verdict::of(answer.status) {
     Accepted => {
       self.sent = self.sent + batch.length().to_int64()
