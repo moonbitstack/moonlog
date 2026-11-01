@@ -186,3 +186,22 @@ async test "a mail reaches a running Mailpit" {
   assert_eq(sink.pending(), 0)
   assert_eq(sink.sent(), 2L)
 }
+
+///|
+/// A server that is not listening at all: the records stay queued, in order,
+/// and the failure is the answer, so the loop that owns the sink can come back
+/// with the same batch instead of losing it.
+#cfg(target="native")
+async test "a mail that cannot reach the server keeps the records" {
+  let sink = Mail::new(host="127.0.0.1", port=1, from="moonlog@example.com", to=[
+    "oncall@example.com",
+  ])
+  ignore(sink.write(entry_of(@moonlog.error, 0L, "the disk is full", [])))
+  match sink.send() {
+    Ok(count) => fail("a closed port took " + count.to_string() + " records")
+    Err(_) => ()
+  }
+  assert_eq(sink.pending(), 1)
+  assert_eq(sink.failures(), 1L)
+  assert_eq(sink.sent(), 0L)
+}

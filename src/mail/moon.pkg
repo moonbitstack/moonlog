@@ -23,6 +23,7 @@ options(
     "mail.mbt": [ "native", "wasm" ],
     "letter.mbt": [ "native", "wasm" ],
     "mail_wbtest.mbt": [ "native", "wasm" ],
+    "stopped_wbtest.mbt": [ "native", "wasm" ],
   },
 )
 
@@ -31,4 +32,6 @@ options(
 // time on Linux.
 import {
   "moonbitlang/async",
+  "moonbitlang/async/fs",
+  "moonbitstack/moonfetch",
 } for "wbtest"

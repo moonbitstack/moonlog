@@ -207,3 +207,37 @@ jobs:
           fi
           wait "$test_pid"
 
+      # A stopped Mailpit: the port is gone, so a send fails at once. The
+      # records have to stay queued in order, the slot's health machine — the
+      # breaker a mail slot runs — has to go down and back up, and the letter
+      # that waited has to be in Mailpit's own API once the retry lands.
+      - name: a letter waits out a stopped Mailpit
+        env:
+          MOONLOG_SMTP_HOST: 127.0.0.1
+          MOONLOG_MAILPIT_URL: http://127.0.0.1:8025
+          MOONLOG_SMTP_STOPPED: ${{ runner.temp }}/moonlog-smtp-waiting
+        run: |
+          container=$(docker ps --filter "publish=1025" --format "{{.ID}}" | head -n 1)
+          if [ -z "$container" ]; then
+            echo "::error::no container publishes 1025"
+            exit 1
+          fi
+          rm -f "$MOONLOG_SMTP_STOPPED"
+          docker stop "$container"
+          moon test src/mail/stopped_wbtest.mbt --target native -i 0 &
+          test_pid=$!
+          waiting=0
+          for _ in $(seq 600); do
+            if [ -f "$MOONLOG_SMTP_STOPPED" ]; then
+              waiting=1
+              break
+            fi
+            sleep 1
+          done
+          docker start "$container"
+          if [ "$waiting" != 1 ]; then
+            echo "::error::the send never reached the stopped server"
+            wait "$test_pid" || true
+            exit 1
+          fi
+          wait "$test_pid"

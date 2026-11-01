@@ -434,13 +434,28 @@ pub async fn Mail::send(self : Mail) -> Result[Int32, String] {
       }
   }
   let now = (self.clock)()
-  let smtp = @net.Smtp::connect(self.host, security, port=self.port, now~)
-  match self.auth {
-    Some((user, password)) => smtp.auth(@sasl.Plain::new(user, password))
-    None => ()
+  // A server that is away, a connection that is refused and a greeting that
+  // never comes are all the same answer as a refused recipient: the batch goes
+  // back on the queue and the failure is what the caller's loop retries. A
+  // throw here would take the records with it.
+  let replies = try {
+    let smtp = @net.Smtp::connect(self.host, security, port=self.port, now~)
+    match self.auth {
+      Some((user, password)) => smtp.auth(@sasl.Plain::new(user, password))
+      None => ()
+    }
+    let answers = smtp.send(self.from, self.to, letter.encode())
+    smtp.quit()
+    answers
+  } catch {
+    error => {
+      self.failures = self.failures + 1L
+      self.restore(batch)
+      return Err(
+        "the server would not take the mail: " + @debug.to_string(error),
+      )
+    }
   }
-  let replies = smtp.send(self.from, self.to, letter.encode())
-  smtp.quit()
   let mut refused = None
   for pair in replies {
     if !pair.1.is_ok() {
