@@ -544,13 +544,13 @@
 
         <h2 id="layouts" data-api-group>Layouts</h2>
 
-        <div class="entry" data-api-entry="Clock Clock how an instant is written   the library holds no clock  so every instant here arrives as nanoseconds since the epoch and every local time is the instant shifted by an offset that was handed in  a  custom  spec is strftime  the subset below ">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Clock</span><span class="rest">Local · Utc · Rfc3339 · Unix · UnixMs · UnixNs · Custom(String)</span></div>
-          <p class="what">How an instant is written.  The library holds no clock, so every instant here arrives as nanoseconds since the epoch and every local time is the instant shifted by an offset that was handed in. A <code>Custom</code> spec is strftime, the subset below.</p>
+        <div class="entry" data-api-entry="Clock Clock how an instant is written   the library holds no clock  so every instant here arrives as nanoseconds since the epoch and every local time is the instant shifted by an offset that was handed in   custom  is a strftime spec   go  a reference time layout and  ldml  a unicode date pattern  each with everything moondate reads in that style ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Clock</span><span class="rest">Local · Utc · Rfc3339 · Iso · Unix · UnixMs · UnixNs · Custom(String) · Go(String) · Ldml(String)</span></div>
+          <p class="what">How an instant is written.  The library holds no clock, so every instant here arrives as nanoseconds since the epoch and every local time is the instant shifted by an offset that was handed in. <code>Custom</code> is a strftime spec, <code>Go</code> a reference-time layout and <code>Ldml</code> a Unicode date pattern, each with everything moondate reads in that style.</p>
         </div>
-        <div class="entry" data-api-entry="Clock::parse parse a clock spec  as a   time     hole spells it ">
+        <div class="entry" data-api-entry="Clock::parse parse a clock spec  as a   time     hole spells it  a spec that is none of the names is strftime  unless  go   or  ldml   says otherwise ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Clock::parse</span><span class="rest">(StringView) -&gt; Self</span></div>
-          <p class="what">A clock spec, as a <code>{time:…}</code> hole spells it.</p>
+          <p class="what">A clock spec, as a <code>{time:…}</code> hole spells it. A spec that is none of the names is strftime, unless <code>go:</code> or <code>ldml:</code> says otherwise.</p>
         </div>
         <div class="entry" data-api-entry="Clock::write write writes  time  in this clock s form   offset  is seconds east of utc ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Clock::write</span><span class="rest">(Self, StringBuilder, Int64, Int32) -&gt; Unit</span></div>
@@ -1520,7 +1520,7 @@
           <p class="what">The alarm as the hub wants it.</p>
         </div>
         <div class="entry" data-api-entry="Config Config a logging configuration  read from a document and checked against the settings the shipped sinks read   reading a document does not build anything  it says what the deployment asked for  and the application   or  moonlog global    turns that into sinks  that split is what lets the same document be checked  dumped and reloaded without a file system in the way ">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Config</span><span class="rest">mut profile : @moonlog.Profile, mut filter : String, mut slots : Array[Slot], mut alarm : Alarm?, mut app : String, mut env : String, mut instance : String, mut levels : Array[@moonlog.Level], mut chain : Array[&amp;@moonlog.Processor], mut process : Array[Json], mut alarms : Array[(String, Alarm)], mut watch : Int64?, mut filter_env : String?</span></div>
+          <div class="sig"><span class="kind ty">type</span><span class="name">Config</span><span class="rest">mut profile : @moonlog.Profile, mut filter : String, mut slots : Array[Slot], mut alarm : Alarm?, mut app : String, mut env : String, mut instance : String, mut levels : Array[@moonlog.Level], mut chain : Array[&amp;@moonlog.Processor], mut process : Array[Json], mut alarms : Array[(String, Alarm)], mut watch : Int64?, mut filter_env : String?, mut kinds : Array[Kind]</span></div>
           <p class="what">A logging configuration, read from a document and checked against the settings the shipped sinks read.  Reading a document does not build anything: it says what the deployment asked for, and the application — or <code>moonlog/global</code> — turns that into sinks. That split is what lets the same document be checked, dumped and reloaded without a file system in the way.</p>
         </div>
         <div class="entry" data-api-entry="Config::alarm alarm the alarm the document describes  if any ">
@@ -1534,6 +1534,10 @@
         <div class="entry" data-api-entry="Config::app app the deployment s own name  as the document gives it ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Config::app</span><span class="rest">(Self) -&gt; String</span></div>
           <p class="what">The deployment's own name, as the document gives it.</p>
+        </div>
+        <div class="entry" data-api-entry="Config::build build the sink the program s own kind makes for  slot   or  none  when the slot is a built in kind ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::build</span><span class="rest">(Self, Slot) -&gt; &amp;@moonlog.Sink? raise Refused</span></div>
+          <p class="what">The sink the program's own kind makes for <code>slot</code>, or <code>None</code> when the slot is a built-in kind.</p>
         </div>
         <div class="entry" data-api-entry="Config::chain chain the chain every record walks before a slot sees it ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Config::chain</span><span class="rest">(Self) -&gt; Array[&amp;@moonlog.Processor]</span></div>
@@ -1571,9 +1575,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Config::new</span><span class="rest">() -&gt; Self</span></div>
           <p class="what">What a configuration with no document says: the default profile, the default filter, and nothing to write to.</p>
         </div>
-        <div class="entry" data-api-entry="Config::parse parse reads a document      name   in any string is replaced by the environment variable of that name  a name the environment does not have is refused  because a configuration that silently logs to an empty url is worse than one that will not start ">
-          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::parse</span><span class="rest">(StringView, format? : Format, lookup? : (String) -&gt; String?) -&gt; Self raise Refused</span></div>
-          <p class="what">Reads a document.  <code>${NAME}</code> in any string is replaced by the environment variable of that name; a name the environment does not have is refused, because a configuration that silently logs to an empty URL is worse than one that will not start.</p>
+        <div class="entry" data-api-entry="Config::parse parse reads a document      name   in any string is replaced by the environment variable of that name  a name the environment does not have is refused  because a configuration that silently logs to an empty url is worse than one that will not start    kinds  are sinks of the program s own that the document may name beside the built in ones ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::parse</span><span class="rest">(StringView, format? : Format, lookup? : (String) -&gt; String?, kinds? : Array[Kind]) -&gt; Self raise Refused</span></div>
+          <p class="what">Reads a document.  <code>${NAME}</code> in any string is replaced by the environment variable of that name; a name the environment does not have is refused, because a configuration that silently logs to an empty URL is worse than one that will not start.  <code>kinds</code> are sinks of the program's own that the document may name beside the built-in ones.</p>
         </div>
         <div class="entry" data-api-entry="Config::process process the chain s steps as the document wrote them  which is what  dump  writes back ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Config::process</span><span class="rest">(Self) -&gt; Array[Json]</span></div>
@@ -1635,6 +1639,14 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Format::write</span><span class="rest">(Self, Json) -&gt; String</span></div>
           <p class="what">Writes the tree back out in this format.</p>
         </div>
+        <div class="entry" data-api-entry="Kind Kind a sink of your own that a document can name  what  kind  it answers to  the keys it reads beside the ones every slot has  and how to make it from the slot once the document is read   a name a built in kind has is refused  a document that says  file  should not change meaning with what the program passed in ">
+          <div class="sig"><span class="kind ty">type</span><span class="name">Kind</span><span class="rest">name : String, keys : Array[String], build : (Slot) -&gt; &amp;@moonlog.Sink raise Refused</span></div>
+          <p class="what">A sink of your own that a document can name: what <code>kind</code> it answers to, the keys it reads beside the ones every slot has, and how to make it from the slot once the document is read.  A name a built-in kind has is refused: a document that says <code>file</code> should not change meaning with what the program passed in.</p>
+        </div>
+        <div class="entry" data-api-entry="Kind::new new a kind called  name   built by  build   whose keys are checked for being there and no more  the shape of each is for  build  to judge  through  slot  text  and the rest ">
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Kind::new</span><span class="rest">(String, (Slot) -&gt; &amp;@moonlog.Sink raise Refused, keys? : Array[String]) -&gt; Self</span></div>
+          <p class="what">A kind called <code>name</code>, built by <code>build</code>, whose keys are checked for being there and no more: the shape of each is for <code>build</code> to judge, through <code>Slot::text</code> and the rest.</p>
+        </div>
         <div class="entry" data-api-entry="Queue Queue a queue as a document writes it ">
           <div class="sig"><span class="kind ty">type</span><span class="name">Queue</span><span class="rest">size : Int32, batch : Int32, wait : Int64, full : @moonlog.Full</span></div>
           <p class="what">A queue as a document writes it.</p>
@@ -1659,9 +1671,9 @@
           <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::flag</span><span class="rest">(Self, String) -&gt; Bool?</span></div>
           <p class="what">A setting as a yes or no.</p>
         </div>
-        <div class="entry" data-api-entry="Slot::keys keys the keys this slot s kind reads  which is what a deployment file is checked against ">
+        <div class="entry" data-api-entry="Slot::keys keys the keys this slot s built in kind reads  which is what a deployment file is checked against ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::keys</span><span class="rest">(Self) -&gt; Array[String]</span></div>
-          <p class="what">The keys this slot's kind reads, which is what a deployment file is checked against.</p>
+          <p class="what">The keys this slot's built-in kind reads, which is what a deployment file is checked against.</p>
         </div>
         <div class="entry" data-api-entry="Slot::pairs pairs a setting as a table of strings  in document order where the format keeps one ">
           <div class="sig"><span class="kind fn">fn</span><span class="name">Slot::pairs</span><span class="rest">(Self, String) -&gt; Array[(String, String)]?</span></div>

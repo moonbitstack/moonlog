@@ -24,8 +24,10 @@
 fn spec_of(
   root : Map[String, Json],
   lookup : (String) -> String?,
+  kinds : Array[Kind],
 ) -> Config raise Refused {
   let config = Config::new()
+  config.kinds = kinds
   // Levels are read before anything that may name one.
   match root.get("levels") {
     Some(value) => config.levels = levels_of(value)
@@ -87,7 +89,8 @@ fn spec_of(
     }
   }
   match sinks {
-    Some(value) => config.slots = spec_sinks(value, config.levels, lookup)
+    Some(value) =>
+      config.slots = spec_sinks(value, config.levels, lookup, kinds)
     None => ()
   }
   // A named alarm a sink points at has to be one the document defines.
@@ -784,6 +787,7 @@ fn spec_sinks(
   value : Json,
   levels : Array[@moonlog.Level],
   lookup : (String) -> String?,
+  kinds : Array[Kind],
 ) -> Array[Slot] raise Refused {
   let items = match as_list(value) {
     Some(items) => items
@@ -831,7 +835,7 @@ fn spec_sinks(
     }
     seen.push(name)
     let translated = spec_sink_table(at, kind, fields)
-    let slot = slot_of(name, translated, lookup, at~, levels~)
+    let slot = slot_of(name, translated, lookup, kinds, at~, levels~)
     // A slot's own level or filter may name a level the document defined.
     match slot.filter {
       Some(spec) =>

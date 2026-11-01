@@ -60,6 +60,8 @@ priv enum Setting {
   Span
   Texts
   Pairs
+  /// A key of a sink kind the program brought, which judges the shape itself.
+  Any
 }
 
 ///|
@@ -148,6 +150,7 @@ fn wanted(setting : Setting) -> String {
     Span => "a span such as 5s"
     Texts => "a list of strings"
     Pairs => "a table of strings"
+    Any => "anything"
   }
 }
 
@@ -155,6 +158,7 @@ fn wanted(setting : Setting) -> String {
 /// Whether a value has the shape a setting asks for.
 fn shaped(setting : Setting, value : Json, at : String) -> Unit raise Refused {
   match setting {
+    Any => ()
     Text =>
       if as_text(value) is None {
         raise refuse(at, shown(value), wanted(setting))

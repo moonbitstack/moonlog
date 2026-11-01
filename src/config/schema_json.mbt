@@ -124,6 +124,7 @@ fn alarm_schema() -> Json {
 /// The schema of one setting, from the shape the parser checks for.
 fn setting_schema(setting : Setting) -> Json {
   match setting {
+    Any => object([])
     Text => object([("type", text("string"))])
     Flag => object([("type", text("boolean"))])
     Colour =>

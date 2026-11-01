@@ -110,8 +110,8 @@ pub fn Slot::pairs(self : Slot, key : String) -> Array[(String, String)]? {
 }
 
 ///|
-/// The keys this slot's kind reads, which is what a deployment file is checked
-/// against.
+/// The keys this slot's built-in kind reads, which is what a deployment file is
+/// checked against.
 pub fn Slot::keys(self : Slot) -> Array[String] {
   let names : Array[String] = []
   for pair in kinds {

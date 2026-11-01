@@ -249,6 +249,58 @@ test "examples: the Rust example's own sink kind" {
 }
 
 ///|
+/// The same document with the kind brought along, which is all it took.
+test "examples: a kind of the program's own reads its keys through the slot" {
+  let document =
+    #|app: mirror
+    #|sinks:
+    #|  - kind: console
+    #|    pattern: "{level:<5} {msg}{fields}"
+    #|  - kind: phone
+    #|    name: oncall
+    #|    phone: 13800138000
+    #|    level: warn
+    #|    pattern: "{level} {msg}"
+  let dialled = Ref("")
+  let phone = Kind::new("phone", keys=["phone"], slot => {
+    dialled.val = match slot.count("phone") {
+      Some(n) => n.to_string()
+      None => slot.text("phone").unwrap_or("")
+    }
+    @moonlog.Discard::new()
+  })
+  let config = Config::parse(document, lookup=example_env, kinds=[phone])
+  let slot = config.slots()[1]
+  assert_eq(slot.kind, "phone")
+  assert_eq(slot.name, "oncall")
+  assert_true(config.build(slot) is Some(_))
+  assert_true(dialled.val.length() > 0)
+  assert_true(config.build(config.slots()[0]) is None)
+}
+
+///|
+test "kinds: a key the kind does not read is refused, and a built-in name cannot be taken" {
+  let document =
+    #|sinks:
+    #|  - kind: phone
+    #|    name: oncall
+    #|    pager: 1
+  let phone = Kind::new("phone", keys=["phone"], _ => @moonlog.Discard::new())
+  let at = (text : String, kinds : Array[Kind]) => {
+    try {
+      ignore(Config::parse(text, lookup=example_env, kinds~))
+      None
+    } catch {
+      Refused(at~, ..) => Some(at)
+    }
+  }
+  assert_eq(at(document, [phone]), Some("sinks.0.pager"))
+  let taken = Kind::new("file", _ => @moonlog.Discard::new())
+  assert_eq(at("app: a\n", [taken]), Some("kinds"))
+  assert_eq(at("app: a\n", [phone, phone]), Some("kinds"))
+}
+
+///|
 /// The config page's document with `max_size` written `max_sise`.
 test "examples: a misspelt setting in the config page's document" {
   let document =

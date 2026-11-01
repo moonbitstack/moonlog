@@ -42,10 +42,12 @@ pub(all) struct Config {
   mut alarms : Array[(String, Alarm)]
   mut watch : Int64?
   mut filter_env : String?
+  mut kinds : Array[Kind]
 }
 pub fn Config::alarm(Self) -> Alarm?
 pub fn Config::alarms(Self) -> Array[(String, Alarm)]
 pub fn Config::app(Self) -> String
+pub fn Config::build(Self, Slot) -> &@moonlog.Sink? raise Refused
 pub fn Config::chain(Self) -> Array[&@moonlog.Processor]
 pub fn Config::dump(Self, format? : Format) -> String
 pub fn Config::env(Self) -> String
@@ -55,7 +57,7 @@ pub fn Config::instance(Self) -> String
 pub fn Config::levels(Self) -> Array[@moonlog.Level]
 pub fn Config::load(path~ : String) -> Self raise Refused
 pub fn Config::new() -> Self
-pub fn Config::parse(StringView, format? : Format, lookup? : (String) -> String?) -> Self raise Refused
+pub fn Config::parse(StringView, format? : Format, lookup? : (String) -> String?, kinds? : Array[Kind]) -> Self raise Refused
 pub fn Config::process(Self) -> Array[Json]
 pub fn Config::profile(Self) -> @moonlog.Profile
 pub fn Config::save(Self, path~ : String) -> Unit raise Refused
@@ -76,6 +78,13 @@ pub fn Format::of(StringView) -> Self raise Refused
 pub fn Format::parse(StringView) -> Self raise Refused
 pub fn Format::read(Self, StringView, String) -> Json raise Refused
 pub fn Format::write(Self, Json) -> String
+
+pub(all) struct Kind {
+  name : String
+  keys : Array[String]
+  build : (Slot) -> &@moonlog.Sink raise Refused
+}
+pub fn Kind::new(String, (Slot) -> &@moonlog.Sink raise Refused, keys? : Array[String]) -> Self
 
 pub(all) struct Queue {
   size : Int32

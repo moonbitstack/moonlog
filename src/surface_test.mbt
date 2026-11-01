@@ -212,8 +212,22 @@ test "clocks write every form, before 1970 as well" {
   assert_eq(write(@moonlog.Clock::parse("%z"), t, 3600), "+0100")
   assert_eq(write(@moonlog.Clock::parse("%:z"), t, 3600), "+01:00")
   assert_eq(write(@moonlog.Clock::parse("100%%"), t, 0), "100%")
-  assert_eq(write(@moonlog.Clock::parse("%q"), t, 0), "%q")
+  assert_eq(write(@moonlog.Clock::parse("%!"), t, 0), "%!")
   assert_eq(write(@moonlog.Clock::parse("end%"), t, 0), "end%")
   assert_eq(write(@moonlog.Clock::parse("%.3f"), t, 0), ".123")
-  assert_eq(write(@moonlog.Clock::parse("%f"), t, 0), ".123456789")
+  assert_eq(write(@moonlog.Clock::parse("%f"), t, 0), "123456")
+  assert_eq(write(@moonlog.Clock::parse("%A %j %U"), t, 0), "Tuesday 318 46")
+  assert_eq(write(@moonlog.Clock::parse("%X"), t, 0), "22:13:20")
+  assert_eq(
+    write(@moonlog.Clock::parse("go:2006-01-02T15:04:05.000Z07:00"), t, 3600),
+    "2023-11-14T23:13:20.123+01:00",
+  )
+  assert_eq(
+    write(@moonlog.Clock::parse("ldml:yyyy-MM-dd HH:mm:ss.SSS"), t, 3600),
+    "2023-11-14 23:13:20.123",
+  )
+  assert_eq(
+    write(@moonlog.Clock::parse("iso"), t, 3600),
+    "2023-11-14T22:13:20.123Z",
+  )
 }

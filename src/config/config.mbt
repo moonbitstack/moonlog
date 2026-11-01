@@ -33,6 +33,8 @@ pub(all) struct Config {
   mut watch : Int64?
   /// A variable whose value overrides `filter`.
   mut filter_env : String?
+  /// The sink kinds the program brought beside the built-in ones.
+  mut kinds : Array[Kind]
 }
 
 ///|
@@ -101,6 +103,7 @@ pub fn Config::new() -> Config {
     alarms: [],
     watch: None,
     filter_env: None,
+    kinds: [],
   }
 }
 
@@ -154,11 +157,17 @@ pub fn Alarm::tiers(self : Alarm) -> @moonlog.Tiers {
 /// name; a name the environment does not have is refused, because a
 /// configuration that silently logs to an empty URL is worse than one that
 /// will not start.
+///
+/// `kinds` are sinks of the program's own that the document may name beside the
+/// built-in ones.
 pub fn Config::parse(
   text : StringView,
   format~ : Format = Format::Yaml,
   lookup~ : (String) -> String? = fn(name) { @env.get_env_var(name) },
+  kinds? : Array[Kind],
 ) -> Config raise Refused {
+  let kinds = kinds.unwrap_or([])
+  checked(kinds)
   let tree = format.read(text, "")
   let root = match as_table(tree) {
     Some(root) => root
@@ -168,9 +177,10 @@ pub fn Config::parse(
   // profile `compat` or its alarms in a table is the shared specification's,
   // and is read by `spec_of`.
   if root.get("sinks") is Some(_) || root.get("compat") is Some(_) {
-    return spec_of(root, lookup)
+    return spec_of(root, lookup, kinds)
   }
   let config = Config::new()
+  config.kinds = kinds
   match root.get("levels") {
     Some(value) => config.levels = levels_of(value)
     None => ()
@@ -187,7 +197,7 @@ pub fn Config::parse(
           config.levels,
         )
       "level" => level_min = Some(level_named(key, value, config.levels))
-      "slots" => config.slots = slots_of(value, lookup)
+      "slots" => config.slots = slots_of(value, lookup, kinds)
       "alarm" => config.alarm = Some(alarm_of(value, lookup))
       "app" => config.app = word(key, value)
       "env" => config.env = word(key, value)
@@ -239,6 +249,7 @@ fn profile_of(at : String, value : Json) -> @moonlog.Profile raise Refused {
 fn slots_of(
   value : Json,
   lookup : (String) -> String?,
+  kinds : Array[Kind],
 ) -> Array[Slot] raise Refused {
   let table = match as_table(value) {
     Some(table) => table
@@ -246,7 +257,7 @@ fn slots_of(
   }
   let slots : Array[Slot] = []
   for name, body in table {
-    slots.push(slot_of(name, body, lookup))
+    slots.push(slot_of(name, body, lookup, kinds))
   }
   slots
 }
@@ -257,6 +268,7 @@ fn slot_of(
   name : String,
   body : Json,
   lookup : (String) -> String?,
+  kinds : Array[Kind],
   at? : String,
   levels? : Array[@moonlog.Level],
 ) -> Slot raise Refused {
@@ -277,11 +289,16 @@ fn slot_of(
   let known = match settings_of(kind) {
     Some(known) => known
     None =>
-      raise refuse(
-        at + ".kind",
-        "`" + kind + "`",
-        "console, file, loki, mail, memory or discard",
-      )
+      match own(kinds, kind) {
+        Some(mine) => loose(mine)
+        None =>
+          raise refuse(
+            at + ".kind",
+            "`" + kind + "`",
+            "console, file, loki, mail, memory or discard" +
+            kinds.fold(init="", (names, k) => names + ", " + k.name),
+          )
+      }
   }
   let settings = Map([])
   for key, value in table {

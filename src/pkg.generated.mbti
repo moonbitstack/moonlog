@@ -83,10 +83,13 @@ pub(all) enum Clock {
   Local
   Utc
   Rfc3339
+  Iso
   Unix
   UnixMs
   UnixNs
   Custom(String)
+  Go(String)
+  Ldml(String)
 } derive(Eq, @debug.Debug)
 pub fn Clock::equal(Self, Self) -> Bool
 pub fn Clock::not_equal(Self, Self) -> Bool

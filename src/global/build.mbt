@@ -63,7 +63,13 @@ fn refused(at : String, got : String, want : String) -> @config.Refused {
 
 ///|
 /// The sink one slot of a document asks for.
-fn built_of(slot : @config.Slot) -> Built raise @config.Refused {
+fn built_of(
+  config : @config.Config?,
+  slot : @config.Slot,
+) -> Built raise @config.Refused {
+  if config is Some(document) && document.build(slot) is Some(sink) {
+    return { sink, file: None, loki: None, mail: None, }
+  }
   let at = "slots." + slot.name
   match slot.kind {
     "console" | "stdio" => {

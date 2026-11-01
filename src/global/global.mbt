@@ -245,7 +245,7 @@ pub fn start(
     add(hub, slot)
   } else {
     for described in slots {
-      let built = built_of(described)
+      let built = built_of(config, described)
       match built.file {
         Some(file) => files.push(file)
         None => ()

@@ -25,5 +25,5 @@ import {
   "moonbitstack/moonjson@0.4.2",
   "moonbitstack/moonbase@0.4.2",
   "moonbitstack/moontls@0.9.6",
-  "moonbitstack/moondate@0.1.0",
+  "moonbitstack/moondate@0.1.2",
 }

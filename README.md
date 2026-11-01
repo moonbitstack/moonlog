@@ -198,7 +198,7 @@ Every token but `time` may end with `<N`, `>N` or `^N` to pad to N columns, then
 
 | Token | Options | Writes |
 |:--|:--|:--|
-| `time` | `local`, `utc`, `rfc3339`, `unix`, `unix_ms`, `unix_ns`, or strftime | the instant |
+| `time` | `local`, `utc`, `rfc3339`, `iso`, `unix`, `unix_ms`, `unix_ns`, a strftime spec, `go:` and a reference-time layout, or `ldml:` and a Unicode date pattern | the instant |
 | `level` | `lower` | the level, as the profile or the preset spells it |
 | `target` | `~N` shortens leading segments until it fits | where the record came from |
 | `module`, `func`, `file`, `line` | `file:base` keeps the name | the caller, `?` when unknown |
@@ -225,7 +225,14 @@ Every token but `time` may end with `<N`, `>N` or `^N` to pad to N columns, then
 
 A `Sink` is one method: `write(entry)`. An entry is the record and the line the
 slot's layout made of it. `Lines`, `Memory` and `Discard` come with the package;
-a sink of your own is a struct and three lines.
+a sink of your own is a struct and three lines. To let a configuration file name
+it, pass a `Kind` to `Config::parse`: what `kind` it answers to, the keys it reads,
+and how to make it from the slot.
+
+```moonbit
+let phone = @config.Kind::new("phone", keys=["phone"], slot => Phone::new(slot.text("phone")))
+@global.init(config=@config.Config::parse(text, kinds=[phone]))
+```
 
 A `Slot` is where everything else lives:
 
