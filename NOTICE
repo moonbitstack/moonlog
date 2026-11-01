@@ -5,6 +5,10 @@ This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 
 The behaviour this package implements follows the shared logging
 specification published with ServerLog (https://github.com/LeoHeco/ServerLog),
-which is distributed under the MIT licence. The cases in that specification
-are reproduced, as MoonBit tests, in src/*_wbtest.mbt; the code here is an
-independent implementation of the model they describe.
+which is distributed under the MIT licence.
+
+The case files of that specification are copied verbatim into
+scripts/serlog-cases/, and its published configuration examples into
+scripts/serlog-examples/; scripts/gen_cases.py and scripts/gen_examples.py turn
+them into the MoonBit tests under src/. The code here is an independent
+implementation of the model those files describe.
