@@ -91,6 +91,25 @@
           it.
         </p>
 
+        <p>
+          The specification this guide follows, and its implementations in Go,
+          Java, Node, Python and Rust, are called <code>serlog</code>; this is
+          the MoonBit one, <code>moonbitstack/moonlog</code>. A
+          <code>moon.pkg</code> may import it under the other name, so a file
+          reads the way a reader of any implementation expects — the items are
+          the same items, whichever name resolves them.
+        </p>
+        <div class="code">
+          <header><span class="tag">moon.pkg</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">import</span> {
+  <span class="s">"moonbitstack/moonlog"</span> @serlog,
+}
+
+<span class="c">// main.mbt</span>
+<span class="kw">let</span> hub = <span class="fn">@serlog.Hub::new</span>(clock=<span class="kw">fn</span>() { <span class="n">1_700_000_000_000_000_000L</span> })
+hub.<span class="fn">logger</span>(<span class="s">"mirror::sync"</span>).<span class="fn">info</span>(<span class="s">"starting"</span>)</pre>
+        </div>
+
         <h2 id="line">One line</h2>
         <p>
           A logger needs somewhere to write. The smallest useful sink is
@@ -615,9 +634,10 @@ config.<span class="fn">chain</span>().<span class="fn">length</span>()         
           The <a href="api.html">API reference</a> lists every name with its
           parameters. <a href="inside.html">Inside</a> explains why the pieces
           are shaped this way — the dispatch order, the time model, the health
-          machine and the alarm walk. The repository holds eight runnable
+          machine and the alarm walk. The repository holds nine runnable
           examples under <code>src/examples</code>, from a first hub to a
-          deployment document driving a process hub.
+          deployment document driving a process hub, and one that imports this
+          package under the name <code>serlog</code>.
         </p>
 
         <div class="next" style="margin-top: 30px">

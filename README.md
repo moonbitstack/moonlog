@@ -35,6 +35,34 @@ log.warn("slow", fields=[("took_ms", @moonlog.Value::of_int(1200))])
 moon add moonbitstack/moonlog
 ```
 
+### The name
+
+The specification this package implements, and its five implementations, are
+called **serlog**. This one is `moonbitstack/moonlog`: the same model, the same
+deployment documents, the same incident records. The word `serlog` is already
+here in the places that are read rather than imported — it is the default
+profile, the filter variable `SERLOG_FILTER`, and the target an incident is
+reported under. Only the package name a MoonBit project writes in `moon.pkg`
+differs, and MoonBit lets that name be the other one:
+
+```moonbit
+// moon.pkg
+import {
+  "moonbitstack/moonlog" @serlog,
+}
+```
+
+```moonbit
+// main.mbt — the same API, under the name the other implementations use
+let hub = @serlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
+hub.logger("mirror::sync").info("starting")
+```
+
+There is no second package to keep in step: `@serlog.Hub` is `@moonlog.Hub`,
+resolved by the compiler, and the alias costs nothing at run time.
+`src/examples/09-alias` is that file, built on every target along with the
+rest.
+
 ## What it does not do
 
 **It does not read a clock.** Every instant arrives as nanoseconds since the
