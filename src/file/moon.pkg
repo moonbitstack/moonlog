@@ -11,5 +11,6 @@ options(
   targets: {
     "sys.other.mbt": [ "js", "wasm", "wasm-gc" ],
     "sandbox_wbtest.mbt": [ "native" ],
+    "phone_reference_wbtest.mbt": [ "native" ],
   },
 )
