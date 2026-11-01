@@ -59,6 +59,7 @@ jobs:
           moon run --target native src/examples/06-config
           moon run --target native src/examples/07-shipping
           moon run --target native src/examples/08-world
+          moon run src/examples/09-alias
 
       - name: lint (fmt is clean)
         run: |
