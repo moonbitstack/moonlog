@@ -35,13 +35,17 @@ fn spec_of(
   let mut alarms = None
   let mut steps = None
   let mut redacted = None
+  let mut level_min = None
   for key, value in root {
     match key {
       "app" => config.app = word(key, value)
       "env" => config.env = word(key, value)
       "instance" => config.instance = word(key, value)
       "compat" => config.profile = profile_of(key, value)
-      "level" => config.filter = level_named(key, value, config.levels)
+      // A document may give a default level and a filter. The filter wins,
+      // whatever order the table hands the two over in: `level` is the short
+      // way to say what `filter` says in full.
+      "level" => level_min = Some(level_named(key, value, config.levels))
       "filter" =>
         config.filter = levels_named(
           substitute(key, value, lookup),
@@ -61,6 +65,12 @@ fn spec_of(
           "app, env, instance, compat, level, filter, filter_env, levels, " +
           "process, redact, sinks, alarms or watch",
         )
+    }
+  }
+  if config.filter == "" {
+    match level_min {
+      Some(min) => config.filter = min
+      None => ()
     }
   }
   // The chain is `process` first and the `redact` shorthand after it, in that

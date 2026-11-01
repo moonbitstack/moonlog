@@ -312,3 +312,24 @@ test "a slot's own steps survive a round trip through another format" {
   assert_eq(slot.chain.length(), 2)
   assert_eq(slot.process.length(), 2)
 }
+
+///|
+test "a document with a level and a filter keeps the filter" {
+  let document =
+    #|level: debug
+    #|filter: info, app=warn
+    #|sinks:
+    #|  - kind: console
+  let config = Config::parse(document)
+  assert_eq(config.filter(), "info, app=warn")
+}
+
+///|
+test "a document with only a level reads it as the filter" {
+  let document =
+    #|level: debug
+    #|sinks:
+    #|  - kind: console
+  let config = Config::parse(document)
+  assert_eq(config.filter(), "debug")
+}

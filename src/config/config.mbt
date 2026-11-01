@@ -177,6 +177,7 @@ pub fn Config::parse(
   }
   let mut steps = None
   let mut redacted = None
+  let mut level_min = None
   for key, value in root {
     match key {
       "profile" => config.profile = profile_of(key, value)
@@ -185,6 +186,7 @@ pub fn Config::parse(
           substitute(key, value, lookup),
           config.levels,
         )
+      "level" => level_min = Some(level_named(key, value, config.levels))
       "slots" => config.slots = slots_of(value, lookup)
       "alarm" => config.alarm = Some(alarm_of(value, lookup))
       "app" => config.app = word(key, value)
@@ -200,9 +202,15 @@ pub fn Config::parse(
         raise refuse(
           key,
           "a key",
-          "profile, filter, slots, alarm, app, env, instance, levels, " +
-          "process, redact, alarms, watch or filter_env",
+          "profile, level, filter, slots, alarm, app, env, instance, " +
+          "levels, process, redact, alarms, watch or filter_env",
         )
+    }
+  }
+  if config.filter == "" {
+    match level_min {
+      Some(min) => config.filter = min
+      None => ()
     }
   }
   build_chain(config, steps, redacted)
