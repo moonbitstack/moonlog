@@ -308,8 +308,8 @@ fn chain_of(
     None => raise refuse(at, shown(value), "a list of steps")
   }
   let chain : Array[&@moonlog.Processor] = []
-  for item in items {
-    chain.push(step_of(at, item, levels))
+  for index, item in items {
+    chain.push(step_of(at + "." + index.to_string(), item, levels))
   }
   chain
 }
