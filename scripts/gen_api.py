@@ -168,9 +168,22 @@ def impls_of(listed):
     return impls
 
 
+def verify(page, expected):
+    """Every public name in an interface is on the page, or this is not a
+    reference. A name a group hid is as missing as one never written, and a
+    reader looking for it has no way to tell which happened."""
+    absent = sorted(
+        {name for name in expected if f'class="name">{html.escape(name)}<' not in page}
+    )
+    if absent:
+        raise SystemExit("the reference left out " + ", ".join(absent))
+
+
 def render():
     body = []
+    expected = []
     listed = items(SRC / "pkg.generated.mbti")
+    expected.extend(name for kind, name, _, _ in listed if kind != "impl")
     impls = impls_of(listed)
     docs, home = sources(SRC)
     entries = {key: {"types": {}, "loose": []} for key, _, _ in GROUPS}
@@ -207,6 +220,9 @@ def render():
             f'        <p class="note">{html.escape(blurb)}.</p>\n'
         )
         package_listed = items(package / "pkg.generated.mbti")
+        expected.extend(
+            name for kind, name, _, _ in package_listed if kind != "impl"
+        )
         package_docs, _ = sources(package)
         body.extend(grouped(package_listed, package_docs, impls_of(package_listed)))
         body.append("")
@@ -218,6 +234,7 @@ def render():
     page = (ROOT / "docs" / "api.template.html").read_text(encoding="utf-8")
     page = page.replace("<!-- body -->", "\n".join(body))
     page = page.replace("<!-- rail -->", "\n".join(rail))
+    verify(page, expected)
     (ROOT / "docs" / "api.html").write_text(page, encoding="utf-8", newline="\n")
 
 
