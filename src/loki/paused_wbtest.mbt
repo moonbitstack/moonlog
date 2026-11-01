@@ -44,7 +44,7 @@ async test "a push to a paused Loki waits, lands when it answers, and reads back
   assert_eq(sink.pending(), 0)
   assert_eq(sink.sent(), 1L)
   let answer = @moonfetch.get(
-    address,
+    address + "/loki/api/v1/query_range",
     query=[("query", "{job=\"moonlog-test\"}"), ("limit", "50")],
     timeout=10,
   )
