@@ -304,7 +304,10 @@ pub fn JsonLine::encode(
       o.str("@version", "1")
       o.str("message", record.msg)
       o.str("logger_name", record.target)
-      o.opt("thread_name", record.thread)
+      // Logstash reads `thread_name` unconditionally, so the key stays even
+      // when the record carries no thread: a reader that has to test for the
+      // key on every line is worse than an empty one.
+      o.str("thread_name", record.thread.unwrap_or(""))
       self.name_or(o, "level", level.named(label(level, Profile::Logback)))
       o.raw("level_value", level.logstash().to_string())
       write_object_fields(o, record, "stack_trace", self.nest, false)
