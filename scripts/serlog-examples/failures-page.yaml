@@ -1,0 +1,5 @@
+sinks:
+  - { kind: loki, url: "http://alloy:3100/loki/api/v1/push", on_fail: ops }
+  - { kind: mail, name: oncall, alarm_only: true, host: smtp.example.org, to: [ops@example.org] }
+alarms:
+  ops: { tiers: [[oncall], [stderr]], remind: 30m }

@@ -124,10 +124,26 @@ pub fn start(
     None =>
       match config {
         Some(config) =>
-          if config.filter() != "" {
-            config.filter()
-          } else {
-            filter_from_env(chosen)
+          match config.filter_env() {
+            // A document that names a variable lets it win, as the
+            // specification says: a deployment may raise the level of a
+            // running program without editing the file.
+            Some(name) =>
+              match @env.get_env_var(name) {
+                Some(spec) => spec
+                None =>
+                  if config.filter() != "" {
+                    config.filter()
+                  } else {
+                    filter_from_env(chosen)
+                  }
+              }
+            None =>
+              if config.filter() != "" {
+                config.filter()
+              } else {
+                filter_from_env(chosen)
+              }
           }
         None => filter_from_env(chosen)
       }
@@ -140,12 +156,34 @@ pub fn start(
         want="a filter: " + error.to_text(),
       )
   }
+  // The document's own name for the deployment, when it gives one.
+  let identity = match config {
+    Some(config) =>
+      if config.app() != "" {
+        @moonlog.Identity::of(
+          app=config.app(),
+          env=config.env(),
+          instance=config.instance(),
+        )
+      } else {
+        @moonlog.Identity::of(app=app_name())
+      }
+    None => @moonlog.Identity::of(app=app_name())
+  }
   let hub = @moonlog.Hub::new(
-    identity=@moonlog.Identity::of(app=app_name()),
+    identity~,
     profile=chosen,
     clock=now,
     filter=chosen_filter,
   )
+  // The chain every record walks before a slot sees it.
+  match config {
+    Some(config) =>
+      for step in config.chain() {
+        hub.process(step)
+      }
+    None => ()
+  }
   let files : Array[@file.File] = []
   let lokis : Array[@loki.Loki] = []
   let mails : Array[@mail.Mail] = []
@@ -156,6 +194,37 @@ pub fn start(
         None => None
       }
     None => None
+  }
+  // A sink's `on_fail` names one of the document's alarms; `panic` and
+  // `ignore` are the two a slot can be told without one.
+  fn on_fail_for(described : @config.Slot) -> @moonlog.OnFail? {
+    let policy = match described.on_fail {
+      Some(name) => name
+      None => ""
+    }
+    match policy {
+      "panic" => Some(@moonlog.OnFail::Panic)
+      "ignore" => Some(@moonlog.OnFail::Ignore)
+      _ =>
+        match config {
+          Some(config) =>
+            if policy == "" || policy == "default" {
+              match alarm {
+                Some(tiers) => Some(@moonlog.OnFail::Alarm(tiers))
+                None => None
+              }
+            } else {
+              let mut found = None
+              for pair in config.alarms() {
+                if pair.0 == policy {
+                  found = Some(@moonlog.OnFail::Alarm(pair.1.tiers()))
+                }
+              }
+              found
+            }
+          None => None
+        }
+    }
   }
   let slots = match config {
     Some(config) => config.slots()
@@ -190,8 +259,11 @@ pub fn start(
         None => ()
       }
       let mut slot = slot_of(built, described)
-      match alarm {
-        Some(tiers) => slot = slot.on_fail(@moonlog.OnFail::Alarm(tiers))
+      if described.alarm_only {
+        slot = slot.alarm_only()
+      }
+      match on_fail_for(described) {
+        Some(policy) => slot = slot.on_fail(policy)
         None => ()
       }
       add(hub, slot)

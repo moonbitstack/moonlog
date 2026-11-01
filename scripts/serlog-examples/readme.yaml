@@ -1,0 +1,10 @@
+app: mirror
+filter: info,hustsync=debug
+redact: [pass]
+sinks:
+  - kind: console
+  - { kind: file, name: app, path: /var/log/app.log, max_size: 64MiB, keep: 7, gzip: true }
+  - { kind: loki, url: "http://alloy:3100/loki/api/v1/push", on_fail: ops }
+alarms:
+  ops: { tiers: [[stderr]], remind: 30m }
+watch: 30s

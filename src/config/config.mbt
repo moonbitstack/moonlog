@@ -14,6 +14,25 @@ pub(all) struct Config {
   mut filter : String
   mut slots : Array[Slot]
   mut alarm : Alarm?
+  /// The deployment's own name, and what it calls its environment and node:
+  /// the identity a record carries. Empty when the document says nothing.
+  mut app : String
+  mut env : String
+  mut instance : String
+  /// Levels the document defines by name, for a filter or a slot to use.
+  mut levels : Array[@moonlog.Level]
+  /// The chain every record walks before a slot sees it: `process` and the
+  /// `redact` shorthand, in the order they apply.
+  mut chain : Array[&@moonlog.Processor]
+  /// Those same steps as the document wrote them, which is what `dump` writes
+  /// back: a built processor cannot be asked for its options.
+  mut process : Array[Json]
+  /// Alarms the document names, which a sink's `on_fail` may point at.
+  mut alarms : Array[(String, Alarm)]
+  /// How often the document asks for its file to be checked, when it says.
+  mut watch : Int64?
+  /// A variable whose value overrides `filter`.
+  mut filter_env : String?
 }
 
 ///|
@@ -24,12 +43,17 @@ pub(all) struct Config {
 pub(all) struct Slot {
   name : String
   kind : String
-  filter : String?
+  mut filter : String?
   layout : String?
   colour : Bool?
   retries : Int32?
   probe : Int64?
   queue : Queue?
+  /// The alarm an incident on this sink goes to, by name; nothing means the
+  /// document's default alarm.
+  mut on_fail : String?
+  /// Whether the sink is kept off the log route and takes incidents only.
+  mut alarm_only : Bool
   settings : Map[String, Json]
 }
 
@@ -59,7 +83,21 @@ pub let remind_default : Int64 = 900_000_000_000L
 /// What a configuration with no document says: the default profile, the
 /// default filter, and nothing to write to.
 pub fn Config::new() -> Config {
-  { profile: @moonlog.Profile::Serlog, filter: "", slots: [], alarm: None, }
+  {
+    profile: @moonlog.Profile::Serlog,
+    filter: "",
+    slots: [],
+    alarm: None,
+    app: "",
+    env: "",
+    instance: "",
+    levels: [],
+    chain: [],
+    process: [],
+    alarms: [],
+    watch: None,
+    filter_env: None,
+  }
 }
 
 ///|
@@ -122,14 +160,47 @@ pub fn Config::parse(
     Some(root) => root
     None => raise refuse("", shown(tree), "a table")
   }
+  // Two spellings of one model: a document that lists `sinks`, names its
+  // profile `compat` or its alarms in a table is the shared specification's,
+  // and is read by `spec_of`.
+  if root.get("sinks") is Some(_) || root.get("compat") is Some(_) {
+    return spec_of(root, lookup)
+  }
   let config = Config::new()
+  match root.get("levels") {
+    Some(value) => config.levels = levels_of(value)
+    None => ()
+  }
+  let mut steps = None
+  let mut redacted = None
   for key, value in root {
     match key {
       "profile" => config.profile = profile_of(key, value)
       "filter" => config.filter = substitute(key, value, lookup)
       "slots" => config.slots = slots_of(value, lookup)
       "alarm" => config.alarm = Some(alarm_of(value, lookup))
-      _ => raise refuse(key, "a key", "profile, filter, slots or alarm")
+      "app" => config.app = word(key, value)
+      "env" => config.env = word(key, value)
+      "instance" => config.instance = word(key, value)
+      "levels" => ()
+      "process" => steps = Some(value)
+      "redact" => redacted = Some(value)
+      "alarms" => config.alarms = alarms_of(value, lookup)
+      "watch" => config.watch = Some(parse_span(key, word(key, value)))
+      "filter_env" => config.filter_env = Some(word(key, value))
+      _ =>
+        raise refuse(
+          key,
+          "a key",
+          "profile, filter, slots, alarm, app, env, instance, levels, " +
+          "process, redact, alarms, watch or filter_env",
+        )
+    }
+  }
+  build_chain(config, steps, redacted)
+  for pair in config.alarms {
+    if pair.0 == "default" {
+      config.alarm = Some(pair.1)
     }
   }
   config
@@ -170,8 +241,9 @@ fn slot_of(
   name : String,
   body : Json,
   lookup : (String) -> String?,
+  at? : String,
 ) -> Slot raise Refused {
-  let at = "slots." + name
+  let at = at.unwrap_or("slots." + name)
   let table = match as_table(body) {
     Some(table) => table
     None => raise refuse(at, shown(body), "a table")
@@ -219,7 +291,9 @@ fn slot_of(
       key != "colour" &&
       key != "retries" &&
       key != "probe" &&
-      key != "queue" {
+      key != "queue" &&
+      key != "on_fail" &&
+      key != "alarm_only" {
       settings[key] = substituted(at + "." + key, value, lookup)
     }
   }
@@ -266,6 +340,18 @@ fn slot_of(
     queue: match table.get("queue") {
       Some(value) => queue_of(at + ".queue", value)
       None => None
+    },
+    on_fail: match table.get("on_fail") {
+      Some(value) => Some(substitute(at + ".on_fail", value, lookup))
+      None => None
+    },
+    alarm_only: match table.get("alarm_only") {
+      Some(value) =>
+        match as_flag(value) {
+          Some(flag) => flag
+          None => false
+        }
+      None => false
     },
     settings,
   }
@@ -398,7 +484,13 @@ fn alarm_of(value : Json, lookup : (String) -> String?) -> Alarm raise Refused {
       }
     None => remind_default
   }
-  let fallback = match table.get("fallback") {
+  // A document may call an alarm's fallback `on_fail`, the way the shared
+  // specification does, or `fallback`, the way this package always has.
+  let wanted = match table.get("fallback") {
+    Some(value) => Some(value)
+    None => table.get("on_fail")
+  }
+  let fallback = match wanted {
     Some(value) => {
       let name = substitute(at + ".fallback", value, lookup)
       match name {
@@ -500,6 +592,43 @@ pub fn Config::to_json(self : Config) -> Json {
   if self.filter != "" {
     root["filter"] = Json::string(self.filter)
   }
+  if self.app != "" {
+    root["app"] = Json::string(self.app)
+  }
+  if self.env != "" {
+    root["env"] = Json::string(self.env)
+  }
+  if self.instance != "" {
+    root["instance"] = Json::string(self.instance)
+  }
+  if self.levels.length() > 0 {
+    let levels : Map[String, Json] = Map([])
+    for level in self.levels {
+      let body : Map[String, Json] = Map([])
+      body["value"] = Json::number(level.value.to_double())
+      body["colour"] = Json::string(level.colour.name().to_owned())
+      levels[level.name] = Json::object(body)
+    }
+    root["levels"] = Json::object(levels)
+  }
+  if self.process.length() > 0 {
+    root["process"] = Json::array(self.process)
+  }
+  match self.watch {
+    Some(span) => root["watch"] = Json::string(nanos_as_span(span))
+    None => ()
+  }
+  match self.filter_env {
+    Some(name) => root["filter_env"] = Json::string(name)
+    None => ()
+  }
+  if self.alarms.length() > 0 {
+    let alarms : Map[String, Json] = Map([])
+    for pair in self.alarms {
+      alarms[pair.0] = alarm_json(pair.1)
+    }
+    root["alarms"] = Json::object(alarms)
+  }
   let slots : Map[String, Json] = Map([])
   for slot in self.slots {
     let body : Map[String, Json] = Map([])
@@ -524,6 +653,13 @@ pub fn Config::to_json(self : Config) -> Json {
       Some(probe) => body["probe"] = Json::string(nanos_as_span(probe))
       None => ()
     }
+    match slot.on_fail {
+      Some(name) => body["on_fail"] = Json::string(name)
+      None => ()
+    }
+    if slot.alarm_only {
+      body["alarm_only"] = Json::boolean(true)
+    }
     match slot.queue {
       Some(queue) => {
         let held : Map[String, Json] = Map([])
@@ -547,29 +683,33 @@ pub fn Config::to_json(self : Config) -> Json {
   }
   root["slots"] = Json::object(slots)
   match self.alarm {
-    Some(alarm) => {
-      let body : Map[String, Json] = Map([])
-      let tiers : Array[Json] = []
-      for tier in alarm.tiers {
-        let names : Array[Json] = []
-        for name in tier {
-          names.push(Json::string(name))
-        }
-        tiers.push(Json::array(names))
-      }
-      body["tiers"] = Json::array(tiers)
-      body["remind"] = Json::string(nanos_as_span(alarm.remind))
-      body["fallback"] = Json::string(
-        match alarm.fallback {
-          @moonlog.Fallback::Ignore => "ignore"
-          @moonlog.Fallback::Panic => "panic"
-        },
-      )
-      root["alarm"] = Json::object(body)
-    }
+    Some(alarm) => root["alarm"] = alarm_json(alarm)
     None => ()
   }
   Json::object(root)
+}
+
+///|
+/// An alarm as a document writes it, under either name it may sit at.
+fn alarm_json(alarm : Alarm) -> Json {
+  let body : Map[String, Json] = Map([])
+  let tiers : Array[Json] = []
+  for tier in alarm.tiers {
+    let names : Array[Json] = []
+    for name in tier {
+      names.push(Json::string(name))
+    }
+    tiers.push(Json::array(names))
+  }
+  body["tiers"] = Json::array(tiers)
+  body["remind"] = Json::string(nanos_as_span(alarm.remind))
+  body["on_fail"] = Json::string(
+    match alarm.fallback {
+      @moonlog.Fallback::Ignore => "ignore"
+      @moonlog.Fallback::Panic => "panic"
+    },
+  )
+  Json::object(body)
 }
 
 ///|

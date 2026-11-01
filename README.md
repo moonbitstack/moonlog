@@ -325,7 +325,11 @@ pruned by count, age or total size.
 The two network sinks queue instead of writing: a log call never waits for a
 socket. `Loki::push` and `Mail::send` do the talking, from an async loop the
 application already runs, and a batch that has to be tried again goes back at
-the front of the queue in order.
+the front of the queue in order. A server that is away, a connection that is
+refused and a request that runs out of time all count as worth another try, so
+the loop comes back with the same batch rather than losing it; a batch a server
+refuses for good — Loki answering 400 for a line outside its window, say — is
+dropped and counted instead, because sending it again would spin for ever.
 
 ```moonbit
 let loki = @loki.Loki::new(url="http://loki:3100", labels=[("job", "gateway")])
@@ -356,6 +360,39 @@ slots:
     every: 24h
     keep: 7
 ```
+
+The same document can be written the other way round, which is the shape a
+deployment file often arrives in: a list of sinks that each carry their own
+`kind` and `name`, an `alarms` table a sink points at with `on_fail`, and one
+level of the document that applies to all of them.
+
+```yaml
+app: mirror
+env: prod
+compat: serlog
+filter: info, sync=debug
+levels: { notice: { value: 35, colour: blue } }
+process: [{ fields: { region: cn } }]
+redact: [pass, token]
+watch: 30s
+sinks:
+  - kind: console
+  - { kind: file, name: app, path: /var/log/app.log, max_size: 64MiB, keep: 7, gzip: true }
+  - { kind: loki, url: "http://alloy:3100/loki/api/v1/push", on_fail: ops }
+  - { kind: mail, name: oncall, alarm_only: true, host: smtp.example.org, to: [ops@example.org] }
+alarms:
+  ops: { tiers: [[oncall], [stderr]], on_fail: panic, remind: 30m }
+```
+
+Both spellings are read into one `Config`, so the rest of this page applies to
+either: `compat` is the profile, `sinks` are the slots, `app`, `env` and
+`instance` are the identity a record carries, `levels` are levels a filter or a
+slot may then name, `process` and the `redact` shorthand are the chain every
+record walks, and `watch` is how often the file is worth checking. The keys a
+sink keeps are the same under both spellings, with the names a deployment file
+usually uses accepted for the ones this package spells its own way: `console`
+for `stdio`, `gzip` for `compress`, `rotate` for `every`, `user` and `pass` for
+`username` and `password`, and `format` with `pattern` or `schema` for `layout`.
 
 ```moonbit
 @global.start(config=@config.Config::load(path="/etc/gateway.yaml"))

@@ -1,0 +1,6 @@
+app: mirror
+filter: info,hustsync=debug
+sinks:
+  - kind: console
+  - { kind: file, name: app, path: logs/app.log, rotate: day, keep: 7, gzip: true }
+  - { kind: loki, url: "http://alloy:3100/loki/api/v1/push", labels: { team: mirrors } }

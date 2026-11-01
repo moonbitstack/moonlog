@@ -33,13 +33,30 @@ pub(all) struct Config {
   mut filter : String
   mut slots : Array[Slot]
   mut alarm : Alarm?
+  mut app : String
+  mut env : String
+  mut instance : String
+  mut levels : Array[@moonlog.Level]
+  mut chain : Array[&@moonlog.Processor]
+  mut process : Array[Json]
+  mut alarms : Array[(String, Alarm)]
+  mut watch : Int64?
+  mut filter_env : String?
 }
 pub fn Config::alarm(Self) -> Alarm?
+pub fn Config::alarms(Self) -> Array[(String, Alarm)]
+pub fn Config::app(Self) -> String
+pub fn Config::chain(Self) -> Array[&@moonlog.Processor]
 pub fn Config::dump(Self, format? : Format) -> String
+pub fn Config::env(Self) -> String
 pub fn Config::filter(Self) -> String
+pub fn Config::filter_env(Self) -> String?
+pub fn Config::instance(Self) -> String
+pub fn Config::levels(Self) -> Array[@moonlog.Level]
 pub fn Config::load(path~ : String) -> Self raise Refused
 pub fn Config::new() -> Self
 pub fn Config::parse(StringView, format? : Format, lookup? : (String) -> String?) -> Self raise Refused
+pub fn Config::process(Self) -> Array[Json]
 pub fn Config::profile(Self) -> @moonlog.Profile
 pub fn Config::save(Self, path~ : String) -> Unit raise Refused
 pub fn Config::schema() -> Json
@@ -47,6 +64,7 @@ pub fn Config::slot(Self, String) -> Slot?
 pub fn Config::slots(Self) -> Array[Slot]
 pub fn Config::to_json(Self) -> Json
 pub fn Config::watch(path~ : String, format? : Format, lookup? : (String) -> String?) -> Watcher raise Refused
+pub fn Config::watch_span(Self) -> Int64?
 
 pub(all) enum Format {
   Yaml
@@ -69,12 +87,14 @@ pub(all) struct Queue {
 pub(all) struct Slot {
   name : String
   kind : String
-  filter : String?
+  mut filter : String?
   layout : String?
   colour : Bool?
   retries : Int32?
   probe : Int64?
   queue : Queue?
+  mut on_fail : String?
+  mut alarm_only : Bool
   settings : Map[String, Json]
 }
 pub fn Slot::count(Self, String) -> Int32?

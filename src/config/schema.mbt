@@ -127,6 +127,8 @@ let common : Array[(String, Setting)] = [
   ("colour", Flag),
   ("retries", Count),
   ("probe", Span),
+  ("on_fail", Text),
+  ("alarm_only", Flag),
 ]
 
 ///|

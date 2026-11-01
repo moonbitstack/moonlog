@@ -1,0 +1,9 @@
+app: mirror
+sinks:
+  - kind: console
+    pattern: "{level:<5} {msg}{fields}"
+  - kind: phone
+    name: oncall
+    phone: 13800138000
+    level: warn
+    pattern: "{level} {msg}"

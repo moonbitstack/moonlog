@@ -1,0 +1,15 @@
+app: mirror
+env: prod
+compat: serlog
+filter: info,hustsync=debug
+levels: { notice: { value: 35, colour: blue } }
+process: [{ fields: { region: cn } }]
+redact: [pass, token]
+watch: 30s
+sinks:
+  - kind: console
+  - { kind: file, name: app, path: /var/log/app.log, max_size: 64MiB, keep: 7, gzip: true }
+  - { kind: loki, url: "http://alloy:3100/loki/api/v1/push", on_fail: ops }
+  - { kind: mail, name: oncall, alarm_only: true, host: smtp.example.org, user: bot@example.org, pass: "${SMTP_PASS}", to: [ops@example.org] }
+alarms:
+  ops: { tiers: [[oncall], [stderr]], on_fail: panic, remind: 30m }
