@@ -223,7 +223,7 @@ fn replace_all(
       break
     }
     out.write_char(c)
-    rest = after.view(start_offset=c.utf16_len())
+    rest = after.exact_view(start=c.utf16_len())
   }
   out.write_string(rest.to_owned())
   out.to_string()
