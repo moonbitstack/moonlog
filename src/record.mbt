@@ -6,12 +6,13 @@
 ///
 /// Every part may be unknown; a layout writes `?` for the ones that are, which
 /// is what a call site without debug information looks like.
+#derive(Eq, Debug)
 pub(all) struct Caller {
   module_path : String?
   func : String?
   file : String?
   line : Int32?
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Caller with Debug::{to_repr}

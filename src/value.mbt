@@ -7,6 +7,7 @@
 /// Fields are carried as values rather than as text so a layout decides how
 /// they read: `7` and `"7"` are the same three characters on a line and
 /// different things in a JSON document.
+#derive(Debug)
 pub(all) enum Value {
   Null
   Bool(Bool)
@@ -17,7 +18,7 @@ pub(all) enum Value {
   Map(Array[(String, Value)])
   Error(String, Array[String])
   Other(String)
-} derive(Debug)
+}
 
 ///|
 pub extend Value with Debug::{to_repr}

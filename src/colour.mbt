@@ -6,6 +6,7 @@
 ///
 /// `Alarm` is white on red, which is what a fatal line is worth. `Plain` writes
 /// no escape at all, so a value that never reached a terminal is unchanged.
+#derive(Eq, Debug)
 pub(all) enum Colour {
   Plain
   Red
@@ -17,7 +18,7 @@ pub(all) enum Colour {
   White
   Grey
   Alarm
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Colour with Debug::{to_repr}

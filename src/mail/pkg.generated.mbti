@@ -56,11 +56,12 @@ pub fn Mail::window(Self) -> Int64
 pub fn Mail::write(Self, @moonlog.Entry) -> Result[Unit, String]
 pub impl @moonlog.Sink for Mail
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Security {
   Clear
   StartTls
   Tls
-} derive(Eq, @debug.Debug)
+}
 pub fn Security::equal(Self, Self) -> Bool
 pub fn Security::not_equal(Self, Self) -> Bool
 pub fn Security::port(Self) -> Int32

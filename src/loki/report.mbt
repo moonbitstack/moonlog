@@ -29,11 +29,12 @@ pub fn Report::pushed(self : Report) -> Bool {
 
 ///|
 /// What to do with a batch that came back as `status`.
+#derive(Eq, Debug)
 pub(all) enum Verdict {
   Accepted
   Refused
   Retry
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Verdict with Eq::{equal, not_equal}

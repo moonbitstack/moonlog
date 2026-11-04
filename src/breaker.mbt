@@ -3,11 +3,12 @@
 
 ///|
 /// Whether a sink is working.
+#derive(Eq, Debug)
 pub(all) enum Health {
   Up
   Down
   Probing
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Health with Eq::{equal, not_equal}
@@ -27,11 +28,12 @@ pub fn Health::name(self : Health) -> StringView {
 
 ///|
 /// How a failure is told.
+#derive(Eq, Debug)
 pub(all) enum Tell {
   Report
   Silent
   Folded
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Tell with Eq::{equal, not_equal}

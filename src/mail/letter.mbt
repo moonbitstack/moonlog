@@ -3,11 +3,12 @@
 
 ///|
 /// How the connection to the mail server is protected.
+#derive(Eq, Debug)
 pub(all) enum Security {
   Clear
   StartTls
   Tls
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Security with Eq::{equal, not_equal}

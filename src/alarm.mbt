@@ -3,11 +3,12 @@
 
 ///|
 /// Which report of an incident this is.
+#derive(Eq, Debug)
 pub(all) enum Phase {
   Opened
   Reminder
   Resolved
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Phase with Eq::{equal, not_equal}
@@ -27,10 +28,11 @@ pub fn Phase::name(self : Phase) -> StringView {
 
 ///|
 /// What an alarm does when no tier took the incident.
+#derive(Eq, Debug)
 pub(all) enum Fallback {
   Panic
   Ignore
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Fallback with Eq::{equal, not_equal}
@@ -236,10 +238,11 @@ pub extend Tiers with Alarm::{route, fallback, remind}
 
 ///|
 /// How an alarm walk ended.
+#derive(Eq, Debug)
 pub(all) enum Outcome {
   Heard
   Unheard
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Outcome with Eq::{equal, not_equal}

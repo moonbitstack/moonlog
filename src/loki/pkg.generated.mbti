@@ -58,11 +58,12 @@ pub(all) struct Report {
 pub fn Report::idle() -> Self
 pub fn Report::pushed(Self) -> Bool
 
+#derive(Eq, @debug.Debug)
 pub(all) enum Verdict {
   Accepted
   Refused
   Retry
-} derive(Eq, @debug.Debug)
+}
 pub fn Verdict::equal(Self, Self) -> Bool
 pub fn Verdict::not_equal(Self, Self) -> Bool
 pub fn Verdict::of(Int32) -> Self

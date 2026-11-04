@@ -9,6 +9,7 @@
 /// that was handed in. `Custom` is a strftime spec, `Go` a reference-time
 /// layout and `Ldml` a Unicode date pattern, each with everything moondate reads
 /// in that style.
+#derive(Eq, Debug)
 pub(all) enum Clock {
   Local
   Utc
@@ -20,7 +21,7 @@ pub(all) enum Clock {
   Custom(String)
   Go(String)
   Ldml(String)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Clock with Debug::{to_repr}

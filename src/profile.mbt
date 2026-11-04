@@ -3,11 +3,12 @@
 
 ///|
 /// Where a console writes.
+#derive(Eq, Debug)
 pub(all) enum Stream {
   Stdout
   Stderr
   Auto
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Stream with Debug::{to_repr}
@@ -43,6 +44,7 @@ pub fn Stream::parse(name : StringView) -> Stream raise Refused {
 /// console writes to, the level it starts at, and the variables a filter is
 /// read from — because those four are what a deployment already expects when
 /// it moves from one logger to another.
+#derive(Eq, Debug)
 pub(all) enum Profile {
   Serlog
   Tracing
@@ -51,7 +53,7 @@ pub(all) enum Profile {
   Logback
   Slog
   Pino
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Profile with Debug::{to_repr}

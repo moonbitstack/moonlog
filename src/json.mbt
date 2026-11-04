@@ -3,6 +3,7 @@
 
 ///|
 /// A JSON shape other tools already read.
+#derive(Eq, Debug)
 pub(all) enum Schema {
   Serlog
   Pino
@@ -14,7 +15,7 @@ pub(all) enum Schema {
   Ecs
   Gelf
   Otel
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Schema with Eq::{equal, not_equal}
@@ -60,10 +61,11 @@ pub fn Schema::parse(name : StringView) -> Schema raise Refused {
 
 ///|
 /// How levels are written, when a schema is told to write them another way.
+#derive(Eq, Debug)
 pub(all) enum Levels {
   Name
   Number
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Levels with Eq::{equal, not_equal}

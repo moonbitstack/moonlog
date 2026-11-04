@@ -3,10 +3,11 @@
 
 ///|
 /// What a full queue does with a record that arrives.
+#derive(Eq, Debug)
 pub(all) enum Full {
   Drop
   Block
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Full with Eq::{equal, not_equal}
