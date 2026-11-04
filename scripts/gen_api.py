@@ -57,6 +57,8 @@ def sources(base):
                 pending = []
             elif stripped.startswith("///"):
                 pending.append(stripped[3:].strip())
+            elif stripped.startswith("#"):
+                pass
             elif trait and stripped.startswith("fn "):
                 method = re.match(r"fn (\w+)", stripped).group(1)
                 if pending:

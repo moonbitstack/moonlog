@@ -1520,7 +1520,7 @@
           <p class="what">The alarm as the hub wants it.</p>
         </div>
         <div class="entry" data-api-entry="Config Config a logging configuration  read from a document and checked against the settings the shipped sinks read   reading a document does not build anything  it says what the deployment asked for  and the application   or  moonlog global    turns that into sinks  that split is what lets the same document be checked  dumped and reloaded without a file system in the way ">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Config</span><span class="rest">mut profile : @moonlog.Profile, mut filter : String, mut slots : Array[Slot], mut alarm : Alarm?, mut app : String, mut env : String, mut instance : String, mut levels : Array[@moonlog.Level], mut chain : Array[&amp;@moonlog.Processor], mut process : Array[Json], mut alarms : Array[(String, Alarm)], mut watch : Int64?, mut filter_env : String?, mut kinds : Array[Kind]</span></div>
+          <div class="sig"><span class="kind ty">type</span><span class="name">Config</span><span class="rest">mut profile : @moonlog.Profile, mut filter : String, mut slots : Array[Slot], mut alarm : Alarm?, mut app : String, mut env : String, mut instance : String, mut levels : Array[@moonlog.Level], mut chain : Array[&amp;@moonlog.Processor], mut process : Array[@json.Json], mut alarms : Array[(String, Alarm)], mut watch : Int64?, mut filter_env : String?, mut kinds : Array[Kind]</span></div>
           <p class="what">A logging configuration, read from a document and checked against the settings the shipped sinks read.  Reading a document does not build anything: it says what the deployment asked for, and the application — or <code>moonlog/global</code> — turns that into sinks. That split is what lets the same document be checked, dumped and reloaded without a file system in the way.</p>
         </div>
         <div class="entry" data-api-entry="Config::alarm alarm the alarm the document describes  if any ">
@@ -1580,7 +1580,7 @@
           <p class="what">Reads a document.  <code>${NAME}</code> in any string is replaced by the environment variable of that name; a name the environment does not have is refused, because a configuration that silently logs to an empty URL is worse than one that will not start.  <code>kinds</code> are sinks of the program's own that the document may name beside the built-in ones.</p>
         </div>
         <div class="entry" data-api-entry="Config::process process the chain s steps as the document wrote them  which is what  dump  writes back ">
-          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::process</span><span class="rest">(Self) -&gt; Array[Json]</span></div>
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::process</span><span class="rest">(Self) -&gt; Array[@json.Json]</span></div>
           <p class="what">The chain's steps as the document wrote them, which is what <code>dump</code> writes back.</p>
         </div>
         <div class="entry" data-api-entry="Config::profile profile the profile the document asks for ">
@@ -1592,7 +1592,7 @@
           <p class="what">Writes the configuration to <code>path</code> in the format its extension asks for.</p>
         </div>
         <div class="entry" data-api-entry="Config::schema schema the json schema a document of this shape answers to   it is built from the same tables the parser checks against  so the schema an editor or a pipeline validates with cannot drift from the parser  a key the schema allows is a key the parser reads  and a value of the wrong shape is refused in both places  publish it next to a deployment for the editor to pick up   moonlog config  never needs it to read a file ">
-          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::schema</span><span class="rest">() -&gt; Json</span></div>
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::schema</span><span class="rest">() -&gt; @json.Json</span></div>
           <p class="what">The JSON Schema a document of this shape answers to.  It is built from the same tables the parser checks against, so the schema an editor or a pipeline validates with cannot drift from the parser: a key the schema allows is a key the parser reads, and a value of the wrong shape is refused in both places. Publish it next to a deployment for the editor to pick up; <code>moonlog/config</code> never needs it to read a file.</p>
         </div>
         <div class="entry" data-api-entry="Config::slot slot the slot called  name   if there is one ">
@@ -1604,7 +1604,7 @@
           <p class="what">The slots the document describes, in document order.</p>
         </div>
         <div class="entry" data-api-entry="Config::to_json to_json the document this configuration is written as ">
-          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::to_json</span><span class="rest">(Self) -&gt; Json</span></div>
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Config::to_json</span><span class="rest">(Self) -&gt; @json.Json</span></div>
           <p class="what">The document this configuration is written as.</p>
         </div>
         <div class="entry" data-api-entry="Config::watch watch starts watching  path  ">
@@ -1632,11 +1632,11 @@
           <p class="what">A format by name.</p>
         </div>
         <div class="entry" data-api-entry="Format::read read reads a document into the tree every reader in this family produces ">
-          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::read</span><span class="rest">(Self, StringView, String) -&gt; Json raise Refused</span></div>
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::read</span><span class="rest">(Self, StringView, String) -&gt; @json.Json raise Refused</span></div>
           <p class="what">Reads a document into the tree every reader in this family produces.</p>
         </div>
         <div class="entry" data-api-entry="Format::write write writes the tree back out in this format ">
-          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::write</span><span class="rest">(Self, Json) -&gt; String</span></div>
+          <div class="sig"><span class="kind fn">fn</span><span class="name">Format::write</span><span class="rest">(Self, @json.Json) -&gt; String</span></div>
           <p class="what">Writes the tree back out in this format.</p>
         </div>
         <div class="entry" data-api-entry="Kind Kind a sink of your own that a document can name  what  kind  it answers to  the keys it reads beside the ones every slot has  and how to make it from the slot once the document is read   a name a built in kind has is refused  a document that says  file  should not change meaning with what the program passed in ">
@@ -1660,7 +1660,7 @@
           <p class="what">A refusal with the key path it happened at.</p>
         </div>
         <div class="entry" data-api-entry="Slot Slot one sink as the document describes it    settings  holds the keys that belong to the kind   text    flag    size  and the rest read them back with the shape the parser already checked ">
-          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span><span class="rest">name : String, kind : String, mut filter : String?, layout : String?, colour : Bool?, retries : Int32?, probe : Int64?, queue : Queue?, mut chain : Array[&amp;@moonlog.Processor], mut process : Array[Json], mut on_fail : String?, mut alarm_only : Bool, settings : Map[String, Json]</span></div>
+          <div class="sig"><span class="kind ty">type</span><span class="name">Slot</span><span class="rest">name : String, kind : String, mut filter : String?, layout : String?, colour : Bool?, retries : Int32?, probe : Int64?, queue : Queue?, mut chain : Array[&amp;@moonlog.Processor], mut process : Array[@json.Json], mut on_fail : String?, mut alarm_only : Bool, settings : Map[String, @json.Json]</span></div>
           <p class="what">One sink as the document describes it.  <code>settings</code> holds the keys that belong to the kind; <code>text</code>, <code>flag</code>, <code>size</code> and the rest read them back with the shape the parser already checked.</p>
         </div>
         <div class="entry" data-api-entry="Slot::count count a setting as a whole number ">
