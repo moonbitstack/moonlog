@@ -8,7 +8,7 @@ four layouts including ten JSON schemas, sinks behind a health machine, and
 alarms that walk their tiers — with subpackages for the console, the file, Loki,
 mail, a deployment document and the process-wide hub.
 
-<sub><a href="#quick-start">Quick start</a> · <a href="#the-surface">The surface</a> · <a href="#layouts">Layouts</a> · <a href="#sinks-slots-and-what-happens-when-one-fails">Slots</a> · <a href="#out-to-the-world">Subpackages</a> · <a href="https://moonbitstack.github.io/moonlog/">Documentation</a></sub>
+<sub><a href="#quick-start">Quick start</a> · <a href="#the-surface">The surface</a> · <a href="#layouts">Layouts</a> · <a href="#sinks-slots-and-what-happens-when-one-fails">Slots</a> · <a href="#out-to-the-world">Subpackages</a> · <a href="https://moonbitstack.github.io/moonlog/">Home</a> · <a href="https://moonbitstack.github.io/moonlog/docs.html">Guide</a> · <a href="https://moonbitstack.github.io/moonlog/api.html">API</a> · <a href="https://mooncakes.io/docs/moonbitstack/moonlog">mooncakes</a></sub>
 
 </div>
 
@@ -24,7 +24,8 @@ import {
 ```
 
 ```moonbit
-let sink = @serlog.Lines::new(fn(line) { println(line) })
+let lines : Array[String] = []
+let sink = @serlog.Lines::new(fn(line) { lines.push(line) })
 let hub = @serlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
 let _ = hub.add(
   @serlog.Slot::new(sink, name="console")
@@ -34,8 +35,8 @@ let _ = hub.add(
 let log = hub.logger("mirror::sync")
 log.info("starting", fields=[("workers", @serlog.Value::of_int(4))])
 log.warn("slow", fields=[("took_ms", @serlog.Value::of_int(1200))])
-// 22:13:20.000 INFO  mirror::sync: starting workers=4
-// 22:13:20.000 WARN  mirror::sync: slow took_ms=1200
+assert_eq(lines[0], "22:13:20.000 INFO  mirror::sync: starting workers=4")
+assert_eq(lines[1], "22:13:20.000 WARN  mirror::sync: slow took_ms=1200")
 ```
 
 ```bash
@@ -226,12 +227,33 @@ Every token but `time` may end with `<N`, `>N` or `^N` to pad to N columns, then
 A `Sink` is one method: `write(entry)`. An entry is the record and the line the
 slot's layout made of it. `Lines`, `Memory` and `Discard` come with the package;
 a sink of your own is a struct and three lines. To let a configuration file name
-it, pass a `Kind` to `Config::parse`: what `kind` it answers to, the keys it reads,
-and how to make it from the slot.
+it, pass a `Kind` to `Config::parse`: what `kind` it answers to, how to make it
+from the slot, and the keys it reads.
 
 ```moonbit
-let phone = @config.Kind::new("phone", keys=["phone"], slot => Phone::new(slot.text("phone")))
-@global.init(config=@config.Config::parse(text, kinds=[phone]))
+struct Phone {
+  number : String
+}
+
+impl @serlog.Sink for Phone with fn write(self, entry) {
+  println(self.number + ": " + entry.line)
+  Ok(())
+}
+```
+
+```moonbit
+let phone = @config.Kind::new(
+  "phone",
+  slot => Phone::{ number: slot.text("phone").unwrap_or("") },
+  keys=["phone"],
+)
+let document =
+  #|sinks:
+  #|  - kind: phone
+  #|    name: alert
+  #|    phone: "+1 555 0100"
+let config = @config.Config::parse(document, kinds=[phone])
+assert_eq(config.slots().length(), 1)
 ```
 
 A `Slot` is where everything else lives:
@@ -281,12 +303,12 @@ resting, never asks the same sink twice, and stops at the first tier where one
 sink took the record.
 
 ```moonbit
-let oncall = @moonlog.Tiers::from([["loki"], ["mail"], ["stderr"]])
-  .with_fallback(@moonlog.Fallback::Ignore)
+let oncall = @serlog.Tiers::from([["loki"], ["mail"], ["stderr"]])
+  .with_fallback(@serlog.Fallback::Ignore)
   .with_remind(1_800_000_000_000L) // half an hour
 
 let _ = hub.add(
-  @moonlog.Slot::new(sink, name="loki").on_fail(@moonlog.OnFail::Alarm(oncall)),
+  @serlog.Slot::new(sink, name="loki").on_fail(@serlog.OnFail::Alarm(oncall)),
 )
 ```
 
@@ -327,6 +349,11 @@ usable on its own:
 | `moonlog/config` | a deployment document read, checked and written back — `Config` | native for the file, all to parse |
 | `moonlog/global` | the process-wide hub, for applications — `start`, `logger` | native |
 
+Everything the table marks native writes through the native backend — a file, a
+socket, the process-wide hub — so the blocks below that open one are native
+blocks; the console, the layouts, the filters and `Config::parse` compile on all
+four targets.
+
 ```moonbit
 let console = @stdio.Console::new()
 let _ = hub.add(console.slot())
@@ -357,14 +384,13 @@ the loop comes back with the same batch rather than losing it; a batch a server
 refuses for good — Loki answering 400 for a line outside its window, say — is
 dropped and counted instead, because sending it again would spin for ever.
 
-```moonbit
+```moonbit native
+let hub = @serlog.Hub::new(clock=fn() { 1_700_000_000_000_000_000L })
 let loki = @loki.Loki::new(url="http://loki:3100", labels=[("job", "gateway")])
 let _ = hub.add(loki.slot())
-// in a loop you already have:
-match loki.push() {
-  report if report.pushed() => ()
-  _ => ()  // the report says why, and what is still queued
-}
+// and in the loop you already run:
+let report = loki.push()
+assert_eq(report.sent, 0)  // nothing was queued, so nothing was sent
 ```
 
 A deployment file is where all of that is usually configured. `Config` reads
@@ -424,9 +450,10 @@ A queue is written either way, too: the table above, or `queue: 8192` with
 A `colour` may be the words `auto`, `always` or `never` as well as a flag, and a
 sink may carry steps of its own in `process`, which run before its layout.
 
-```moonbit
-@global.start(config=@config.Config::load(path="/etc/gateway.yaml"))
-@global.logger("gateway").info("serving", fields=[("port", @moonlog.Value::of_int(8080))])
+```moonbit native
+let deployment = @config.Config::load(path="/etc/gateway.yaml")
+@global.start(config=deployment)
+@global.logger("gateway").info("serving", fields=[("port", @serlog.Value::of_int(8080))])
 @global.flush()
 ```
 

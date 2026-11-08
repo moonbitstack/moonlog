@@ -292,9 +292,9 @@
           <table>
             <thead><tr><th>Cases</th><th>Pins</th><th>Here</th></tr></thead>
             <tbody>
-              <tr><td>render</td><td>patterns, presets, logfmt, pretty, the serlog document and nine other schemas, and the filter rules</td><td>10 tests</td></tr>
-              <tr><td>fail</td><td>the health machine, step by step, with the phase each step owes</td><td>9 tests</td></tr>
-              <tr><td>alarm</td><td>the walk: stars, resting sinks, repeats, and what an incident carries</td><td>8 tests</td></tr>
+              <tr><td>render</td><td>patterns, presets, logfmt, pretty, the serlog document and nine other schemas, and the filter rules</td><td><code>src/spec_render_test.mbt</code></td></tr>
+              <tr><td>fail</td><td>the health machine, step by step, with the phase each step owes</td><td><code>src/spec_fail_test.mbt</code></td></tr>
+              <tr><td>alarm</td><td>the walk: stars, resting sinks, repeats, and what an incident carries</td><td><code>src/spec_alarm_test.mbt</code></td></tr>
             </tbody>
           </table>
         </div>
@@ -303,7 +303,7 @@
           what a full one drops, the logger's bound fields, a sink of one's own,
           redaction by path, the token bucket, deduplication, a sink that logs
           into its own hub, and a hub whose sink is down while another reads the
-          incident. Fifty-eight in all, on four backends.
+          incident. It runs on four backends.
         </p>
 
         <h2 id="code">Reading the code</h2>

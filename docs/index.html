@@ -273,9 +273,9 @@
 
           <div class="code" style="margin-top: 26px">
             <header><span class="tag">main.mbt</span><button class="copy" data-copy>copy</button></header>
-            <pre><span class="kw">let</span> sink = <span class="fn">@moonlog.Memory::new</span>()
+            <pre><span class="kw">let</span> lines : Array[<span class="ty">String</span>] = []
+<span class="kw">let</span> sink = <span class="fn">@moonlog.Lines::new</span>(<span class="kw">fn</span>(line) { lines.<span class="fn">push</span>(line) })
 <span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(
-  identity=<span class="fn">@moonlog.Identity::of</span>(app=<span class="s">"gateway"</span>, env=<span class="s">"prod"</span>),
   clock=<span class="kw">fn</span>() { <span class="n">1_700_000_000_000_000_000L</span> },
 )
 <span class="kw">let</span> _ = hub.<span class="fn">add</span>(
@@ -285,7 +285,9 @@
 
 <span class="kw">let</span> log = hub.<span class="fn">logger</span>(<span class="s">"mirror::sync"</span>)
 log.<span class="fn">info</span>(<span class="s">"starting"</span>, fields=[(<span class="s">"workers"</span>, <span class="fn">@moonlog.Value::of_int</span>(<span class="n">4</span>))])
-<span class="c">// 22:13:20.000 INFO  mirror::sync: starting workers=4</span></pre>
+log.<span class="fn">warn</span>(<span class="s">"slow"</span>, fields=[(<span class="s">"took_ms"</span>, <span class="fn">@moonlog.Value::of_int</span>(<span class="n">1200</span>))])
+<span class="fn">assert_eq</span>(lines[<span class="n">0</span>], <span class="s">"22:13:20.000 INFO  mirror::sync: starting workers=4"</span>)
+<span class="fn">assert_eq</span>(lines[<span class="n">1</span>], <span class="s">"22:13:20.000 WARN  mirror::sync: slow took_ms=1200"</span>)</pre>
           </div>
         </div>
       </section>

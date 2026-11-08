@@ -101,7 +101,7 @@
         <div class="code">
           <header><span class="tag">moon.pkg</span><button class="copy" data-copy>copy</button></header>
           <pre><span class="kw">import</span> {
-  <span class="s">"moonbitstack/moonlog"</span> @serlog,
+  <span class="s">"moonbitstack/moonlog"</span> @moonlog,
 }</pre>
         </div>
 
@@ -139,9 +139,10 @@ hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn
   name: <span class="s">"notice"</span>, value: <span class="n">35</span>, colour: <span class="fn">@moonlog.Colour::Blue</span>,
 }
 <span class="kw">let</span> quiet = <span class="fn">@moonlog.Filter::parse</span>(<span class="s">"warn, app=debug, app::net=off"</span>)
-quiet.<span class="fn">allows</span>(<span class="fn">@moonlog.debug</span>, <span class="s">"app::sync"</span>)   <span class="c">// true</span>
-quiet.<span class="fn">allows</span>(<span class="fn">@moonlog.error</span>, <span class="s">"app::net"</span>)   <span class="c">// false</span>
-quiet.<span class="fn">lowest</span>()                                <span class="c">// Some(debug)</span></pre>
+<span class="fn">assert_eq</span>(notice.value, <span class="n">35</span>)
+<span class="fn">assert_eq</span>(quiet.<span class="fn">allows</span>(<span class="fn">@moonlog.debug</span>, <span class="s">"app::sync"</span>), <span class="kw">true</span>)
+<span class="fn">assert_eq</span>(quiet.<span class="fn">allows</span>(<span class="fn">@moonlog.error</span>, <span class="s">"app::net"</span>), <span class="kw">false</span>)
+<span class="fn">assert_eq</span>(quiet.<span class="fn">lowest</span>().<span class="fn">unwrap</span>().<span class="fn">name</span>(), <span class="s">"debug"</span>)</pre>
         </div>
         <div class="table-wrap">
           <table>
@@ -167,11 +168,11 @@ quiet.<span class="fn">lowest</span>()                                <span clas
         <div class="code">
           <header><span class="tag">filters.mbt</span><button class="copy" data-copy>copy</button></header>
           <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(
-  clock=<span class="kw">fn</span>() { <span class="n">0L</span> },
+  clock=<span class="kw">fn</span>() { <span class="n">1_700_000_000_000_000_000L</span> },
   filter=<span class="fn">@moonlog.Filter::parse</span>(<span class="s">"info,mirror::sync=debug"</span>),
 )
 hub.<span class="fn">set_level</span>(<span class="fn">@moonlog.warn</span>)              <span class="c">// replace it at run time</span>
-hub.<span class="fn">enabled</span>(<span class="fn">@moonlog.debug</span>)                  <span class="c">// ask before building a message</span></pre>
+<span class="fn">assert_eq</span>(hub.<span class="fn">enabled</span>(<span class="fn">@moonlog.debug</span>), <span class="kw">false</span>)  <span class="c">// ask before building a message</span></pre>
         </div>
 
         <h2 id="fields">Fields keep their type</h2>
@@ -189,7 +190,7 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
   (<span class="s">"tries"</span>, <span class="fn">@moonlog.Value::of_int</span>(<span class="n">3</span>)),
   (<span class="s">"req"</span>, <span class="fn">@moonlog.Value::of_map</span>([(<span class="s">"id"</span>, <span class="fn">@moonlog.Value::of_int</span>(<span class="n">7</span>))])),
 ])
-<span class="c">// sync: gave up error=connect: refused tries=3 req.id=7</span></pre>
+<span class="c">// 2023-11-14 22:13:20.000 INFO  sync: gave up error=connect: refused tries=3 req.id=7</span></pre>
         </div>
         <p>
           A map is spread into <code>req.id=7</code> on a text line and kept as
@@ -207,17 +208,21 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
         </p>
         <div class="code">
           <header><span class="tag">steps.mbt</span><button class="copy" data-copy>copy</button></header>
-          <pre><span class="kw">let</span> slot = <span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"audit"</span>)
+          <pre><span class="kw">struct</span> <span class="ty">Region</span> { }
+
+<span class="kw">impl</span> <span class="fn">@moonlog.Processor</span> <span class="kw">for</span> <span class="ty">Region</span> <span class="kw">with</span> <span class="fn">process</span>(_self, record, _env) {
+  <span class="fn">Some</span>(record.<span class="fn">set</span>(<span class="s">"region"</span>, <span class="fn">@moonlog.Value::of_str</span>(<span class="s">"eu"</span>)))
+}</pre>
+        </div>
+        <div class="code">
+          <header><span class="tag">steps.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> _ = hub.<span class="fn">add</span>(
+  <span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"audit"</span>)
   .<span class="fn">process</span>(<span class="fn">@moonlog.Redact::new</span>().<span class="fn">key</span>(<span class="s">"authorization"</span>).<span class="fn">path</span>(<span class="s">"req.headers.auth"</span>))
   .<span class="fn">process</span>(<span class="fn">@moonlog.Sanitise::new</span>())
   .<span class="fn">process</span>(<span class="fn">@moonlog.Sample::new</span>(first=<span class="n">2</span>, every=<span class="n">10</span>, per=<span class="n">60_000_000_000L</span>))
-
-<span class="c">// Your own: return the record, a changed copy, or None to drop it.</span>
-<span class="kw">struct</span> <span class="ty">Region</span> { }
-
-<span class="kw">pub impl</span> <span class="fn">@moonlog.Processor</span> <span class="kw">for</span> <span class="ty">Region</span> <span class="kw">with</span> <span class="fn">process</span>(_self, record, _env) {
-  <span class="fn">Some</span>(record.<span class="fn">set</span>(<span class="s">"region"</span>, <span class="fn">@moonlog.Value::of_str</span>(<span class="s">"eu"</span>)))
-}</pre>
+  .<span class="fn">process</span>(<span class="ty">Region</span>::{}),
+)</pre>
         </div>
         <div class="table-wrap">
           <table>
@@ -256,7 +261,10 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
   .<span class="fn">nest</span>(<span class="s">"data"</span>)
 
 <span class="c">// A preset name stands wherever a pattern does.</span>
-<span class="fn">@moonlog.Pattern::parse</span>(<span class="s">"logback"</span>)</pre>
+<span class="fn">assert_eq</span>(<span class="fn">@moonlog.Pattern::parse</span>(<span class="s">"logback"</span>).<span class="fn">source</span>(), <span class="s">"logback"</span>)
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"line"</span>).<span class="fn">layout</span>(line))
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"ecs"</span>).<span class="fn">layout</span>(json))
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(sink, name=<span class="s">"custom"</span>).<span class="fn">layout</span>(custom))</pre>
         </div>
         <div class="table-wrap">
           <table>
@@ -282,15 +290,17 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
         </p>
         <div class="code">
           <header><span class="tag">sink.mbt</span><button class="copy" data-copy>copy</button></header>
-          <pre><span class="kw">struct</span> <span class="ty">Counter</span> { mut lines : <span class="ty">Int</span> }
+          <pre><span class="kw">struct</span> <span class="ty">Counter</span> { <span class="kw">mut</span> lines : <span class="ty">Int</span> }
 
-<span class="kw">pub impl</span> <span class="fn">@moonlog.Sink</span> <span class="kw">for</span> <span class="ty">Counter</span> <span class="kw">with</span> <span class="fn">write</span>(self, entry) {
+<span class="kw">impl</span> <span class="fn">@moonlog.Sink</span> <span class="kw">for</span> <span class="ty">Counter</span> <span class="kw">with</span> <span class="fn">write</span>(self, entry) {
   <span class="kw">let</span> _ = entry
   self.lines = self.lines + <span class="n">1</span>
   <span class="fn">Ok</span>(())
-}
-
-<span class="kw">let</span> counted = <span class="ty">Counter</span>::{ lines: <span class="n">0</span> }
+}</pre>
+        </div>
+        <div class="code">
+          <header><span class="tag">sink.mbt</span><button class="copy" data-copy>copy</button></header>
+          <pre><span class="kw">let</span> counted = <span class="ty">Counter</span>::{ lines: <span class="n">0</span> }
 <span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(counted, name=<span class="s">"count"</span>))</pre>
         </div>
         <p>
@@ -372,9 +382,13 @@ log.<span class="fn">info</span>(<span class="s">"gave up"</span>, fields=[
         </p>
         <div class="code">
           <header><span class="tag">profiles.mbt</span><button class="copy" data-copy>copy</button></header>
-          <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(profile=<span class="fn">@moonlog.Profile::Python</span>, clock=<span class="kw">fn</span>() { <span class="n">0L</span> })
+          <pre><span class="kw">let</span> held : <span class="ty">Array</span>[<span class="ty">String</span>] = []
+<span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(profile=<span class="fn">@moonlog.Profile::Python</span>, clock=<span class="kw">fn</span>() { <span class="n">0L</span> })
+<span class="kw">let</span> _ = hub.<span class="fn">add</span>(<span class="fn">@moonlog.Slot::new</span>(
+  <span class="fn">@moonlog.Lines::new</span>(<span class="kw">fn</span>(line) { held.<span class="fn">push</span>(line) }), name=<span class="s">"console"</span>,
+))
 hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn">warn</span>(<span class="s">"careful"</span>)
-<span class="c">// WARNING:app:careful</span></pre>
+<span class="fn">assert_eq</span>(held[<span class="n">0</span>], <span class="s">"WARNING:app:careful"</span>)</pre>
         </div>
         <div class="table-wrap">
           <table>
@@ -402,9 +416,9 @@ hub.<span class="fn">logger</span>(<span class="s">"app"</span>).<span class="fn
         <div class="code">
           <header><span class="tag">console.mbt</span><button class="copy" data-copy>copy</button></header>
           <pre><span class="kw">let</span> console = <span class="fn">@stdio.Console::new</span>(stream=<span class="fn">@moonlog.Stream::Auto</span>)
-console.<span class="fn">target</span>(<span class="fn">@moonlog.info</span>)   <span class="c">// Stdout</span>
-console.<span class="fn">target</span>(<span class="fn">@moonlog.error</span>)  <span class="c">// Stderr</span>
-console.<span class="fn">coloured</span>()              <span class="c">// false: a pipe is not a terminal</span>
+<span class="fn">assert_eq</span>(console.<span class="fn">target</span>(<span class="fn">@moonlog.info</span>), <span class="fn">@moonlog.Stream::Stdout</span>)
+<span class="fn">assert_eq</span>(console.<span class="fn">target</span>(<span class="fn">@moonlog.error</span>), <span class="fn">@moonlog.Stream::Stderr</span>)
+<span class="kw">let</span> _ = console.<span class="fn">coloured</span>()  <span class="c">// true only when the stream is a terminal</span>
 <span class="kw">let</span> _ = hub.<span class="fn">add</span>(console.<span class="fn">slot</span>()) <span class="c">// a slot, already coloured to match</span></pre>
         </div>
         <p>
@@ -433,8 +447,8 @@ console.<span class="fn">coloured</span>()              <span class="c">// false
   compress=<span class="kw">true</span>,
 )
 <span class="kw">let</span> _ = hub.<span class="fn">add</span>(file.<span class="fn">slot</span>())
-<span class="c">// app.log.20231114T221320.gz</span>
-file.<span class="fn">segments</span>()</pre>
+<span class="c">// after the first cut, the directory holds app.log.20231114T221320.gz</span>
+<span class="kw">let</span> _ = file.<span class="fn">segments</span>()  <span class="c">// the segments on disk, oldest first</span></pre>
         </div>
         <p>
           A segment is named after the instant it was cut, in UTC, so a
@@ -462,14 +476,16 @@ file.<span class="fn">segments</span>()</pre>
         </p>
         <div class="code">
           <header><span class="tag">push.mbt</span><button class="copy" data-copy>copy</button></header>
-          <pre><span class="kw">let</span> loki = <span class="fn">@loki.Loki::new</span>(
+          <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(clock=<span class="kw">fn</span>() { <span class="n">1_700_000_000_000_000_000L</span> })
+<span class="kw">let</span> loki = <span class="fn">@loki.Loki::new</span>(
   url=<span class="s">"http://loki:3100"</span>, labels=[(<span class="s">"job"</span>, <span class="s">"gateway"</span>)],
 )
 <span class="kw">let</span> _ = hub.<span class="fn">add</span>(loki.<span class="fn">slot</span>())
 <span class="c">// once per turn of a loop you already have</span>
-<span class="kw">match</span> loki.<span class="fn">push</span>() {
-  report <span class="kw">if</span> report.<span class="fn">pushed</span>() => ()          <span class="c">// landed</span>
-  report => <span class="c">// wait `report.retry` said what, then come back</span>
+<span class="kw">let</span> report = loki.<span class="fn">push</span>()
+<span class="kw">match</span> report.<span class="fn">retry</span> {
+  <span class="fn">Some</span>(why) => <span class="fn">println</span>(<span class="s">"come back in a while: "</span> + why)
+  <span class="fn">None</span> => ()
 }</pre>
         </div>
         <p>
@@ -490,7 +506,8 @@ file.<span class="fn">segments</span>()</pre>
         </p>
         <div class="code">
           <header><span class="tag">oncall.mbt</span><button class="copy" data-copy>copy</button></header>
-          <pre><span class="kw">let</span> mail = <span class="fn">@mail.Mail::new</span>(
+          <pre><span class="kw">let</span> hub = <span class="fn">@moonlog.Hub::new</span>(clock=<span class="kw">fn</span>() { <span class="n">1_700_000_000_000_000_000L</span> })
+<span class="kw">let</span> mail = <span class="fn">@mail.Mail::new</span>(
   host=<span class="s">"smtp.example.com"</span>,
   from=<span class="s">"gateway@example.com"</span>,
   to=[<span class="s">"oncall@example.com"</span>],
@@ -498,8 +515,12 @@ file.<span class="fn">segments</span>()</pre>
   window=<span class="n">60_000_000_000L</span>, at_most=<span class="n">100</span>,
 )
 <span class="kw">let</span> _ = hub.<span class="fn">add</span>(mail.<span class="fn">slot</span>())
+<span class="kw">let</span> now = <span class="n">1_700_000_000_000_000_000L</span>
 <span class="kw">if</span> mail.<span class="fn">due</span>(now) {
-  <span class="kw">match</span> mail.<span class="fn">send</span>() { ok => (), error => <span class="c">// stays queued</span> () }
+  <span class="kw">match</span> mail.<span class="fn">send</span>() {
+    <span class="fn">Ok</span>(count) => <span class="fn">println</span>(<span class="s">"sent "</span> + count.<span class="fn">to_string</span>())
+    <span class="fn">Err</span>(why) => <span class="fn">println</span>(<span class="s">"still queued: "</span> + why)
+  }
 }</pre>
         </div>
         <p>
@@ -526,8 +547,8 @@ file.<span class="fn">segments</span>()</pre>
 <span class="c">#   app: {kind: file, path: /var/log/gateway/app.log, max_size: 64mb}</span>
 
 <span class="kw">let</span> config = <span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>)
-config.<span class="fn">slots</span>().<span class="fn">length</span>()                     <span class="c">// 2</span>
-config.<span class="fn">dump</span>(format=<span class="fn">@config.Format::Toml</span>)     <span class="c">// the same, in TOML</span></pre>
+<span class="fn">assert_eq</span>(config.<span class="fn">slots</span>().<span class="fn">length</span>(), <span class="n">2</span>)
+<span class="kw">let</span> _ = config.<span class="fn">dump</span>(format=<span class="fn">@config.Format::Toml</span>)  <span class="c">// the same, in TOML</span></pre>
         </div>
         <p>
           YAML, JSON and TOML read into the same tree, so the same document
@@ -566,10 +587,10 @@ config.<span class="fn">dump</span>(format=<span class="fn">@config.Format::Toml
 <span class="c"># alarms:</span>
 <span class="c">#   ops: { tiers: [[stderr]], remind: 30m }</span>
 
-<span class="kw">let</span> config = <span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>)
-config.<span class="fn">app</span>()                            <span class="c">// "mirror"</span>
-config.<span class="fn">slots</span>().<span class="fn">length</span>()                     <span class="c">// 3</span>
-config.<span class="fn">chain</span>().<span class="fn">length</span>()                     <span class="c">// 2: the fields step, then the redaction</span></pre>
+<span class="kw">let</span> second = <span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>)
+<span class="fn">assert_eq</span>(second.<span class="fn">app</span>(), <span class="s">"mirror"</span>)
+<span class="fn">assert_eq</span>(second.<span class="fn">slots</span>().<span class="fn">length</span>(), <span class="n">3</span>)
+<span class="fn">assert_eq</span>(second.<span class="fn">chain</span>().<span class="fn">length</span>(), <span class="n">2</span>)  <span class="c">// the fields step, then the redaction</span></pre>
         </div>
         <p>
           The keys a sink keeps are the same under both spellings, with the
@@ -603,10 +624,11 @@ config.<span class="fn">chain</span>().<span class="fn">length</span>()         
         </p>
         <div class="code">
           <header><span class="tag">main.mbt</span><button class="copy" data-copy>copy</button></header>
-          <pre><span class="fn">@global.start</span>(config=<span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>))
+          <pre><span class="kw">let</span> deployment = <span class="fn">@config.Config::load</span>(path=<span class="s">"/etc/gateway.yaml"</span>)
+<span class="fn">@global.start</span>(config=deployment)
 <span class="fn">@global.logger</span>(<span class="s">"gateway"</span>).<span class="fn">info</span>(<span class="s">"serving"</span>)
 <span class="kw">for</span> status <span class="kw">in</span> <span class="fn">@global.status</span>() {
-  <span class="c">// name, kind, health, skipped, dropped, error</span>
+  <span class="fn">println</span>(status.name + <span class="s">" "</span> + status.health.<span class="fn">name</span>().<span class="fn">to_owned</span>())
 }
 <span class="fn">@global.flush</span>()     <span class="c">// before the process goes away</span>
 <span class="fn">@global.shutdown</span>()</pre>
