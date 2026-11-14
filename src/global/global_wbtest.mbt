@@ -141,9 +141,14 @@ test "a slot kind nothing reads is refused while the document is read" {
 
 ///|
 test "a file slot writes where the document says, and flush leaves it there" {
-  let base = match @env.get_env_var("TEMP") {
-    Some(dir) => if dir == "" { "." } else { dir }
-    None => "."
+  // The system's temporary directory, never the working tree: TMPDIR on Unix,
+  // TEMP or TMP on Windows.
+  let mut base = "/tmp"
+  for key in ["TMPDIR", "TEMP", "TMP"] {
+    if @env.get_env_var(key) is Some(dir) && dir != "" {
+      base = dir
+      break
+    }
   }
   let joiner = if base.contains("\\") { "\\" } else { "/" }
   let path = base + joiner + "moonlog-global-" + @env.now().to_string() + ".log"
