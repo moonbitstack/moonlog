@@ -1666,3 +1666,18 @@ footer a {
 @supports not selector(::-webkit-scrollbar) {
   html:not(.scrolling) { scrollbar-color: transparent transparent; }
 }
+
+/* On a phone an inline identifier breaks where it must, and the two next-page cards stack, so
+   neither widens the page past the screen. */
+@media (width <= 600px) {
+  :not(pre) > code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+  .next {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .next a {
+    overflow-wrap: anywhere;
+  }
+}
