@@ -1,6 +1,6 @@
 name = "moonbitstack/moonlog"
 
-version = "0.2.0"
+version = "0.2.1"
 
 source = "src"
 
@@ -33,14 +33,14 @@ description = "Structured logging for MoonBit."
 
 import {
   "moonbitlang/async@0.22.5",
-  "moonbitstack/moonzip@0.4.0",
-  "moonbitstack/moonmail@0.2.0",
-  "moonbitstack/moonfetch@0.2.0",
-  "moonbitstack/moonyaml@0.2.0",
-  "moonbitstack/moontoml@0.2.0",
-  "moonbitstack/moonschema@0.2.5",
-  "moonbitstack/moonjson@0.5.0",
-  "moonbitstack/moonbase@0.5.0",
-  "moonbitstack/moontls@0.9.17",
-  "moonbitstack/moondate@0.1.7",
+  "moonbitstack/moonzip@0.4.1",
+  "moonbitstack/moonmail@0.2.1",
+  "moonbitstack/moonfetch@0.2.1",
+  "moonbitstack/moonyaml@0.2.1",
+  "moonbitstack/moontoml@0.2.1",
+  "moonbitstack/moonschema@0.3.1",
+  "moonbitstack/moonjson@0.5.1",
+  "moonbitstack/moonbase@0.5.1",
+  "moonbitstack/moontls@0.10.2",
+  "moonbitstack/moondate@0.2.1",
 }
